@@ -7,11 +7,14 @@ extends Node2D
 @export var line_color: Color = Color(1.0, 0.8, 0.2)
 
 @onready var boundary_line: Line2D = $BoundaryLine
+@onready var boundary_shape: CollisionShape2D = $Boundary/CollisionShape2D
 
 func _ready() -> void:
 	_update_boundary()
 
 func _update_boundary() -> void:
+	if boundary_shape.shape is CircleShape2D:
+		boundary_shape.shape.radius = radius
 	boundary_line.width = line_width
 	boundary_line.default_color = line_color
 	boundary_line.clear_points()
