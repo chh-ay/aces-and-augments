@@ -13,12 +13,17 @@ func _ready() -> void:
 	_update_boundary()
 
 func _update_boundary() -> void:
-	if boundary_shape.shape is CircleShape2D:
-		boundary_shape.shape.radius = radius
+	var circle_shape: CircleShape2D = boundary_shape.shape as CircleShape2D
+	if circle_shape != null:
+		circle_shape.radius = radius
+
+	if boundary_line == null:
+		return
+
 	boundary_line.width = line_width
 	boundary_line.default_color = line_color
 	boundary_line.clear_points()
-	for i in range(segments + 1):
+	for i: int in range(segments + 1):
 		var angle: float = TAU * float(i) / float(segments)
 		var point: Vector2 = Vector2(cos(angle), sin(angle)) * radius
 		boundary_line.add_point(point)

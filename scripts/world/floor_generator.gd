@@ -1,0 +1,367 @@
+class_name FloorGenerator
+extends Node
+
+signal chunk_generated(chunk: Vector2i)
+signal chunk_cleared(chunk: Vector2i)
+
+# Algorithm overview:
+# - Corner-based Wang tiling: each tile corner (NW/NE/SW/SE) is classified as "upper" or "lower"
+#   using smoothed FastNoiseLite values and `upper_threshold`.
+# - The 4-corner signature maps to a tile coordinate loaded from `data/arena_tileset.json`.
+# - Base layer always uses the base tile; detail layer uses the mapped tile when any corner is "upper".
+# - Optional border ring forces "upper" at the world edge to create a clear boundary.
+
+const DEFAULT_CHUNK_SIZE: Vector2i = Vector2i(64, 64)
+const DEFAULT_TILE_SIZE: Vector2i = Vector2i(32, 32) # Matches arena_tileset.json tile size.
+const ALL_UPPER_KEY: String = "upper|upper|upper|upper"
+const ALL_LOWER_KEY: String = "lower|lower|lower|lower"
+const WORLD_LIMIT_DISABLED: int = 0
+# Sentinel outside any reasonable world radius so the first update always runs.
+const INVALID_CHUNK: Vector2i = Vector2i(1_000_000, 1_000_000)
+# Keep a small extra ring beyond the render radius to reduce churn while moving.
+const CHUNK_LIMIT_PADDING: int = 1
+const FLOOR_BASE_Z_INDEX: int = -30
+const FLOOR_DETAIL_Z_INDEX: int = -20
+
+@export var player_path: NodePath
+@export var floor_base_path: NodePath
+@export var floor_detail_path: NodePath
+
+@export var chunk_size: Vector2i = DEFAULT_CHUNK_SIZE # Tiles per chunk (X,Y).
+@export var chunk_radius: int = 1 # How many chunks around the player to keep generated.
+@export var chunk_limit: int = 2 # Max chunk distance before pruning (>= chunk_radius + padding).
+@export var world_radius_chunks: int = 2 # World half-size in chunks; 0 disables the limit.
+@export var use_border_ring: bool = true # Force a ring at the world edge to visually cap the map.
+@export var border_thickness_chunks: int = 1 # Ring thickness in chunks.
+@export var use_detail_layer: bool = true
+@export var upper_threshold: float = 0.12 # Noise cutoff; higher = fewer "upper" tiles.
+@export var noise_frequency: float = 0.04 # Noise scale; lower = larger blobs.
+@export var noise_smoothing_radius: int = 1 # Box blur radius for smoother terrain.
+
+var _player: Node2D
+var _floor_base: TileMapLayer
+var _floor_detail: TileMapLayer
+var _noise: FastNoiseLite
+var _mapping: Dictionary = {}
+var _base_coords: Vector2i = Vector2i.ZERO
+var _border_coords: Vector2i = Vector2i.ZERO
+var _base_source_id: int = -1
+var _detail_source_id: int = -1
+var _atlas: TileSetAtlasSource
+var _tile_size: Vector2i = DEFAULT_TILE_SIZE
+var _chunk_world_size: Vector2 = Vector2.ZERO
+var _playable_radius_world: Vector2 = Vector2.ZERO
+var _generated_chunks: Dictionary = {}
+var _last_chunk: Vector2i = INVALID_CHUNK
+
+func _ready() -> void:
+	_player = get_node_or_null(player_path) as Node2D
+	_floor_base = get_node_or_null(floor_base_path) as TileMapLayer
+	_floor_detail = get_node_or_null(floor_detail_path) as TileMapLayer
+	_setup_render_layers()
+	_init_floor()
+
+func _process(_delta: float) -> void:
+	if _player == null or _noise == null:
+		return
+	_update_floor_chunks()
+
+func get_chunk_size() -> Vector2i:
+	return chunk_size
+
+func get_tile_size() -> Vector2i:
+	return _tile_size
+
+func get_noise() -> FastNoiseLite:
+	return _noise
+
+func get_upper_threshold() -> float:
+	return upper_threshold
+
+func _refresh_cached_metrics() -> void:
+	_chunk_world_size = Vector2(
+		float(chunk_size.x) * float(_tile_size.x),
+		float(chunk_size.y) * float(_tile_size.y)
+	)
+	var playable_radius_chunks: int = _get_playable_radius_chunks()
+	_playable_radius_world = Vector2(
+		float(playable_radius_chunks) * _chunk_world_size.x,
+		float(playable_radius_chunks) * _chunk_world_size.y
+	)
+
+
+func _validate_chunk_settings() -> void:
+	# Ensure we keep at least one extra ring so chunks don't thrash in/out while moving.
+	if chunk_limit < chunk_radius + CHUNK_LIMIT_PADDING:
+		chunk_limit = chunk_radius + CHUNK_LIMIT_PADDING
+	if border_thickness_chunks < 0:
+		border_thickness_chunks = 0
+	if world_radius_chunks > WORLD_LIMIT_DISABLED and border_thickness_chunks >= world_radius_chunks:
+		# Keep at least one playable chunk inside the border.
+		border_thickness_chunks = max(world_radius_chunks - 1, 0)
+
+func is_world_position_within_limit(world_pos: Vector2) -> bool:
+	if world_radius_chunks <= WORLD_LIMIT_DISABLED:
+		return true
+	return abs(world_pos.x) <= _playable_radius_world.x and abs(world_pos.y) <= _playable_radius_world.y
+
+func _init_floor() -> void:
+	if _floor_base == null or _floor_detail == null:
+		return
+	var tileset: TileSet = _create_floor_tileset()
+	if tileset == null:
+		return
+	_floor_base.tile_set = tileset
+	_floor_detail.tile_set = tileset
+
+	_base_source_id = -1
+	_detail_source_id = -1
+	if tileset.get_source_count() > 0:
+		_base_source_id = tileset.get_source_id(0)
+	if use_detail_layer and tileset.get_source_count() > 1:
+		_detail_source_id = tileset.get_source_id(1)
+	if _base_source_id == -1:
+		return
+
+	if use_detail_layer:
+		_atlas = tileset.get_source(_detail_source_id) as TileSetAtlasSource
+	else:
+		_atlas = tileset.get_source(_base_source_id) as TileSetAtlasSource
+	if _atlas == null:
+		return
+
+	_mapping = _load_tileset_mapping()
+	_base_coords = _mapping.get("BASE", _mapping.get(ALL_LOWER_KEY, Vector2i.ZERO))
+	_border_coords = _mapping.get(ALL_UPPER_KEY, _base_coords)
+	if _mapping.has("BASE_OVERRIDE"):
+		_base_coords = _mapping["BASE_OVERRIDE"]
+
+	_tile_size = tileset.tile_size
+	_validate_chunk_settings()
+	_refresh_cached_metrics()
+
+	_noise = FastNoiseLite.new()
+	_noise.seed = randi()
+	_noise.frequency = noise_frequency
+
+	_floor_base.clear()
+	_floor_detail.clear()
+	_generated_chunks.clear()
+	_last_chunk = INVALID_CHUNK
+	_update_floor_chunks()
+
+func _update_floor_chunks() -> void:
+	if _player == null:
+		return
+	var chunk: Vector2i = _world_to_chunk(_player.global_position)
+	if chunk == _last_chunk:
+		return
+	_last_chunk = chunk
+	for y in range(chunk.y - chunk_radius, chunk.y + chunk_radius + 1):
+		for x in range(chunk.x - chunk_radius, chunk.x + chunk_radius + 1):
+			var c: Vector2i = Vector2i(x, y)
+			if not _is_chunk_within_world_limit(c):
+				continue
+			if not _generated_chunks.has(c):
+				_generate_chunk(c)
+	_prune_chunks(chunk)
+
+func _generate_chunk(chunk: Vector2i) -> void:
+	if _base_source_id == -1:
+		return
+	var is_border_chunk: bool = _is_chunk_in_border_ring(chunk)
+	var start_x: int = chunk.x * chunk_size.x
+	var start_y: int = chunk.y * chunk_size.y
+	var corner_types: Array = _build_corner_type_grid(start_x, start_y)
+	for y in range(start_y, start_y + chunk_size.y):
+		for x in range(start_x, start_x + chunk_size.x):
+			var base_coords: Vector2i = _base_coords
+			var coords: Vector2i = _base_coords
+			var has_upper: bool = false
+			if is_border_chunk:
+				coords = _border_coords
+				has_upper = true
+			else:
+				var local_x: int = x - start_x
+				var local_y: int = y - start_y
+				var nw: String = corner_types[local_x][local_y]
+				var ne: String = corner_types[local_x + 1][local_y]
+				var sw: String = corner_types[local_x][local_y + 1]
+				var se: String = corner_types[local_x + 1][local_y + 1]
+				has_upper = nw == "upper" or ne == "upper" or sw == "upper" or se == "upper"
+				var key: String = "%s|%s|%s|%s" % [nw, ne, sw, se]
+				coords = _mapping.get(key, _base_coords)
+			if _atlas != null and not _atlas.has_tile(coords):
+				coords = _base_coords
+			if use_detail_layer:
+				_floor_base.set_cell(Vector2i(x, y), _base_source_id, base_coords)
+				if has_upper:
+					_floor_detail.set_cell(Vector2i(x, y), _detail_source_id, coords)
+				else:
+					_floor_detail.erase_cell(Vector2i(x, y))
+			else:
+				_floor_base.set_cell(Vector2i(x, y), _base_source_id, coords)
+				_floor_detail.erase_cell(Vector2i(x, y))
+	_generated_chunks[chunk] = true
+	chunk_generated.emit(chunk)
+
+func _prune_chunks(center: Vector2i) -> void:
+	var to_remove: Array[Vector2i] = []
+	for key in _generated_chunks.keys():
+		var chunk: Vector2i = key
+		var dx: int = abs(chunk.x - center.x)
+		var dy: int = abs(chunk.y - center.y)
+		if max(dx, dy) > chunk_limit:
+			to_remove.append(chunk)
+	for chunk in to_remove:
+		_clear_chunk(chunk)
+		_generated_chunks.erase(chunk)
+		chunk_cleared.emit(chunk)
+
+func _clear_chunk(chunk: Vector2i) -> void:
+	var start_x: int = chunk.x * chunk_size.x
+	var start_y: int = chunk.y * chunk_size.y
+	for y in range(start_y, start_y + chunk_size.y):
+		for x in range(start_x, start_x + chunk_size.x):
+			_floor_base.erase_cell(Vector2i(x, y))
+			_floor_detail.erase_cell(Vector2i(x, y))
+
+func _corner_type(noise: FastNoiseLite, x: int, y: int) -> String:
+	var value: float = _smoothed_noise(noise, x, y)
+	return "upper" if value > upper_threshold else "lower"
+
+func _smoothed_noise(noise: FastNoiseLite, x: int, y: int) -> float:
+	if noise_smoothing_radius <= 0:
+		return noise.get_noise_2d(float(x), float(y))
+	var sum: float = 0.0
+	var count: int = 0
+	for oy in range(-noise_smoothing_radius, noise_smoothing_radius + 1):
+		for ox in range(-noise_smoothing_radius, noise_smoothing_radius + 1):
+			sum += noise.get_noise_2d(float(x + ox), float(y + oy))
+			count += 1
+	return sum / float(count)
+
+func _get_playable_radius_chunks() -> int:
+	if world_radius_chunks <= WORLD_LIMIT_DISABLED:
+		return world_radius_chunks
+	if not use_border_ring:
+		return world_radius_chunks
+	return max(world_radius_chunks - border_thickness_chunks, 0)
+
+func _is_chunk_within_world_limit(chunk: Vector2i) -> bool:
+	if world_radius_chunks <= WORLD_LIMIT_DISABLED:
+		return true
+	return max(abs(chunk.x), abs(chunk.y)) <= world_radius_chunks
+
+func _is_chunk_in_border_ring(chunk: Vector2i) -> bool:
+	if not use_border_ring:
+		return false
+	if world_radius_chunks <= WORLD_LIMIT_DISABLED:
+		return false
+	if border_thickness_chunks <= 0:
+		return false
+	var distance: int = max(abs(chunk.x), abs(chunk.y))
+	var inner_radius: int = max(world_radius_chunks - border_thickness_chunks, 0)
+	return distance > inner_radius and distance <= world_radius_chunks
+
+func _world_to_chunk(world_pos: Vector2) -> Vector2i:
+	var cx: int = int(floor(world_pos.x / _chunk_world_size.x))
+	var cy: int = int(floor(world_pos.y / _chunk_world_size.y))
+	return Vector2i(cx, cy)
+
+func _build_corner_type_grid(start_x: int, start_y: int) -> Array:
+	# Cache corner classifications so each noise point is evaluated once per chunk.
+	var grid_width: int = chunk_size.x + 1
+	var grid_height: int = chunk_size.y + 1
+	var grid: Array = []
+	grid.resize(grid_width)
+	for gx in range(grid_width):
+		var column: Array = []
+		column.resize(grid_height)
+		for gy in range(grid_height):
+			column[gy] = _corner_type(_noise, start_x + gx, start_y + gy)
+		grid[gx] = column
+	return grid
+
+func _load_tileset_mapping() -> Dictionary:
+	var mapping: Dictionary = {}
+	var path: String = "res://data/arena_tileset.json"
+	if not FileAccess.file_exists(path):
+		return mapping
+	var json_text: String = FileAccess.get_file_as_string(path)
+	var parsed: Variant = JSON.parse_string(json_text)
+	if parsed is Dictionary:
+		var data: Dictionary = parsed
+		if data.has("tileset"):
+			var tileset_data: Dictionary = data["tileset"]
+			if tileset_data.has("tiles"):
+				var tiles: Array = tileset_data["tiles"]
+				for tile_data in tiles:
+					if tile_data is Dictionary:
+						var tile: Dictionary = tile_data
+						if tile.has("corners") and tile.has("original_position"):
+							var corners: Dictionary = tile["corners"]
+							var pos: Dictionary = tile["original_position"]
+							var key: String = "%s|%s|%s|%s" % [
+								corners.get("NW", "lower"),
+								corners.get("NE", "lower"),
+								corners.get("SW", "lower"),
+								corners.get("SE", "lower")
+							]
+							mapping[key] = Vector2i(
+								int(pos.get("col", 0)),
+								int(pos.get("row", 0))
+							)
+							if corners.get("NW") == "lower" and corners.get("NE") == "lower" and corners.get("SW") == "lower" and corners.get("SE") == "lower":
+								mapping["BASE"] = mapping[key]
+			if tileset_data.has("base_override"):
+				var override_data: Dictionary = tileset_data["base_override"]
+				mapping["BASE_OVERRIDE"] = Vector2i(
+					int(override_data.get("col", 0)),
+					int(override_data.get("row", 0))
+				)
+	return mapping
+
+func _create_floor_tileset() -> TileSet:
+	var base_tex: Texture2D = null
+	var detail_tex: Texture2D = null
+	if use_detail_layer:
+		# Use AssetRegistry to keep tileset paths centralized.
+		base_tex = AssetRegistry.get_tileset_texture("floor_base")
+		detail_tex = AssetRegistry.get_tileset_texture("floor_detail")
+	else:
+		base_tex = AssetRegistry.get_tileset_texture("floor_wang")
+	if base_tex == null:
+		return null
+	if use_detail_layer and detail_tex == null:
+		return null
+	var tileset: TileSet = TileSet.new()
+	tileset.tile_size = DEFAULT_TILE_SIZE
+	var base_atlas: TileSetAtlasSource = TileSetAtlasSource.new()
+	base_atlas.texture = base_tex
+	base_atlas.texture_region_size = tileset.tile_size
+	base_atlas.create_tile(Vector2i.ZERO, Vector2i.ONE)
+	tileset.add_source(base_atlas)
+
+	if use_detail_layer:
+		var detail_atlas: TileSetAtlasSource = TileSetAtlasSource.new()
+		detail_atlas.texture = detail_tex
+		detail_atlas.texture_region_size = tileset.tile_size
+		var atlas_size: Vector2i = Vector2i(
+			int(float(detail_tex.get_width()) / float(tileset.tile_size.x)),
+			int(float(detail_tex.get_height()) / float(tileset.tile_size.y))
+		)
+		for y in range(atlas_size.y):
+			for x in range(atlas_size.x):
+				detail_atlas.create_tile(Vector2i(x, y), Vector2i.ONE)
+		tileset.add_source(detail_atlas)
+	return tileset
+
+func _setup_render_layers() -> void:
+	if _floor_base != null:
+		_floor_base.z_index = FLOOR_BASE_Z_INDEX
+		_floor_base.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	if _floor_detail != null:
+		_floor_detail.z_index = FLOOR_DETAIL_Z_INDEX
+		_floor_detail.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		_floor_detail.visible = use_detail_layer
