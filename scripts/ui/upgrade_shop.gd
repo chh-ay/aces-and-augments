@@ -45,10 +45,10 @@ func _build_rows() -> void:
 	_rows.clear()
 	for index in range(3):
 		_rows.append({
-			"name": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/NameLabel" % (index + 1)) as Label,
-			"desc": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/DescriptionLabel" % (index + 1)) as Label,
-			"cost": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/CostLabel" % (index + 1)) as Label,
-			"button": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/BuyButton" % (index + 1)) as Button,
+			"name": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/NameLabel" % (index + 1)) as Label,
+			"desc": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/DescriptionLabel" % (index + 1)) as Label,
+			"cost": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/CostLabel" % (index + 1)) as Label,
+			"button": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/BuyButton" % (index + 1)) as Button,
 			"id": ""
 		})
 	var definitions: Array[Dictionary] = GameManager.get_upgrade_definitions() if GameManager != null else []
