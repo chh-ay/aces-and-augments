@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dax8b8kh2fc8o"]
 
 [ext_resource type="Script" path="res://scripts/enemies/basic_enemy.gd" id="1_jhru5"]
-[ext_resource type="Texture2D" uid="uid://bsgqyvqyqc0k4" path="res://assets/sprites/enemies/slime_placeholder.png" id="2_fpn8u"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/mutant_enemy.png" id="2_fpn8u"]
 [ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="3_oksqa"]
 [ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="4_4tlam"]
 
@@ -22,8 +22,7 @@ card_drop_chance = 0.24
 
 [node name="Sprite" type="Sprite2D" parent="."]
 texture_filter = 1
-modulate = Color(0.64, 0.96, 0.58, 1)
-scale = Vector2(1.18, 1.18)
+scale = Vector2(1.12, 1.12)
 texture = ExtResource("2_fpn8u")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

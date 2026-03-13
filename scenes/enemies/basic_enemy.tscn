@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cw10jr8r05fy1"]
 
 [ext_resource type="Script" uid="uid://c0wepg8hribie" path="res://scripts/enemies/basic_enemy.gd" id="1_8xi43"]
-[ext_resource type="Texture2D" uid="uid://bsgqyvqyqc0k4" path="res://assets/sprites/enemies/slime_placeholder.png" id="2_8xi43"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime_enemy.png" id="2_8xi43"]
 [ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="2_ibjif"]
 [ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="3_4mpuu"]
 
