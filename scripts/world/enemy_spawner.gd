@@ -28,11 +28,16 @@ var _floor_generator: FloorGenerator
 var _arena: Arena
 var _elapsed_run_time: float = 0.0
 var _despawn_timer: float = 0.0
+var _base_spawn_interval: float = 0.0
 var _enemy_mutation_profile: Dictionary = {
 	"health": 1.0,
 	"damage": 1.0,
 	"speed": 1.0
 }
+var _difficulty_speed_multiplier: float = 1.0
+var _difficulty_health_multiplier: float = 1.0
+var _difficulty_damage_multiplier: float = 1.0
+var _difficulty_card_drop_multiplier: float = 1.0
 
 func _ready() -> void:
 	_enemy_container = get_node_or_null(enemy_container_path) as Node2D
@@ -41,6 +46,8 @@ func _ready() -> void:
 	_arena = get_node_or_null(arena_path) as Arena
 	if _arena == null:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
+	_base_spawn_interval = spawn_interval
+	_apply_selected_difficulty()
 	_spawn_timer = spawn_interval
 
 func _physics_process(delta: float) -> void:
@@ -90,6 +97,9 @@ func _spawn_enemy() -> void:
 		_enemy_container.add_child(enemy2d)
 		enemy2d.add_to_group("enemy")
 		enemy2d.global_position = _pick_spawn_position()
+		if "card_drop_chance" in enemy2d:
+			var card_drop_chance: float = float(enemy2d.get("card_drop_chance"))
+			enemy2d.set("card_drop_chance", clamp(card_drop_chance * _difficulty_card_drop_multiplier, 0.0, 1.0))
 		_apply_enemy_scaling(enemy2d, _get_run_progress())
 
 func _pick_enemy_scene() -> PackedScene:
@@ -142,9 +152,20 @@ func _apply_enemy_scaling(enemy_node: Node2D, progress: float) -> void:
 	if not enemy_node.has_method("apply_difficulty_scaling"):
 		return
 	var eased: float = progress * progress * (3.0 - 2.0 * progress)
-	var speed_multiplier: float = lerpf(1.0, peak_speed_multiplier, eased)
-	var health_multiplier: float = lerpf(1.0, peak_health_multiplier, eased)
-	var damage_multiplier: float = lerpf(1.0, peak_damage_multiplier, eased)
+	var speed_multiplier: float = lerpf(1.0, peak_speed_multiplier, eased) * _difficulty_speed_multiplier
+	var health_multiplier: float = lerpf(1.0, peak_health_multiplier, eased) * _difficulty_health_multiplier
+	var damage_multiplier: float = lerpf(1.0, peak_damage_multiplier, eased) * _difficulty_damage_multiplier
 	enemy_node.call("apply_difficulty_scaling", speed_multiplier, health_multiplier, damage_multiplier)
 	if enemy_node.has_method("apply_mutation_profile"):
 		enemy_node.call("apply_mutation_profile", _enemy_mutation_profile)
+
+func _apply_selected_difficulty() -> void:
+	if GameManager == null:
+		return
+	var config: Dictionary = GameManager.get_selected_difficulty()
+	_difficulty_speed_multiplier = float(config.get("enemy_speed", 1.0))
+	_difficulty_health_multiplier = float(config.get("enemy_health", 1.0))
+	_difficulty_damage_multiplier = float(config.get("enemy_damage", 1.0))
+	_difficulty_card_drop_multiplier = float(config.get("card_drop", 1.0))
+	var spawn_rate_multiplier: float = max(float(config.get("spawn_rate", 1.0)), 0.1)
+	spawn_interval = _base_spawn_interval / spawn_rate_multiplier

@@ -101,6 +101,24 @@ autowrap_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
 
+[node name="DifficultyButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=1015534220]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Difficulty: Hard"
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_font_sizes/font_size = 16
+
+[node name="DifficultyHint" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1099400252]
+layout_mode = 2
+text = "Enemy speed 100%  |  HP 100%  |  spawn 100%  |  cards 100%"
+horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.62, 0.7, 0.78, 0.9)
+
 [node name="Buttons" type="VBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=1617894437]
 layout_mode = 2
 theme_override_constants/separation = 10
