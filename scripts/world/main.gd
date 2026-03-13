@@ -7,7 +7,7 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
-@export_range(1, 6, 1) var lucky_terminal_count: int = 3
+@export_range(1, 6, 1) var lucky_terminal_count: int = 2
 
 @onready var music_player: AudioStreamPlayer = $RunMusicPlayer
 @onready var player: PlayerController = $Player
@@ -347,17 +347,18 @@ func _position_lucky_terminals() -> void:
 		return
 	var offset_distance: float = 224.0
 	if run_director == null or run_director.run_duration_seconds > 30.0:
-		offset_distance = 960.0
+		offset_distance = 640.0
 	if arena != null:
-		offset_distance = min(offset_distance, arena.get_inner_radius(96.0))
+		offset_distance = min(offset_distance, arena.get_inner_radius(160.0))
+		offset_distance = max(offset_distance, arena.get_inner_radius(240.0) * 0.72)
 	var terminal_count: int = _lucky_terminals.size()
 	var base_angle: float = randf() * TAU
 	for index in range(terminal_count):
 		var terminal: LuckyTerminal = _lucky_terminals[index]
 		if terminal == null:
 			continue
-		var angle: float = base_angle + (TAU / float(terminal_count)) * float(index) + randf_range(-0.22, 0.22)
-		var distance_scale: float = randf_range(0.74, 1.0)
+		var angle: float = base_angle + (TAU / float(terminal_count)) * float(index) + randf_range(-0.08, 0.08)
+		var distance_scale: float = randf_range(0.92, 1.0)
 		var offset: Vector2 = Vector2.RIGHT.rotated(angle) * offset_distance * distance_scale
 		var target_position: Vector2 = player.global_position + offset
 		if arena != null:
