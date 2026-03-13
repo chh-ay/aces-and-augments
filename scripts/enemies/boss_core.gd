@@ -19,6 +19,7 @@ func _ready() -> void:
 	_player = get_tree().get_first_node_in_group("player") as PlayerController
 
 func _physics_process(delta: float) -> void:
+	_update_hit_flash(delta)
 	_damage_cooldown = max(_damage_cooldown - delta, 0.0)
 	_dash_cooldown_remaining = max(_dash_cooldown_remaining - delta, 0.0)
 	var player: PlayerController = _get_target_player()
