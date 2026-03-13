@@ -11,7 +11,7 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 0.80,
 		"enemy_damage": 0.85,
 		"spawn_rate": 0.80,
-		"card_drop": 1.20
+		"card_drop": 0.80
 	},
 	"hard": {
 		"name": "Hard",
@@ -19,7 +19,7 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 1.00,
 		"enemy_damage": 1.00,
 		"spawn_rate": 1.00,
-		"card_drop": 1.00
+		"card_drop": 0.50
 	},
 	"hell": {
 		"name": "Hell",
@@ -27,17 +27,22 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 1.20,
 		"enemy_damage": 1.15,
 		"spawn_rate": 1.30,
-		"card_drop": 0.80
+		"card_drop": 0.25
 	}
 }
 
 var selected_difficulty_id: String = DEFAULT_DIFFICULTY
 
 func _ready() -> void:
-	selected_difficulty_id = _sanitize_difficulty_id(selected_difficulty_id)
+	var persisted_difficulty: String = selected_difficulty_id
+	if SaveManager != null and SaveManager.has_method("get_selected_difficulty"):
+		persisted_difficulty = String(SaveManager.call("get_selected_difficulty", selected_difficulty_id))
+	selected_difficulty_id = _sanitize_difficulty_id(persisted_difficulty)
 
 func set_selected_difficulty(difficulty_id: String) -> Dictionary:
 	selected_difficulty_id = _sanitize_difficulty_id(difficulty_id)
+	if SaveManager != null and SaveManager.has_method("set_selected_difficulty"):
+		SaveManager.call("set_selected_difficulty", selected_difficulty_id)
 	var config: Dictionary = get_selected_difficulty()
 	difficulty_changed.emit(selected_difficulty_id, config)
 	return config
