@@ -37,6 +37,7 @@ const FLOOR_DETAIL_Z_INDEX: int = -20
 @export var upper_threshold: float = 0.12 # Noise cutoff; higher = fewer "upper" tiles.
 @export var noise_frequency: float = 0.04 # Noise scale; lower = larger blobs.
 @export var noise_smoothing_radius: int = 1 # Box blur radius for smoother terrain.
+@export var max_chunk_rows_generated_per_frame: int = 8
 
 var _player: Node2D
 var _floor_base: TileMapLayer
@@ -53,6 +54,9 @@ var _chunk_world_size: Vector2 = Vector2.ZERO
 var _playable_radius_world: Vector2 = Vector2.ZERO
 var _generated_chunks: Dictionary = {}
 var _last_chunk: Vector2i = INVALID_CHUNK
+var _queued_chunks: Array[Vector2i] = []
+var _queued_chunk_lookup: Dictionary = {}
+var _active_chunk_job: Dictionary = {}
 
 func _ready() -> void:
 	_player = get_node_or_null(player_path) as Node2D
@@ -65,6 +69,7 @@ func _process(_delta: float) -> void:
 	if _player == null or _noise == null:
 		return
 	_update_floor_chunks()
+	_drain_chunk_queue()
 
 func get_chunk_size() -> Vector2i:
 	return chunk_size
@@ -147,6 +152,9 @@ func _init_floor() -> void:
 	_floor_base.clear()
 	_floor_detail.clear()
 	_generated_chunks.clear()
+	_queued_chunks.clear()
+	_queued_chunk_lookup.clear()
+	_active_chunk_job.clear()
 	_last_chunk = INVALID_CHUNK
 	_update_floor_chunks()
 
@@ -163,45 +171,76 @@ func _update_floor_chunks() -> void:
 			if not _is_chunk_within_world_limit(c):
 				continue
 			if not _generated_chunks.has(c):
-				_generate_chunk(c)
+				_queue_chunk_generation(c)
 	_prune_chunks(chunk)
 
 func _generate_chunk(chunk: Vector2i) -> void:
 	if _base_source_id == -1:
 		return
+	var job: Dictionary = _create_chunk_job(chunk)
+	if job.is_empty():
+		return
+	while int(job.get("row_index", 0)) < chunk_size.y:
+		_generate_chunk_row(job)
+	_finalize_chunk_job(job)
+
+func _create_chunk_job(chunk: Vector2i) -> Dictionary:
+	if _base_source_id == -1:
+		return {}
 	var is_border_chunk: bool = _is_chunk_in_border_ring(chunk)
 	var start_x: int = chunk.x * chunk_size.x
 	var start_y: int = chunk.y * chunk_size.y
 	var corner_types: Array = _build_corner_type_grid(start_x, start_y)
-	for y in range(start_y, start_y + chunk_size.y):
-		for x in range(start_x, start_x + chunk_size.x):
-			var base_coords: Vector2i = _base_coords
-			var coords: Vector2i = _base_coords
-			var has_upper: bool = false
-			if is_border_chunk:
-				coords = _border_coords
-				has_upper = true
+	return {
+		"chunk": chunk,
+		"is_border_chunk": is_border_chunk,
+		"start_x": start_x,
+		"start_y": start_y,
+		"corner_types": corner_types,
+		"row_index": 0
+	}
+
+func _generate_chunk_row(job: Dictionary) -> void:
+	var start_x: int = int(job.get("start_x", 0))
+	var start_y: int = int(job.get("start_y", 0))
+	var row_index: int = int(job.get("row_index", 0))
+	var y: int = start_y + row_index
+	var is_border_chunk: bool = bool(job.get("is_border_chunk", false))
+	var corner_types: Array = job.get("corner_types", [])
+	for x in range(start_x, start_x + chunk_size.x):
+		var base_coords: Vector2i = _base_coords
+		var coords: Vector2i = _base_coords
+		var has_upper: bool = false
+		if is_border_chunk:
+			coords = _border_coords
+			has_upper = true
+		else:
+			var local_x: int = x - start_x
+			var local_y: int = y - start_y
+			var nw: String = corner_types[local_x][local_y]
+			var ne: String = corner_types[local_x + 1][local_y]
+			var sw: String = corner_types[local_x][local_y + 1]
+			var se: String = corner_types[local_x + 1][local_y + 1]
+			has_upper = nw == "upper" or ne == "upper" or sw == "upper" or se == "upper"
+			var key: String = "%s|%s|%s|%s" % [nw, ne, sw, se]
+			coords = _mapping.get(key, _base_coords)
+		if _atlas != null and not _atlas.has_tile(coords):
+			coords = _base_coords
+		if use_detail_layer:
+			_floor_base.set_cell(Vector2i(x, y), _base_source_id, base_coords)
+			if has_upper:
+				_floor_detail.set_cell(Vector2i(x, y), _detail_source_id, coords)
 			else:
-				var local_x: int = x - start_x
-				var local_y: int = y - start_y
-				var nw: String = corner_types[local_x][local_y]
-				var ne: String = corner_types[local_x + 1][local_y]
-				var sw: String = corner_types[local_x][local_y + 1]
-				var se: String = corner_types[local_x + 1][local_y + 1]
-				has_upper = nw == "upper" or ne == "upper" or sw == "upper" or se == "upper"
-				var key: String = "%s|%s|%s|%s" % [nw, ne, sw, se]
-				coords = _mapping.get(key, _base_coords)
-			if _atlas != null and not _atlas.has_tile(coords):
-				coords = _base_coords
-			if use_detail_layer:
-				_floor_base.set_cell(Vector2i(x, y), _base_source_id, base_coords)
-				if has_upper:
-					_floor_detail.set_cell(Vector2i(x, y), _detail_source_id, coords)
-				else:
-					_floor_detail.erase_cell(Vector2i(x, y))
-			else:
-				_floor_base.set_cell(Vector2i(x, y), _base_source_id, coords)
 				_floor_detail.erase_cell(Vector2i(x, y))
+		else:
+			_floor_base.set_cell(Vector2i(x, y), _base_source_id, coords)
+			_floor_detail.erase_cell(Vector2i(x, y))
+	job["row_index"] = row_index + 1
+
+func _finalize_chunk_job(job: Dictionary) -> void:
+	var chunk: Vector2i = job.get("chunk", INVALID_CHUNK)
+	if chunk == INVALID_CHUNK:
+		return
 	_generated_chunks[chunk] = true
 	chunk_generated.emit(chunk)
 
@@ -217,6 +256,33 @@ func _prune_chunks(center: Vector2i) -> void:
 		_clear_chunk(chunk)
 		_generated_chunks.erase(chunk)
 		chunk_cleared.emit(chunk)
+
+func _queue_chunk_generation(chunk: Vector2i) -> void:
+	if _generated_chunks.has(chunk) or _queued_chunk_lookup.has(chunk):
+		return
+	_queued_chunks.append(chunk)
+	_queued_chunk_lookup[chunk] = true
+
+func _drain_chunk_queue() -> void:
+	var budget: int = max(max_chunk_rows_generated_per_frame, 1)
+	if budget <= 0:
+		return
+	while budget > 0:
+		if _active_chunk_job.is_empty():
+			if _queued_chunks.is_empty():
+				return
+			var chunk: Vector2i = _queued_chunks.pop_front()
+			_queued_chunk_lookup.erase(chunk)
+			if _generated_chunks.has(chunk):
+				continue
+			_active_chunk_job = _create_chunk_job(chunk)
+			if _active_chunk_job.is_empty():
+				continue
+		_generate_chunk_row(_active_chunk_job)
+		budget -= 1
+		if int(_active_chunk_job.get("row_index", 0)) >= chunk_size.y:
+			_finalize_chunk_job(_active_chunk_job)
+			_active_chunk_job.clear()
 
 func _clear_chunk(chunk: Vector2i) -> void:
 	var start_x: int = chunk.x * chunk_size.x

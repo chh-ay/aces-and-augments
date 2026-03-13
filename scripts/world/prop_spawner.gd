@@ -2,16 +2,24 @@ class_name PropSpawner
 extends Node2D
 
 @export var generator_path: NodePath
-@export var prop_count_per_chunk: int = 8
+@export var enabled: bool = false
+@export var prop_count_per_chunk: int = 5
 @export var prop_edge_bias: float = 0.2
+@export var enable_blocking_props: bool = false
+@export var max_prop_chunks_per_frame: int = 1
 
 var _generator: FloorGenerator
 var _props_by_chunk: Dictionary = {}
 var _tile_size: Vector2i = Vector2i(32, 32)
 var _chunk_size: Vector2i = Vector2i(13, 11)
+var _pending_chunks: Array[Vector2i] = []
+var _pending_lookup: Dictionary = {}
 
 func _ready() -> void:
 	z_index = -5
+	if not enabled:
+		set_process(false)
+		return
 	_generator = get_node_or_null(generator_path) as FloorGenerator
 	if _generator == null:
 		return
@@ -20,10 +28,28 @@ func _ready() -> void:
 	_tile_size = _generator.get_tile_size()
 	_chunk_size = _generator.get_chunk_size()
 
+func _process(_delta: float) -> void:
+	if not enabled:
+		return
+	var budget: int = max(max_prop_chunks_per_frame, 1)
+	while budget > 0 and not _pending_chunks.is_empty():
+		var chunk: Vector2i = _pending_chunks.pop_front()
+		_pending_lookup.erase(chunk)
+		_spawn_props_for_chunk(chunk)
+		budget -= 1
+
 func _on_chunk_generated(chunk: Vector2i) -> void:
-	_spawn_props_for_chunk(chunk)
+	if not enabled:
+		return
+	if _pending_lookup.has(chunk):
+		return
+	_pending_chunks.append(chunk)
+	_pending_lookup[chunk] = true
 
 func _on_chunk_cleared(chunk: Vector2i) -> void:
+	if _pending_lookup.has(chunk):
+		_pending_lookup.erase(chunk)
+		_pending_chunks.erase(chunk)
 	_clear_chunk(chunk)
 
 func _spawn_props_for_chunk(chunk: Vector2i) -> void:
@@ -165,7 +191,7 @@ func _create_prop_node(def: Dictionary) -> Node2D:
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	prop_root.add_child(sprite)
 
-	var blocking: bool = bool(def.get("blocking", false))
+	var blocking: bool = enable_blocking_props and bool(def.get("blocking", false))
 	if blocking:
 		var body: StaticBody2D = StaticBody2D.new()
 		var collider: CollisionShape2D = CollisionShape2D.new()
