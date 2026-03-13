@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b5eplpcgf1tiy"]
 
 [ext_resource type="Script" path="res://scripts/ui/hand_augment_panel.gd" id="1_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/card_slot.tscn" id="2_card_slot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.06, 0.08, 0.95)
@@ -87,6 +88,13 @@ offset_bottom = -22.0
 layout_mode = 2
 theme_override_constants/separation = 18
 
+[node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "POKER ROUTE"
+horizontal_alignment = 1
+
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1262120253]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
@@ -124,7 +132,7 @@ theme_override_font_sizes/font_size = 22
 text = "HP 100 / 100\nMove 200\nDamage 1\nAtk 0.65s\nRange 234"
 
 [node name="HandCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow" unique_id=1691126008]
-custom_minimum_size = Vector2(0, 154)
+custom_minimum_size = Vector2(0, 178)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -136,10 +144,33 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HandLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin" unique_id=276603980]
+[node name="HandVBox" type="VBoxContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HandLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox" unique_id=276603980]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Cards 5 / 5\nLocked Straight [Rare]\nPick one route\nNext curse applies immediately"
+
+[node name="CardsRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardSlot1" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+layout_mode = 2
+
+[node name="CardSlot2" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+layout_mode = 2
+
+[node name="CardSlot3" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+layout_mode = 2
+
+[node name="CardSlot4" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+layout_mode = 2
+
+[node name="CardSlot5" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+layout_mode = 2
 
 [node name="ChoicesRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=1337242914]
 custom_minimum_size = Vector2(0, 210)

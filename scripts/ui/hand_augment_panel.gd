@@ -3,6 +3,13 @@ extends Control
 
 signal option_selected(choice_id: String)
 
+@onready var _card_slots: Array[CardSlot] = [
+	get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot1") as CardSlot,
+	get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot2") as CardSlot,
+	get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot3") as CardSlot,
+	get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot4") as CardSlot,
+	get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot5") as CardSlot
+]
 var _buttons: Array[Button] = []
 var _rarity_labels: Array[Label] = []
 var _title_labels: Array[Label] = []
@@ -41,7 +48,7 @@ func _ready() -> void:
 		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox/CurseLabel") as Label
 	]
 	_stats_label = get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin/StatsLabel") as Label
-	_hand_label = get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandLabel") as Label
+	_hand_label = get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/HandLabel") as Label
 	for index in range(_buttons.size()):
 		var button: Button = _buttons[index]
 		if button == null:
@@ -54,6 +61,11 @@ func present(choices: Array, summary: Dictionary = {}) -> void:
 		_stats_label.text = String(summary.get("stats_text", ""))
 	if _hand_label != null:
 		_hand_label.text = String(summary.get("hand_text", ""))
+	var cards: Array = summary.get("cards", [])
+	for index in range(_card_slots.size()):
+		if _card_slots[index] == null:
+			continue
+		_card_slots[index].set_card_data(cards[index] if index < cards.size() else {"empty": true})
 	for index in range(_buttons.size()):
 		var button: Button = _buttons[index]
 		if button == null:
