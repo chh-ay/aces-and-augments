@@ -48,7 +48,7 @@ func _ready() -> void:
 	if pause_menu != null:
 		pause_menu.resume_requested.connect(_on_pause_resume_requested)
 		pause_menu.restart_requested.connect(_on_pause_restart_requested)
-		pause_menu.quit_requested.connect(_on_pause_quit_requested)
+		pause_menu.menu_requested.connect(_on_pause_menu_requested)
 	if run_director != null:
 		run_director.time_expired.connect(_on_run_time_expired)
 
@@ -155,12 +155,12 @@ func _on_pause_restart_requested() -> void:
 		pause_menu.dismiss()
 	get_tree().reload_current_scene()
 
-func _on_pause_quit_requested() -> void:
+func _on_pause_menu_requested() -> void:
 	_pause_open = false
 	get_tree().paused = false
 	if pause_menu != null:
 		pause_menu.dismiss()
-	get_tree().quit()
+	_return_to_main_menu()
 
 func _on_run_time_expired() -> void:
 	if _boss_spawned or boss_scene == null or bosses == null or player == null:
