@@ -21,6 +21,7 @@ const MAIN_MENU_SCENE: PackedScene = preload("res://scenes/ui/main_menu.tscn")
 @onready var bosses: Node2D = $Bosses
 @onready var exits: Node2D = $Exits
 @onready var lucky_terminal: Node2D = $LuckyTerminal
+@onready var pool_manager: Node = get_node_or_null("PoolManager")
 
 var _game_over: bool = false
 var _pause_open: bool = false
@@ -168,6 +169,11 @@ func _on_run_time_expired() -> void:
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
 	_clear_enemies()
+	call_deferred("_spawn_boss")
+
+func _spawn_boss() -> void:
+	if boss_scene == null or bosses == null or player == null:
+		return
 	var boss_node: Node = boss_scene.instantiate()
 	if boss_node is Node2D:
 		var boss: Node2D = boss_node as Node2D
@@ -187,7 +193,10 @@ func _clear_enemies() -> void:
 	if enemies == null:
 		return
 	for child in enemies.get_children():
-		child.queue_free()
+		if pool_manager != null and pool_manager.has_method("release"):
+			pool_manager.release(child)
+		else:
+			child.queue_free()
 
 func _get_boss_spawn_position() -> Vector2:
 	var spawn_position: Vector2 = player.global_position + Vector2(240.0, -80.0)
