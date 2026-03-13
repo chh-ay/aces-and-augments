@@ -103,6 +103,9 @@ pickup_prewarm_count = 20
 [node name="PropSpawner" type="Node2D" parent="." unique_id=1140745295]
 script = ExtResource("4")
 generator_path = NodePath("../FloorGenerator")
+enabled = true
+prop_count_per_chunk = 4
+max_prop_chunks_per_frame = 1
 
 [node name="Floor" type="Node2D" parent="." unique_id=884146632]
 
