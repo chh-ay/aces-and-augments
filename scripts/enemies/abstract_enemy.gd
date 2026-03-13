@@ -2,6 +2,9 @@
 class_name AbstractEnemy
 extends CharacterBody2D
 
+const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
+const HIT_FLASH_DURATION: float = 0.08
+
 @export var move_speed: float = 120.0
 @export var contact_damage: int = 10
 @export var damage_interval: float = 0.5
@@ -27,17 +30,21 @@ var _mutation_profile: Dictionary = {
 	"damage": 1.0,
 	"speed": 1.0
 }
+var _hit_flash_time_remaining: float = 0.0
 
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var _sprite_target: CanvasItem = get_node_or_null("Sprite") as CanvasItem if get_node_or_null("Sprite") != null else get_node_or_null("Sprite2D") as CanvasItem
 
 func _ready() -> void:
 	add_to_group("enemy")
+	_ensure_hit_flash_material()
 	if _current_move_speed <= 0.0 or _current_contact_damage <= 0 or _current_max_health <= 0:
 		apply_difficulty_scaling(1.0, 1.0, 1.0)
 	elif _current_health <= 0:
 		_current_health = _current_max_health
 
 func _physics_process(delta: float) -> void:
+	_update_hit_flash(delta)
 	_damage_cooldown = max(_damage_cooldown - delta, 0.0)
 	var player: PlayerController = _get_target_player()
 	if player == null:
@@ -73,6 +80,7 @@ func take_damage(amount: int) -> void:
 	if amount <= 0:
 		return
 	_current_health = max(_current_health - amount, 0)
+	_trigger_hit_flash()
 	if _current_health > 0 and AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("enemy_hit", randf_range(0.95, 1.08), -9.0)
 	if _current_health <= 0:
@@ -117,6 +125,8 @@ func on_spawned_from_pool() -> void:
 	_difficulty_damage_multiplier = 1.0
 	visible = true
 	set_physics_process(true)
+	_hit_flash_time_remaining = 0.0
+	_set_hit_flash_amount(0.0)
 	if _collision_shape != null:
 		_collision_shape.disabled = false
 	if not is_in_group("enemy"):
@@ -128,6 +138,8 @@ func on_released_to_pool() -> void:
 	velocity = Vector2.ZERO
 	visible = false
 	set_physics_process(false)
+	_hit_flash_time_remaining = 0.0
+	_set_hit_flash_amount(0.0)
 	if _collision_shape != null:
 		_collision_shape.disabled = true
 	if is_in_group("enemy"):
@@ -191,3 +203,33 @@ func _release_to_pool() -> void:
 
 func _get_death_sfx_id() -> String:
 	return "enemy_die"
+
+func _ensure_hit_flash_material() -> void:
+	if _sprite_target == null:
+		return
+	var material: ShaderMaterial = _sprite_target.material as ShaderMaterial
+	if material == null:
+		material = ShaderMaterial.new()
+		material.shader = HIT_FLASH_SHADER
+		_sprite_target.material = material
+	elif material.shader == null:
+		material.shader = HIT_FLASH_SHADER
+	material.set_shader_parameter("flash_amount", 0.0)
+
+func _trigger_hit_flash() -> void:
+	_hit_flash_time_remaining = HIT_FLASH_DURATION
+	_set_hit_flash_amount(1.0)
+
+func _update_hit_flash(delta: float) -> void:
+	if _hit_flash_time_remaining <= 0.0:
+		return
+	_hit_flash_time_remaining = max(_hit_flash_time_remaining - delta, 0.0)
+	_set_hit_flash_amount(_hit_flash_time_remaining / HIT_FLASH_DURATION)
+
+func _set_hit_flash_amount(amount: float) -> void:
+	if _sprite_target == null:
+		return
+	var material: ShaderMaterial = _sprite_target.material as ShaderMaterial
+	if material == null:
+		return
+	material.set_shader_parameter("flash_amount", clampf(amount, 0.0, 1.0))

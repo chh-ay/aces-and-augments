@@ -1,6 +1,9 @@
 class_name PlayerController
 extends CharacterBody2D
 
+const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
+const HIT_FLASH_DURATION: float = 0.10
+
 signal health_changed(hp: int)
 signal died
 signal experience_changed(current_xp: int, required_xp: int, level: int)
@@ -137,10 +140,12 @@ var _meta_upgrade_bonus: Dictionary = {
 @onready var _anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var _camera: Camera2D = $Camera2D
+@onready var _hit_flash_target: CanvasItem = $AnimatedSprite2D
 
 var _shake_strength: float = 0.0
 var _shake_time_remaining: float = 0.0
 var _shake_duration: float = 0.0
+var _hit_flash_time_remaining: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -153,6 +158,7 @@ func _ready() -> void:
 	experience_changed.emit(current_experience, required_experience, current_level)
 	_emit_hand_updated()
 	_regen_timer = health_regen_interval
+	_ensure_hit_flash_material()
 	_update_animation()
 	_clamp_to_arena()
 
@@ -168,6 +174,7 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
+	_update_hit_flash(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_dead or get_tree().paused:
@@ -184,6 +191,7 @@ func take_damage(amount: int) -> void:
 	health_changed.emit(current_health)
 	if AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
+	_trigger_hit_flash()
 	add_screen_shake(5.0, 0.14)
 	if current_health <= 0:
 		_die()
@@ -405,6 +413,7 @@ func _die() -> void:
 	_is_dead = true
 	if AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("player_defeat", 1.0, -1.0)
+	_trigger_hit_flash()
 	add_screen_shake(8.0, 0.26)
 	died.emit()
 	velocity = Vector2.ZERO
@@ -590,6 +599,37 @@ func _update_screen_shake(delta: float) -> void:
 	if _shake_time_remaining <= 0.0:
 		_shake_strength = 0.0
 		_camera.offset = Vector2.ZERO
+
+func _ensure_hit_flash_material() -> void:
+	if _hit_flash_target == null:
+		return
+	var material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
+	if material == null:
+		material = ShaderMaterial.new()
+		material.shader = HIT_FLASH_SHADER
+		_hit_flash_target.material = material
+	elif material.shader == null:
+		material.shader = HIT_FLASH_SHADER
+	material.set_shader_parameter("flash_amount", 0.0)
+
+func _trigger_hit_flash() -> void:
+	_hit_flash_time_remaining = HIT_FLASH_DURATION
+	_set_hit_flash_amount(1.0)
+
+func _update_hit_flash(delta: float) -> void:
+	if _hit_flash_time_remaining <= 0.0:
+		return
+	_hit_flash_time_remaining = max(_hit_flash_time_remaining - delta, 0.0)
+	var flash_amount: float = _hit_flash_time_remaining / HIT_FLASH_DURATION
+	_set_hit_flash_amount(flash_amount)
+
+func _set_hit_flash_amount(amount: float) -> void:
+	if _hit_flash_target == null:
+		return
+	var material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
+	if material == null:
+		return
+	material.set_shader_parameter("flash_amount", clampf(amount, 0.0, 1.0))
 
 func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	var rarity: Dictionary = _roll_rarity()
