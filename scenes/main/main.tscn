@@ -71,11 +71,14 @@ exit_door_scene = ExtResource("8_xdoor")
 lucky_terminal_count = 2
 
 [node name="RunMusicPlayer" type="AudioStreamPlayer" parent="."]
+process_mode = 3
+autoplay = true
 stream = ExtResource("16_run_music")
 bus = &"Master"
 
 [node name="Player" parent="." unique_id=10213486 instance=ExtResource("3")]
 arena_path = NodePath("../Arena")
+floor_generator_path = NodePath("../FloorGenerator")
 
 [node name="EnemySpawner" type="Node" parent="." unique_id=493424533]
 script = ExtResource("5")

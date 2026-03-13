@@ -94,6 +94,7 @@ enum AimMode {
 @export var move_speed: float = 200.0
 @export var max_health: int = 100
 @export var arena_path: NodePath
+@export var floor_generator_path: NodePath
 @export var arena_padding: float = 8.0
 @export var projectile_damage: int = 1
 @export var attack_interval: float = 0.65
@@ -103,6 +104,7 @@ enum AimMode {
 @export_range(0.0, 0.5, 0.01) var lifesteal_ratio: float = 0.0
 @export var min_effective_move_speed: float = 80.0
 @export var max_effective_move_speed: float = 360.0
+@export_range(0.1, 1.0, 0.05) var upper_terrain_move_multiplier: float = 0.72
 @export var aim_mode: int = AimMode.AUTO
 @export var manual_aim_deadzone: float = 10.0
 
@@ -138,6 +140,7 @@ var _royal_flush_achieved: bool = false
 var _is_dead: bool = false
 var _facing: Vector2 = Vector2.DOWN
 var _arena: Arena
+var _floor_generator: FloorGenerator
 var _pending_level_ups: int = 0
 var _active_level_up_choices: Array = []
 var _regen_timer: float = 0.0
@@ -163,6 +166,9 @@ func _ready() -> void:
 	_arena = get_node_or_null(arena_path) as Arena
 	if _arena == null:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
+	_floor_generator = get_node_or_null(floor_generator_path) as FloorGenerator
+	if _floor_generator == null:
+		_floor_generator = get_tree().get_first_node_in_group("floor_generator") as FloorGenerator
 	required_experience = _get_required_experience_for_level(current_level)
 	current_health = get_effective_max_health()
 	health_changed.emit(current_health)
@@ -376,8 +382,11 @@ func get_effective_projectile_damage() -> int:
 
 func get_effective_move_speed() -> float:
 	var base_speed: float = move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))
+	var effective_speed: float = base_speed * float(_player_augment_profile.get("move_speed", 1.0))
+	if _is_in_upper_terrain():
+		effective_speed *= upper_terrain_move_multiplier
 	return clampf(
-		base_speed * float(_player_augment_profile.get("move_speed", 1.0)),
+		effective_speed,
 		min_effective_move_speed,
 		max(max_effective_move_speed, min_effective_move_speed)
 	)
@@ -539,6 +548,15 @@ func _clamp_to_arena() -> void:
 	global_position = clamped_position
 	if normal != Vector2.ZERO and velocity.dot(normal) > 0.0:
 		velocity = velocity.slide(normal)
+
+func _is_in_upper_terrain() -> bool:
+	if _floor_generator == null or not is_instance_valid(_floor_generator):
+		_floor_generator = get_tree().get_first_node_in_group("floor_generator") as FloorGenerator
+		if _floor_generator == null:
+			return false
+	if not _floor_generator.has_method("is_world_position_in_upper_terrain"):
+		return false
+	return _floor_generator.is_world_position_in_upper_terrain(global_position)
 
 func get_collision_radius() -> float:
 	if _collision_shape == null:

@@ -129,6 +129,21 @@ func is_world_position_within_limit(world_pos: Vector2) -> bool:
 		return true
 	return abs(world_pos.x) <= _playable_radius_world.x and abs(world_pos.y) <= _playable_radius_world.y
 
+func is_world_position_in_upper_terrain(world_pos: Vector2) -> bool:
+	if _noise == null or _chunk_world_size == Vector2.ZERO:
+		return false
+	var local_x: float = world_pos.x / float(_tile_size.x)
+	var local_y: float = world_pos.y / float(_tile_size.y)
+	var tile_x: int = int(floor(local_x))
+	var tile_y: int = int(floor(local_y))
+	if _is_chunk_in_border_ring(_world_to_chunk(world_pos)):
+		return true
+	var nw: String = _corner_type(_noise, tile_x, tile_y)
+	var ne: String = _corner_type(_noise, tile_x + 1, tile_y)
+	var sw: String = _corner_type(_noise, tile_x, tile_y + 1)
+	var se: String = _corner_type(_noise, tile_x + 1, tile_y + 1)
+	return nw == "upper" or ne == "upper" or sw == "upper" or se == "upper"
+
 func _init_floor() -> void:
 	if _floor_base == null or _floor_detail == null:
 		return
