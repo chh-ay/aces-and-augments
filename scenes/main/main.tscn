@@ -44,7 +44,7 @@ script = ExtResource("12_pool")
 enemy_scenes = Array[PackedScene]([ExtResource("6"), ExtResource("6_drone"), ExtResource("6_mutant")])
 projectile_scenes = Array[PackedScene]([ExtResource("13_proj")])
 pickup_scenes = Array[PackedScene]([ExtResource("14_orb"), ExtResource("15_card")])
-enemy_prewarm_count = 12
+enemy_prewarm_count = 20
 projectile_prewarm_count = 24
 pickup_prewarm_count = 20
 

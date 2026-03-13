@@ -8,13 +8,16 @@ extends Node
 @export var floor_generator_path: NodePath
 @export var arena_path: NodePath
 
-@export var spawn_interval: float = 1.5
+@export var spawn_interval: float = 2.1
 @export var max_enemies: int = 8
 @export var spawn_rect_size: Vector2 = Vector2(520.0, 300.0)
 @export var min_spawn_distance: float = 120.0
 @export var enemy_despawn_distance: float = 900.0
 @export var run_duration_seconds: float = 600.0
 @export var peak_enemy_count: int = 22
+@export var burst_count_base: int = 2
+@export var burst_count_peak: int = 4
+@export var burst_spread_radius: float = 52.0
 @export var peak_speed_multiplier: float = 1.35
 @export var peak_health_multiplier: float = 1.7
 @export var peak_damage_multiplier: float = 1.25
@@ -62,7 +65,7 @@ func _physics_process(delta: float) -> void:
 	_despawn_timer = max(_despawn_timer - delta, 0.0)
 	if _spawn_timer <= 0.0:
 		_spawn_timer = spawn_interval
-		_spawn_enemy()
+		_spawn_enemy_burst()
 	if _despawn_timer <= 0.0:
 		_despawn_timer = despawn_check_interval
 		_despawn_far_enemies()
@@ -86,13 +89,22 @@ func set_enemy_mutation_profile(profile: Dictionary) -> void:
 		if child.has_method("apply_mutation_profile"):
 			child.call("apply_mutation_profile", _enemy_mutation_profile)
 
-func _spawn_enemy() -> void:
-	var scene_to_spawn: PackedScene = _pick_enemy_scene()
-	if scene_to_spawn == null:
-		return
+func _spawn_enemy_burst() -> void:
 	var current_max_enemies: int = int(round(lerpf(float(max_enemies), float(peak_enemy_count), _get_run_progress())))
-	if _enemy_container.get_child_count() >= current_max_enemies:
+	var available_slots: int = current_max_enemies - _enemy_container.get_child_count()
+	if available_slots <= 0:
 		return
+	var burst_count: int = min(_get_burst_count(), available_slots)
+	if burst_count <= 0:
+		return
+	var anchor_position: Vector2 = _pick_spawn_position()
+	for burst_index in range(burst_count):
+		var scene_to_spawn: PackedScene = _pick_enemy_scene()
+		if scene_to_spawn == null:
+			continue
+		_spawn_single_enemy(scene_to_spawn, anchor_position, burst_index)
+
+func _spawn_single_enemy(scene_to_spawn: PackedScene, anchor_position: Vector2, burst_index: int) -> void:
 	if _pool_manager == null or not is_instance_valid(_pool_manager):
 		_pool_manager = get_tree().get_first_node_in_group("pool_manager")
 	var enemy_node: Node = _pool_manager.call("spawn", scene_to_spawn, _enemy_container) as Node if _pool_manager != null else scene_to_spawn.instantiate()
@@ -102,7 +114,7 @@ func _spawn_enemy() -> void:
 			_enemy_container.add_child(enemy2d)
 		if not enemy2d.is_in_group("enemy"):
 			enemy2d.add_to_group("enemy")
-		enemy2d.global_position = _pick_spawn_position()
+		enemy2d.global_position = _pick_burst_position(anchor_position, burst_index)
 		if "card_drop_chance" in enemy2d:
 			var card_drop_chance: float = float(enemy2d.get("card_drop_chance"))
 			enemy2d.set("card_drop_chance", clamp(card_drop_chance * _difficulty_card_drop_multiplier, 0.0, 1.0))
@@ -140,6 +152,24 @@ func _pick_spawn_position() -> Vector2:
 		return _arena.clamp_world_position(fallback, 28.0)
 	return fallback
 
+func _pick_burst_position(anchor_position: Vector2, burst_index: int) -> Vector2:
+	if burst_index == 0:
+		return anchor_position
+	var attempts: int = 0
+	var angle_step: float = TAU / max(float(_get_burst_count()), 1.0)
+	while attempts < 6:
+		var radius: float = randf_range(18.0, burst_spread_radius)
+		var angle: float = angle_step * float(burst_index) + randf_range(-0.45, 0.45)
+		var candidate: Vector2 = anchor_position + Vector2.RIGHT.rotated(angle) * radius
+		var within_floor: bool = _floor_generator == null or _floor_generator.is_world_position_within_limit(candidate)
+		var within_arena: bool = _arena == null or _arena.is_world_position_inside(candidate, 28.0)
+		if within_floor and within_arena:
+			return candidate
+		attempts += 1
+	if _arena != null:
+		return _arena.clamp_world_position(anchor_position, 28.0)
+	return anchor_position
+
 func _despawn_far_enemies() -> void:
 	var max_distance_sq: float = enemy_despawn_distance * enemy_despawn_distance
 	for child in _enemy_container.get_children():
@@ -155,6 +185,10 @@ func _get_run_progress() -> float:
 	if run_duration_seconds <= 0.0:
 		return 1.0
 	return clamp(_elapsed_run_time / run_duration_seconds, 0.0, 1.0)
+
+func _get_burst_count() -> int:
+	var progress: float = _get_run_progress()
+	return max(int(round(lerpf(float(burst_count_base), float(burst_count_peak), progress))), 1)
 
 
 func _apply_enemy_scaling(enemy_node: Node2D, progress: float) -> void:
