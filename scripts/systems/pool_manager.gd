@@ -79,11 +79,15 @@ func _prewarm_scene(scene: PackedScene, count: int) -> void:
 
 func _take_node(scene: PackedScene, key: String) -> Node:
 	var pool: Array = _available_nodes.get(key, [])
-	if pool.is_empty():
-		return scene.instantiate()
-	var pooled_node: Node = pool.pop_back() as Node
+	while not pool.is_empty():
+		var pooled_variant: Variant = pool.pop_back()
+		if pooled_variant is Node:
+			var pooled_node: Node = pooled_variant as Node
+			if pooled_node != null and is_instance_valid(pooled_node):
+				_available_nodes[key] = pool
+				return pooled_node
 	_available_nodes[key] = pool
-	return pooled_node
+	return scene.instantiate()
 
 func _scene_key(scene: PackedScene) -> String:
 	return scene.resource_path
