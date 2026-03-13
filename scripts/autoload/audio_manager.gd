@@ -74,11 +74,27 @@ func set_master_volume_percent(percent: int) -> void:
 		save_manager.call("set_master_volume_percent", safe_percent)
 
 func get_fullscreen_enabled() -> bool:
-	return DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
+	var window: Window = _get_game_window()
+	if window == null:
+		return false
+	return window.mode == Window.MODE_FULLSCREEN or window.mode == Window.MODE_EXCLUSIVE_FULLSCREEN
+
+func can_change_display_mode() -> bool:
+	return not OS.has_feature("editor")
+
+func get_display_mode_hint() -> String:
+	if can_change_display_mode():
+		return "Windowed or fullscreen"
+	return "Disabled while running embedded in the editor"
 
 func set_fullscreen_enabled(is_enabled: bool) -> void:
-	var window_mode: DisplayServer.WindowMode = DisplayServer.WINDOW_MODE_FULLSCREEN if is_enabled else DisplayServer.WINDOW_MODE_WINDOWED
-	DisplayServer.window_set_mode(window_mode)
+	if not can_change_display_mode():
+		return
+	var window: Window = _get_game_window()
+	if window != null:
+		window.mode = Window.MODE_EXCLUSIVE_FULLSCREEN if is_enabled else Window.MODE_WINDOWED
+		if not is_enabled:
+			window.move_to_center()
 	var save_manager: Node = _get_save_manager()
 	if save_manager != null and save_manager.has_method("set_fullscreen_enabled"):
 		save_manager.call("set_fullscreen_enabled", is_enabled)
@@ -128,6 +144,15 @@ func _get_save_manager() -> Node:
 	if scene_tree == null:
 		return null
 	return scene_tree.root.get_node_or_null("SaveManager")
+
+func _get_game_window() -> Window:
+	var main_loop: MainLoop = Engine.get_main_loop()
+	if main_loop == null:
+		return null
+	var scene_tree: SceneTree = main_loop as SceneTree
+	if scene_tree == null:
+		return null
+	return scene_tree.root
 
 func _ensure_sfx_players() -> void:
 	if not _sfx_players.is_empty():

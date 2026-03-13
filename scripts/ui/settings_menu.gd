@@ -7,6 +7,7 @@ const VOLUME_STEP: int = 10
 
 @onready var _volume_value: Label = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill/Margin/Value
 @onready var _fullscreen_value: Label = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill/Margin/Value
+@onready var _fullscreen_hint: Label = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/LabelBlock/Hint
 @onready var _close_button: Button = $Center/Panel/Margin/VBox/Buttons/CloseButton
 @onready var _volume_down_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeDownButton
 @onready var _volume_up_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeUpButton
@@ -51,6 +52,9 @@ func _on_volume_up_pressed() -> void:
 	_refresh_values()
 
 func _on_fullscreen_pressed() -> void:
+	if not AudioManager.can_change_display_mode():
+		_refresh_values()
+		return
 	AudioManager.set_fullscreen_enabled(not AudioManager.get_fullscreen_enabled())
 	_refresh_values()
 
@@ -59,3 +63,10 @@ func _refresh_values() -> void:
 		_volume_value.text = "%d%%" % AudioManager.get_master_volume_percent()
 	if _fullscreen_value != null:
 		_fullscreen_value.text = "On" if AudioManager.get_fullscreen_enabled() else "Off"
+		if not AudioManager.can_change_display_mode():
+			_fullscreen_value.text = "Embed"
+	if _fullscreen_hint != null:
+		_fullscreen_hint.text = AudioManager.get_display_mode_hint()
+	if _fullscreen_button != null:
+		_fullscreen_button.disabled = not AudioManager.can_change_display_mode()
+		_fullscreen_button.text = "Toggle" if AudioManager.can_change_display_mode() else "Editor Only"
