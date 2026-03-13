@@ -7,6 +7,7 @@ extends Node
 @export var player_path: NodePath
 @export var floor_generator_path: NodePath
 @export var arena_path: NodePath
+@export var run_director_path: NodePath
 
 @export var spawn_interval: float = 2.1
 @export var max_enemies: int = 8
@@ -29,6 +30,7 @@ var _enemy_container: Node2D
 var _player: PlayerController
 var _floor_generator: FloorGenerator
 var _arena: Arena
+var _run_director: RunDirector
 var _elapsed_run_time: float = 0.0
 var _despawn_timer: float = 0.0
 var _base_spawn_interval: float = 0.0
@@ -48,9 +50,14 @@ func _ready() -> void:
 	_player = get_node_or_null(player_path) as PlayerController
 	_floor_generator = get_node_or_null(floor_generator_path) as FloorGenerator
 	_arena = get_node_or_null(arena_path) as Arena
+	_run_director = get_node_or_null(run_director_path) as RunDirector
 	_pool_manager = get_tree().get_first_node_in_group("pool_manager")
 	if _arena == null:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
+	if _run_director == null:
+		_run_director = get_tree().get_first_node_in_group("run_director") as RunDirector
+	if _run_director != null:
+		run_duration_seconds = max(_run_director.run_duration_seconds, 0.0)
 	_base_spawn_interval = spawn_interval
 	_apply_selected_difficulty()
 	_spawn_timer = spawn_interval
@@ -90,7 +97,7 @@ func set_enemy_mutation_profile(profile: Dictionary) -> void:
 			child.call("apply_mutation_profile", _enemy_mutation_profile)
 
 func _spawn_enemy_burst() -> void:
-	var current_max_enemies: int = int(round(lerpf(float(max_enemies), float(peak_enemy_count), _get_run_progress())))
+	var current_max_enemies: int = _get_current_max_enemies()
 	var available_slots: int = current_max_enemies - _enemy_container.get_child_count()
 	if available_slots <= 0:
 		return
@@ -184,11 +191,24 @@ func _despawn_far_enemies() -> void:
 func _get_run_progress() -> float:
 	if run_duration_seconds <= 0.0:
 		return 1.0
+	if _run_director != null:
+		var duration: float = max(_run_director.run_duration_seconds, 0.0)
+		if duration <= 0.0:
+			return 1.0
+		return clampf(1.0 - (_run_director.remaining_seconds / duration), 0.0, 1.0)
 	return clamp(_elapsed_run_time / run_duration_seconds, 0.0, 1.0)
 
 func _get_burst_count() -> int:
-	var progress: float = _get_run_progress()
+	var progress: float = _get_scaled_run_progress()
 	return max(int(round(lerpf(float(burst_count_base), float(burst_count_peak), progress))), 1)
+
+func _get_current_max_enemies() -> int:
+	var progress: float = _get_scaled_run_progress()
+	return max(int(round(lerpf(float(max_enemies), float(peak_enemy_count), progress))), 1)
+
+func _get_scaled_run_progress() -> float:
+	var progress: float = _get_run_progress()
+	return progress * progress * (3.0 - 2.0 * progress)
 
 
 func _apply_enemy_scaling(enemy_node: Node2D, progress: float) -> void:
