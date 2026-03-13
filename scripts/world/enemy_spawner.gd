@@ -38,12 +38,14 @@ var _difficulty_speed_multiplier: float = 1.0
 var _difficulty_health_multiplier: float = 1.0
 var _difficulty_damage_multiplier: float = 1.0
 var _difficulty_card_drop_multiplier: float = 1.0
+var _pool_manager: Node
 
 func _ready() -> void:
 	_enemy_container = get_node_or_null(enemy_container_path) as Node2D
 	_player = get_node_or_null(player_path) as PlayerController
 	_floor_generator = get_node_or_null(floor_generator_path) as FloorGenerator
 	_arena = get_node_or_null(arena_path) as Arena
+	_pool_manager = get_tree().get_first_node_in_group("pool_manager")
 	if _arena == null:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
 	_base_spawn_interval = spawn_interval
@@ -91,11 +93,15 @@ func _spawn_enemy() -> void:
 	var current_max_enemies: int = int(round(lerpf(float(max_enemies), float(peak_enemy_count), _get_run_progress())))
 	if _enemy_container.get_child_count() >= current_max_enemies:
 		return
-	var enemy_node: Node = scene_to_spawn.instantiate()
+	if _pool_manager == null or not is_instance_valid(_pool_manager):
+		_pool_manager = get_tree().get_first_node_in_group("pool_manager")
+	var enemy_node: Node = _pool_manager.call("spawn", scene_to_spawn, _enemy_container) as Node if _pool_manager != null else scene_to_spawn.instantiate()
 	if enemy_node is Node2D:
 		var enemy2d: Node2D = enemy_node as Node2D
-		_enemy_container.add_child(enemy2d)
-		enemy2d.add_to_group("enemy")
+		if enemy2d.get_parent() == null:
+			_enemy_container.add_child(enemy2d)
+		if not enemy2d.is_in_group("enemy"):
+			enemy2d.add_to_group("enemy")
 		enemy2d.global_position = _pick_spawn_position()
 		if "card_drop_chance" in enemy2d:
 			var card_drop_chance: float = float(enemy2d.get("card_drop_chance"))
@@ -140,7 +146,10 @@ func _despawn_far_enemies() -> void:
 		if child is Node2D:
 			var enemy: Node2D = child as Node2D
 			if enemy.global_position.distance_squared_to(_player.global_position) > max_distance_sq:
-				enemy.queue_free()
+				if _pool_manager != null:
+					_pool_manager.release(enemy)
+				else:
+					enemy.queue_free()
 
 func _get_run_progress() -> float:
 	if run_duration_seconds <= 0.0:

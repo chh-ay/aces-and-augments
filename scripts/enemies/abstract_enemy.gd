@@ -77,23 +77,54 @@ func take_damage(amount: int) -> void:
 
 func _die() -> void:
 	if xp_orb_scene != null:
-		var orb_node: Node = xp_orb_scene.instantiate()
+		var orb_node: Node = _spawn_pooled_node(xp_orb_scene, get_tree().current_scene)
 		if orb_node is Node2D:
 			var orb: Node2D = orb_node as Node2D
+			if orb.get_parent() == null:
+				get_tree().current_scene.add_child(orb)
 			orb.global_position = global_position
 			if orb.has_method("set_xp_amount"):
 				orb.call("set_xp_amount", xp_reward)
-			get_tree().current_scene.call_deferred("add_child", orb)
 	if card_pickup_scene != null and randf() <= card_drop_chance:
-		var card_node: Node = card_pickup_scene.instantiate()
+		var card_node: Node = _spawn_pooled_node(card_pickup_scene, get_tree().current_scene)
 		if card_node is Node2D:
 			var pickup: Node2D = card_node as Node2D
+			if pickup.get_parent() == null:
+				get_tree().current_scene.add_child(pickup)
 			pickup.global_position = global_position + Vector2(12.0, -8.0)
 			if pickup.has_method("configure_card"):
 				var suits: PackedStringArray = ["hearts", "diamonds", "clubs", "spades"]
 				pickup.call("configure_card", suits[randi_range(0, suits.size() - 1)], randi_range(1, 13))
-			get_tree().current_scene.call_deferred("add_child", pickup)
-	call_deferred("queue_free")
+	_release_to_pool()
+
+func on_spawned_from_pool() -> void:
+	_damage_cooldown = 0.0
+	velocity = Vector2.ZERO
+	_mutation_profile = {
+		"health": 1.0,
+		"damage": 1.0,
+		"speed": 1.0
+	}
+	_difficulty_speed_multiplier = 1.0
+	_difficulty_health_multiplier = 1.0
+	_difficulty_damage_multiplier = 1.0
+	visible = true
+	set_physics_process(true)
+	if _collision_shape != null:
+		_collision_shape.disabled = false
+	if not is_in_group("enemy"):
+		add_to_group("enemy")
+	_refresh_scaled_stats(true)
+
+func on_released_to_pool() -> void:
+	_damage_cooldown = 0.0
+	velocity = Vector2.ZERO
+	visible = false
+	set_physics_process(false)
+	if _collision_shape != null:
+		_collision_shape.disabled = true
+	if is_in_group("enemy"):
+		remove_from_group("enemy")
 
 
 func apply_difficulty_scaling(speed_multiplier: float, health_multiplier: float, damage_multiplier: float) -> void:
@@ -134,6 +165,19 @@ func _get_stand_off_distance(player: PlayerController) -> float:
 	if player != null and player.has_method("get_collision_radius"):
 		player_radius = float(player.call("get_collision_radius"))
 	return max(player_radius + get_collision_radius() + body_spacing, damage_range * 0.72)
+
+func _spawn_pooled_node(scene: PackedScene, parent: Node) -> Node:
+	var pool_manager: Node = get_tree().get_first_node_in_group("pool_manager")
+	if pool_manager != null and pool_manager.has_method("spawn"):
+		return pool_manager.call("spawn", scene, parent) as Node
+	return scene.instantiate()
+
+func _release_to_pool() -> void:
+	var pool_manager: Node = get_tree().get_first_node_in_group("pool_manager")
+	if pool_manager != null and pool_manager.has_method("release"):
+		pool_manager.call_deferred("release", self)
+		return
+	call_deferred("queue_free")
 
 
 @abstract func _get_target_player() -> PlayerController

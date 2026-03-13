@@ -5,6 +5,10 @@ extends Node
 @export var spawn_distance: float = 18.0
 
 var _cooldown: float = 0.0
+var _pool_manager: Node
+
+func _ready() -> void:
+	_pool_manager = get_tree().get_first_node_in_group("pool_manager")
 
 func _physics_process(delta: float) -> void:
 	var player: PlayerController = get_parent() as PlayerController
@@ -19,13 +23,16 @@ func _physics_process(delta: float) -> void:
 	var direction: Vector2 = (target.global_position - player.global_position).normalized()
 	if direction == Vector2.ZERO:
 		direction = Vector2.RIGHT
-	var projectile_node: Node = projectile_scene.instantiate()
+	if _pool_manager == null or not is_instance_valid(_pool_manager):
+		_pool_manager = get_tree().get_first_node_in_group("pool_manager")
+	var projectile_node: Node = _pool_manager.call("spawn", projectile_scene, get_tree().current_scene) as Node if _pool_manager != null else projectile_scene.instantiate()
 	if projectile_node is Area2D:
 		var projectile: Area2D = projectile_node as Area2D
+		if projectile.get_parent() == null:
+			get_tree().current_scene.add_child(projectile)
 		projectile.global_position = player.global_position + direction * spawn_distance
 		if projectile.has_method("configure"):
 			projectile.call("configure", direction, player.get_effective_projectile_damage(), player)
-		get_tree().current_scene.add_child(projectile)
 		_cooldown = player.get_effective_attack_interval()
 
 func _find_target(player: PlayerController) -> Node2D:
