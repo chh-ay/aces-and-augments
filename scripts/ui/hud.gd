@@ -5,20 +5,34 @@ extends CanvasLayer
 @onready var _health_label: Label = $TopCard/Margin/VBox/HealthHeader/HealthLabel
 @onready var _xp_bar: ProgressBar = $BottomCard/Margin/VBox/XpBar
 @onready var _xp_label: Label = $BottomCard/Margin/VBox/XpLabel
-@onready var _hand_label: Label = $HandCard/Margin/HandLabel
+@onready var _hand_summary_label: Label = $HandCard/Margin/VBox/SummaryLabel
+@onready var _card_labels: Array[Label] = [
+	$HandCard/Margin/VBox/CardsRow/CardSlot1,
+	$HandCard/Margin/VBox/CardsRow/CardSlot2,
+	$HandCard/Margin/VBox/CardsRow/CardSlot3,
+	$HandCard/Margin/VBox/CardsRow/CardSlot4,
+	$HandCard/Margin/VBox/CardsRow/CardSlot5
+]
+@onready var _lock_button: Button = $HandCard/Margin/VBox/LockButton
+@onready var _history_label: Label = $HandCard/Margin/VBox/HistoryLabel
 @onready var _timer_label: Label = $TimerCard/Margin/TimerLabel
 
+var _player: PlayerController
+
 func bind_player(player: PlayerController) -> void:
+	_player = player
 	player.health_changed.connect(_on_health_changed)
 	player.experience_changed.connect(_on_experience_changed)
 	player.hand_updated.connect(_on_hand_updated)
+	if _lock_button != null and not _lock_button.pressed.is_connected(_on_lock_button_pressed):
+		_lock_button.pressed.connect(_on_lock_button_pressed)
 	_health_bar.max_value = player.max_health
 	_health_bar.value = player.current_health
 	_health_label.text = "HP %d / %d" % [player.current_health, player.max_health]
 	_xp_bar.max_value = player.required_experience
 	_xp_bar.value = player.current_experience
 	_xp_label.text = "LV %d  XP %d / %d" % [player.current_level, player.current_experience, player.required_experience]
-	_hand_label.text = "Hand %d / 5\n%s\nBuff x%.2f" % [player.collected_cards, player.active_hand_name, player.active_augment_bonus]
+	_apply_hand_state(player._build_hand_state())
 
 func bind_run_director(run_director: RunDirector) -> void:
 	if run_director == null:
@@ -39,8 +53,8 @@ func _on_experience_changed(current_xp: int, required_xp: int, level: int) -> vo
 	_xp_bar.value = current_xp
 	_xp_label.text = "LV %d  XP %d / %d" % [level, current_xp, required_xp]
 
-func _on_hand_updated(card_count: int, hand_name: String, augment_bonus: float) -> void:
-	_hand_label.text = "Hand %d / 5\n%s\nBuff x%.2f" % [card_count, hand_name, augment_bonus]
+func _on_hand_updated(state: Dictionary) -> void:
+	_apply_hand_state(state)
 
 func _on_time_updated(remaining_seconds: float) -> void:
 	
@@ -53,3 +67,32 @@ func _format_time(remaining_seconds: float) -> String:
 	var minutes: int = int(floor(float(total_seconds) / 60.0))
 	var seconds: int = total_seconds % 60
 	return "%02d:%02d" % [minutes, seconds]
+
+func _apply_hand_state(state: Dictionary) -> void:
+	if _hand_summary_label != null:
+		_hand_summary_label.text = "Cards %d / 5\nPending %s\nPlayer x%.2f  Enemy x%.2f" % [
+			int(state.get("card_count", 0)),
+			String(state.get("pending_hand_name", "No Hand")),
+			float(state.get("active_augment_bonus", 1.0)),
+			float(state.get("enemy_mutation_multiplier", 1.0))
+		]
+	var cards: Array = state.get("cards", [])
+	for index in range(_card_labels.size()):
+		if _card_labels[index] == null:
+			continue
+		_card_labels[index].text = cards[index] if index < cards.size() else "--"
+	if _lock_button != null:
+		var can_lock: bool = bool(state.get("can_lock", false))
+		_lock_button.disabled = not can_lock
+		if can_lock:
+			_lock_button.text = "Lock %s" % String(state.get("pending_hand_name", "Hand"))
+		else:
+			_lock_button.text = "Need 5 Cards"
+	if _history_label != null:
+		var history_text: String = String(state.get("history_text", ""))
+		_history_label.text = "History\n%s" % (history_text if history_text != "" else "None yet")
+
+func _on_lock_button_pressed() -> void:
+	if _player == null:
+		return
+	_player.lock_current_hand()

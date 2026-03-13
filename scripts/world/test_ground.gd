@@ -28,6 +28,4 @@ func _defeat_bosses() -> void:
 func _force_royal_flush() -> void:
 	if player == null:
 		return
-	player.active_hand_name = "Royal Flush"
-	player.active_augment_bonus = 2.0
-	player.hand_updated.emit(player.collected_cards, player.active_hand_name, player.active_augment_bonus)
+	player.debug_force_royal_flush()

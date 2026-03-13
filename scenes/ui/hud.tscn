@@ -169,10 +169,10 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_xp_fill")
 [node name="HandCard" type="PanelContainer" parent="." unique_id=1964151890]
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -180.0
+offset_left = -236.0
 offset_top = 14.0
 offset_right = -14.0
-offset_bottom = 84.0
+offset_bottom = 166.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
 
 [node name="Margin" type="MarginContainer" parent="HandCard" unique_id=1835278010]
@@ -182,7 +182,56 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="HandLabel" type="Label" parent="HandCard/Margin" unique_id=40947164]
+[node name="VBox" type="VBoxContainer" parent="HandCard/Margin" unique_id=1865411800]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SummaryLabel" type="Label" parent="HandCard/Margin/VBox" unique_id=40947164]
 layout_mode = 2
 horizontal_alignment = 2
-text = "Hand 0 / 5\nNo Hand\nBuff x1.00"
+text = "Cards 0 / 5\nPending No Hand\nPlayer x1.00  Enemy x1.00"
+
+[node name="CardsRow" type="HBoxContainer" parent="HandCard/Margin/VBox" unique_id=213498445]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CardSlot1" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=166319142]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+horizontal_alignment = 1
+text = "--"
+
+[node name="CardSlot2" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=104628697]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+horizontal_alignment = 1
+text = "--"
+
+[node name="CardSlot3" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=928106086]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+horizontal_alignment = 1
+text = "--"
+
+[node name="CardSlot4" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=223665405]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+horizontal_alignment = 1
+text = "--"
+
+[node name="CardSlot5" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=89640136]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+horizontal_alignment = 1
+text = "--"
+
+[node name="LockButton" type="Button" parent="HandCard/Margin/VBox" unique_id=146131445]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+disabled = true
+text = "Need 5 Cards"
+
+[node name="HistoryLabel" type="Label" parent="HandCard/Margin/VBox" unique_id=1223461090]
+layout_mode = 2
+text = "History\nNone yet"
+autowrap_mode = 1

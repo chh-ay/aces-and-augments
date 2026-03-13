@@ -31,6 +31,7 @@ func _ready() -> void:
 	if player != null:
 		player.died.connect(_on_player_died)
 		player.level_up_requested.connect(_on_player_level_up_requested)
+		player.hand_locked.connect(_on_player_hand_locked)
 	if hud != null and player != null:
 		hud.bind_player(player)
 	if hud != null and run_director != null:
@@ -143,6 +144,8 @@ func _on_run_time_expired() -> void:
 		var boss: Node2D = boss_node as Node2D
 		bosses.add_child(boss)
 		boss.global_position = _get_boss_spawn_position()
+		if boss.has_method("apply_mutation_scaling") and player != null:
+			boss.call("apply_mutation_scaling", player.get_enemy_mutation_multiplier())
 		if boss.has_signal("defeated"):
 			boss.connect("defeated", Callable(self, "_on_boss_defeated"))
 
@@ -195,11 +198,15 @@ func _on_player_exited_run() -> void:
 		enemy_spawner.set_active(false)
 		enemy_spawner.stop_enemies()
 	_clear_enemies()
-	var has_royal_flush: bool = player != null and player.active_hand_name == "Royal Flush"
+	var has_royal_flush: bool = player != null and player.has_royal_flush_run()
 	if has_royal_flush:
 		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter to restart.")
 	else:
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter to restart.")
+
+func _on_player_hand_locked(_hand_name: String, _player_multiplier: float, enemy_multiplier: float) -> void:
+	if enemy_spawner != null:
+		enemy_spawner.set_enemy_mutation_multiplier(enemy_multiplier)
 
 func _position_lucky_terminal() -> void:
 	if lucky_terminal == null:

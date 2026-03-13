@@ -28,6 +28,7 @@ var _floor_generator: FloorGenerator
 var _arena: Arena
 var _elapsed_run_time: float = 0.0
 var _despawn_timer: float = 0.0
+var _enemy_mutation_multiplier: float = 1.0
 
 func _ready() -> void:
 	_enemy_container = get_node_or_null(enemy_container_path) as Node2D
@@ -63,6 +64,14 @@ func stop_enemies() -> void:
 			var enemy: BasicEnemy = enemy_node as BasicEnemy
 			enemy.set_physics_process(false)
 			enemy.velocity = Vector2.ZERO
+
+func set_enemy_mutation_multiplier(multiplier: float) -> void:
+	_enemy_mutation_multiplier = max(multiplier, 1.0)
+	if _enemy_container == null:
+		return
+	for child in _enemy_container.get_children():
+		if child.has_method("apply_mutation_scaling"):
+			child.call("apply_mutation_scaling", _enemy_mutation_multiplier)
 
 func _spawn_enemy() -> void:
 	var scene_to_spawn: PackedScene = _pick_enemy_scene()
@@ -133,3 +142,5 @@ func _apply_enemy_scaling(enemy_node: Node2D, progress: float) -> void:
 	var health_multiplier: float = lerpf(1.0, peak_health_multiplier, eased)
 	var damage_multiplier: float = lerpf(1.0, peak_damage_multiplier, eased)
 	enemy_node.call("apply_difficulty_scaling", speed_multiplier, health_multiplier, damage_multiplier)
+	if enemy_node.has_method("apply_mutation_scaling"):
+		enemy_node.call("apply_mutation_scaling", _enemy_mutation_multiplier)

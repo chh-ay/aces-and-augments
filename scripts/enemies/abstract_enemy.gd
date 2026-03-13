@@ -6,9 +6,28 @@ extends CharacterBody2D
 @export var contact_damage: int = 10
 @export var damage_interval: float = 0.5
 @export var damage_range: float = 24.0
+@export var max_health: int = 3
+@export var xp_reward: int = 1
+@export var xp_orb_scene: PackedScene
+@export var card_pickup_scene: PackedScene
+@export_range(0.0, 1.0, 0.01) var card_drop_chance: float = 0.18
 
 var _damage_cooldown: float = 0.0
+var _current_health: int = 0
+var _current_move_speed: float = -1.0
+var _current_contact_damage: int = -1
+var _current_max_health: int = -1
+var _difficulty_speed_multiplier: float = 1.0
+var _difficulty_health_multiplier: float = 1.0
+var _difficulty_damage_multiplier: float = 1.0
+var _mutation_multiplier: float = 1.0
 
+func _ready() -> void:
+	add_to_group("enemy")
+	if _current_move_speed <= 0.0 or _current_contact_damage <= 0 or _current_max_health <= 0:
+		apply_difficulty_scaling(1.0, 1.0, 1.0)
+	elif _current_health <= 0:
+		_current_health = _current_max_health
 
 func _physics_process(delta: float) -> void:
 	_damage_cooldown = max(_damage_cooldown - delta, 0.0)
@@ -19,7 +38,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var direction: Vector2 = (player.global_position - global_position).normalized()
-	velocity = direction * move_speed
+	velocity = direction * _current_move_speed
 	move_and_slide()
 	_try_damage(player)
 
@@ -27,9 +46,59 @@ func _physics_process(delta: float) -> void:
 func _try_damage(player: PlayerController) -> void:
 	if _damage_cooldown > 0.0:
 		return
-	if player.global_position.distance_to(global_position) <= damage_range:
-		player.take_damage(contact_damage)
+	if player.global_position.distance_squared_to(global_position) <= damage_range * damage_range:
+		player.take_damage(_current_contact_damage)
 		_damage_cooldown = damage_interval
+
+func take_damage(amount: int) -> void:
+	if amount <= 0:
+		return
+	_current_health = max(_current_health - amount, 0)
+	if _current_health <= 0:
+		_die()
+
+func _die() -> void:
+	if xp_orb_scene != null:
+		var orb_node: Node = xp_orb_scene.instantiate()
+		if orb_node is Node2D:
+			var orb: Node2D = orb_node as Node2D
+			orb.global_position = global_position
+			if orb.has_method("set_xp_amount"):
+				orb.call("set_xp_amount", xp_reward)
+			get_tree().current_scene.call_deferred("add_child", orb)
+	if card_pickup_scene != null and randf() <= card_drop_chance:
+		var card_node: Node = card_pickup_scene.instantiate()
+		if card_node is Node2D:
+			var pickup: Node2D = card_node as Node2D
+			pickup.global_position = global_position + Vector2(12.0, -8.0)
+			if pickup.has_method("configure_card"):
+				var suits: PackedStringArray = ["hearts", "diamonds", "clubs", "spades"]
+				pickup.call("configure_card", suits[randi_range(0, suits.size() - 1)], randi_range(1, 13))
+			get_tree().current_scene.call_deferred("add_child", pickup)
+	call_deferred("queue_free")
+
+
+func apply_difficulty_scaling(speed_multiplier: float, health_multiplier: float, damage_multiplier: float) -> void:
+	_difficulty_speed_multiplier = speed_multiplier
+	_difficulty_health_multiplier = health_multiplier
+	_difficulty_damage_multiplier = damage_multiplier
+	_refresh_scaled_stats(_current_max_health <= 0)
+
+func apply_mutation_scaling(mutation_multiplier: float) -> void:
+	_mutation_multiplier = max(mutation_multiplier, 1.0)
+	_refresh_scaled_stats(_current_max_health <= 0)
+
+func _refresh_scaled_stats(reset_health: bool) -> void:
+	var health_ratio: float = 1.0
+	if _current_max_health > 0:
+		health_ratio = clamp(float(_current_health) / float(_current_max_health), 0.0, 1.0)
+	_current_move_speed = max(move_speed * _difficulty_speed_multiplier * _mutation_multiplier, 1.0)
+	_current_contact_damage = max(int(round(float(contact_damage) * _difficulty_damage_multiplier * _mutation_multiplier)), 1)
+	_current_max_health = max(int(round(float(max_health) * _difficulty_health_multiplier * _mutation_multiplier)), 1)
+	if reset_health:
+		_current_health = _current_max_health
+	else:
+		_current_health = max(int(round(float(_current_max_health) * health_ratio)), 1)
 
 
 @abstract func _get_target_player() -> PlayerController
