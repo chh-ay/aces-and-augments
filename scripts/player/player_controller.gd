@@ -107,7 +107,7 @@ enum AimMode {
 @export_range(0.1, 1.0, 0.05) var upper_terrain_move_multiplier: float = 0.72
 @export var aim_mode: int = AimMode.AUTO
 @export var manual_aim_deadzone: float = 10.0
-@export_range(0.5, 1.5, 0.05) var camera_zoom_scale: float = 0.80
+@export_range(0.5, 1.5, 0.05) var camera_zoom_scale: float = 0.65
 
 var current_health: int = 0
 var current_experience: int = 0
