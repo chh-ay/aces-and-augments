@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cwj5yn5i3bihf"]
 
 [ext_resource type="Script" uid="uid://bfwylvkbluxb1" path="res://scripts/ui/hud.gd" id="1_0mwgc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/card_slot.tscn" id="2_card_slot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top_card"]
 bg_color = Color(0.06, 0.07, 0.09, 0.92)
@@ -195,35 +196,20 @@ text = "Cards 0 / 5\nPending No Hand\nPlayer x1.00  Enemy x1.00"
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="CardSlot1" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=166319142]
-custom_minimum_size = Vector2(28, 0)
+[node name="CardSlot1" parent="HandCard/Margin/VBox/CardsRow" instance=ExtResource("2_card_slot")]
 layout_mode = 2
-horizontal_alignment = 1
-text = "--"
 
-[node name="CardSlot2" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=104628697]
-custom_minimum_size = Vector2(28, 0)
+[node name="CardSlot2" parent="HandCard/Margin/VBox/CardsRow" instance=ExtResource("2_card_slot")]
 layout_mode = 2
-horizontal_alignment = 1
-text = "--"
 
-[node name="CardSlot3" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=928106086]
-custom_minimum_size = Vector2(28, 0)
+[node name="CardSlot3" parent="HandCard/Margin/VBox/CardsRow" instance=ExtResource("2_card_slot")]
 layout_mode = 2
-horizontal_alignment = 1
-text = "--"
 
-[node name="CardSlot4" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=223665405]
-custom_minimum_size = Vector2(28, 0)
+[node name="CardSlot4" parent="HandCard/Margin/VBox/CardsRow" instance=ExtResource("2_card_slot")]
 layout_mode = 2
-horizontal_alignment = 1
-text = "--"
 
-[node name="CardSlot5" type="Label" parent="HandCard/Margin/VBox/CardsRow" unique_id=89640136]
-custom_minimum_size = Vector2(28, 0)
+[node name="CardSlot5" parent="HandCard/Margin/VBox/CardsRow" instance=ExtResource("2_card_slot")]
 layout_mode = 2
-horizontal_alignment = 1
-text = "--"
 
 [node name="LockButton" type="Button" parent="HandCard/Margin/VBox" unique_id=146131445]
 custom_minimum_size = Vector2(0, 28)

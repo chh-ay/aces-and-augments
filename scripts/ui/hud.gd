@@ -6,7 +6,7 @@ extends CanvasLayer
 @onready var _xp_bar: ProgressBar = $BottomCard/Margin/VBox/XpBar
 @onready var _xp_label: Label = $BottomCard/Margin/VBox/XpLabel
 @onready var _hand_summary_label: Label = $HandCard/Margin/VBox/SummaryLabel
-@onready var _card_labels: Array[Label] = [
+@onready var _card_slots: Array[CardSlot] = [
 	$HandCard/Margin/VBox/CardsRow/CardSlot1,
 	$HandCard/Margin/VBox/CardsRow/CardSlot2,
 	$HandCard/Margin/VBox/CardsRow/CardSlot3,
@@ -82,10 +82,10 @@ func _apply_hand_state(state: Dictionary) -> void:
 			String(state.get("active_curse_name", "No Curse"))
 		]
 	var cards: Array = state.get("cards", [])
-	for index in range(_card_labels.size()):
-		if _card_labels[index] == null:
+	for index in range(_card_slots.size()):
+		if _card_slots[index] == null:
 			continue
-		_card_labels[index].text = cards[index] if index < cards.size() else "--"
+		_card_slots[index].set_card_data(cards[index] if index < cards.size() else {"empty": true})
 	if _lock_button != null:
 		var can_lock: bool = bool(state.get("can_lock", false))
 		_lock_button.disabled = not can_lock

@@ -508,7 +508,7 @@ func _build_hand_state() -> Dictionary:
 		pending_tier_name = String(_get_hand_tier_data(_pending_hand_result.rank).get("name", "Common"))
 	return {
 		"card_count": collected_cards,
-		"cards": _build_card_slot_labels(),
+		"cards": _build_card_slot_data(),
 		"pending_hand_name": pending_hand_name,
 		"pending_tier_name": pending_tier_name,
 		"active_hand_name": active_hand_name,
@@ -523,18 +523,31 @@ func _build_hand_state() -> Dictionary:
 		"royal_flush_achieved": _royal_flush_achieved
 	}
 
-func _build_card_slot_labels() -> Array[String]:
-	var labels: Array[String] = []
+func _build_card_slot_data() -> Array[Dictionary]:
+	var cards: Array[Dictionary] = []
 	for card in _hand_cards:
 		if card is PokerHandEvaluator.Card:
-			labels.append(_card_to_short_text(card as PokerHandEvaluator.Card))
-	while labels.size() < 5:
-		labels.append("--")
-	return labels
+			cards.append(_card_to_display_data(card as PokerHandEvaluator.Card))
+	while cards.size() < 5:
+		cards.append({"empty": true})
+	return cards
+
+func _card_to_display_data(card: PokerHandEvaluator.Card) -> Dictionary:
+	return {
+		"empty": false,
+		"value_text": card.get_display_value(),
+		"suit": card.suit,
+		"suit_symbol": _get_card_suit_symbol(card.suit),
+		"suit_name": card.suit.capitalize(),
+		"code_text": _card_to_short_text(card)
+	}
 
 func _card_to_short_text(card: PokerHandEvaluator.Card) -> String:
+	return "%s%s" % [card.get_display_value(), _get_card_suit_symbol(card.suit)]
+
+func _get_card_suit_symbol(suit: String) -> String:
 	var suit_icon: String = "?"
-	match card.suit:
+	match suit:
 		"spades":
 			suit_icon = "S"
 		"clubs":
@@ -543,7 +556,7 @@ func _card_to_short_text(card: PokerHandEvaluator.Card) -> String:
 			suit_icon = "H"
 		"diamonds":
 			suit_icon = "D"
-	return "%s%s" % [card.get_display_value(), suit_icon]
+	return suit_icon
 
 func _build_level_up_choices() -> Array:
 	var pool: Array[Dictionary] = [
