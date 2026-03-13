@@ -9,6 +9,7 @@ extends Node2D
 @onready var game_over_ui: Control = $CanvasLayer/GameOver
 @onready var game_over_title: Label = $CanvasLayer/GameOver/Panel/VBox/Title
 @onready var game_over_hint: Label = $CanvasLayer/GameOver/Panel/VBox/Hint
+@onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
 @onready var hud: Hud = $HUD
 @onready var level_up_panel: LevelUpPanel = $CanvasLayer/LevelUpPanel
 @onready var run_director: RunDirector = $RunDirector
@@ -19,6 +20,7 @@ extends Node2D
 @onready var lucky_terminal: Node2D = $LuckyTerminal
 
 var _game_over: bool = false
+var _pause_open: bool = false
 var _boss_spawned: bool = false
 var _exit_spawned: bool = false
 var _last_boss_defeat_position: Vector2 = Vector2.ZERO
@@ -35,22 +37,36 @@ func _ready() -> void:
 		hud.bind_run_director(run_director)
 	if level_up_panel != null:
 		level_up_panel.option_selected.connect(_on_level_up_option_selected)
+	if pause_menu != null:
+		pause_menu.resume_requested.connect(_on_pause_resume_requested)
+		pause_menu.restart_requested.connect(_on_pause_restart_requested)
+		pause_menu.quit_requested.connect(_on_pause_quit_requested)
 	if run_director != null:
 		run_director.time_expired.connect(_on_run_time_expired)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _game_over:
+	if _game_over:
+		if event.is_action_pressed("ui_accept"):
+			get_tree().reload_current_scene()
+		elif event.is_action_pressed("restart"):
+			get_tree().reload_current_scene()
+		elif event.is_action_pressed("ui_cancel"):
+			get_tree().quit()
 		return
-	if event.is_action_pressed("ui_accept"):
-		get_tree().reload_current_scene()
-	elif event.is_action_pressed("restart"):
-		get_tree().reload_current_scene()
-	elif event.is_action_pressed("ui_cancel"):
-		get_tree().quit()
+	if event.is_action_pressed("ui_cancel"):
+		if level_up_panel != null and level_up_panel.visible:
+			return
+		if _pause_open:
+			return
+		_open_pause_menu()
+		get_viewport().set_input_as_handled()
 
 func _on_player_died() -> void:
 	_game_over = true
+	_pause_open = false
 	get_tree().paused = false
+	if pause_menu != null:
+		pause_menu.dismiss()
 	_update_game_over_ui(true, "GAME OVER", "Press Enter to restart or Esc to quit")
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
@@ -83,6 +99,37 @@ func _on_level_up_option_selected(stat_id: String) -> void:
 	if hud != null:
 		hud.visible = true
 	get_tree().paused = false
+
+func _open_pause_menu() -> void:
+	if pause_menu == null or _game_over:
+		return
+	_pause_open = true
+	get_tree().paused = true
+	pause_menu.present()
+
+func _close_pause_menu() -> void:
+	if pause_menu == null:
+		return
+	_pause_open = false
+	pause_menu.dismiss()
+	get_tree().paused = false
+
+func _on_pause_resume_requested() -> void:
+	_close_pause_menu()
+
+func _on_pause_restart_requested() -> void:
+	_pause_open = false
+	get_tree().paused = false
+	if pause_menu != null:
+		pause_menu.dismiss()
+	get_tree().reload_current_scene()
+
+func _on_pause_quit_requested() -> void:
+	_pause_open = false
+	get_tree().paused = false
+	if pause_menu != null:
+		pause_menu.dismiss()
+	get_tree().quit()
 
 func _on_run_time_expired() -> void:
 	if _boss_spawned or boss_scene == null or bosses == null or player == null:
@@ -140,7 +187,10 @@ func _on_player_exited_run() -> void:
 	if _game_over:
 		return
 	_game_over = true
+	_pause_open = false
 	get_tree().paused = false
+	if pause_menu != null:
+		pause_menu.dismiss()
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
 		enemy_spawner.stop_enemies()

@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://boaaxr4hq1kc4"]
+
+[ext_resource type="Script" uid="uid://dcly5uwysux5p" path="res://scripts/ui/pause_menu.gd" id="1_6tw0m"]
+
+[node name="PauseMenu" type="Control" unique_id=653098927]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_6tw0m")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=750832566]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.54)
+
+[node name="Panel" type="Panel" parent="." unique_id=195979452]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -136.0
+offset_top = -92.0
+offset_right = 136.0
+offset_bottom = 92.0
+
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=252978356]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = -14.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin" unique_id=649176657]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox" unique_id=1102527245]
+layout_mode = 2
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Panel/Margin/VBox" unique_id=314268608]
+layout_mode = 2
+text = "Take a breath, then continue the run."
+horizontal_alignment = 1
+autowrap_mode = 1
+
+[node name="ResumeButton" type="Button" parent="Panel/Margin/VBox" unique_id=1365639674]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+text = "Resume"
+
+[node name="RestartButton" type="Button" parent="Panel/Margin/VBox" unique_id=1505237061]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+text = "Restart Run"
+
+[node name="QuitButton" type="Button" parent="Panel/Margin/VBox" unique_id=619083766]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+text = "Quit Game"

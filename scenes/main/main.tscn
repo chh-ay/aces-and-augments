@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://dx00oojl67cbw" path="res://scenes/enemies/boss_core.tscn" id="8_tbe87"]
 [ext_resource type="PackedScene" uid="uid://bnbee0i2sah2g" path="res://scenes/world/exit_door.tscn" id="8_xdoor"]
 [ext_resource type="PackedScene" uid="uid://dtwwuhxxxadey" path="res://scenes/world/lucky_terminal.tscn" id="9_blune"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" uid="uid://cwj5yn5i3bihf" path="res://scenes/ui/hud.tscn" id="11_7smn1"]
 
 [node name="Main" type="Node2D" unique_id=538251827]
@@ -109,6 +110,14 @@ text = "Press Enter to restart or Esc to quit"
 horizontal_alignment = 1
 
 [node name="LevelUpPanel" type="Control" parent="CanvasLayer" unique_id=1916820633 instance=ExtResource("7_blune")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("10_pause")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
