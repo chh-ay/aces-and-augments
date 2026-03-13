@@ -16,7 +16,7 @@ var _logic_cooldown: float = 0.0
 var _magnet_direction: Vector2 = Vector2.ZERO
 var _is_attracting: bool = false
 
-@onready var _visual: Polygon2D = $Visual
+@onready var _visual: Sprite2D = $CardEmpty
 
 func _ready() -> void:
 	on_spawned_from_pool()
@@ -45,7 +45,7 @@ func on_spawned_from_pool() -> void:
 	visible = true
 	set_physics_process(true)
 	if _visual != null:
-		_visual.color = Color(0.92, 0.92, 0.96, 0.95)
+		_visual.self_modulate = Color(0.92, 0.92, 0.96, 0.95)
 
 func on_released_to_pool() -> void:
 	_player = null
@@ -60,9 +60,9 @@ func configure_card(card_suit: String, card_value: int) -> void:
 	if _visual == null:
 		return
 	if suit == "hearts" or suit == "diamonds":
-		_visual.color = Color(0.98, 0.38, 0.36, 0.95)
+		_visual.self_modulate = Color(0.98, 0.38, 0.36, 0.95)
 	else:
-		_visual.color = Color(0.86, 0.9, 0.96, 0.95)
+		_visual.self_modulate = Color(0.86, 0.9, 0.96, 0.95)
 
 func _run_logic_tick() -> bool:
 	if _player == null:
