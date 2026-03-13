@@ -12,7 +12,7 @@ var _activated: bool = false
 @onready var _timer: Timer = $HideTimer
 
 func _ready() -> void:
-	_message_label.text = message
+	_message_label.text = message.replace("\\n", "\n")
 	_message_panel.visible = false
 	_trigger.body_entered.connect(_on_trigger_body_entered)
 	_timer.timeout.connect(_on_hide_timer_timeout)
