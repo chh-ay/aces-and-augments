@@ -2,14 +2,8 @@
 
 [ext_resource type="Script" uid="uid://34hcitdjqxel" path="res://scripts/pickups/card_pickup.gd" id="1_etp8b"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_etp8b"]
-radius = 7.0
-
-[node name="CardPickup" type="Area2D" unique_id=259764486]
+[node name="CardPickup" type="Node2D" unique_id=259764486]
 script = ExtResource("1_etp8b")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1531342174]
-shape = SubResource("CircleShape2D_etp8b")
 
 [node name="Visual" type="Polygon2D" parent="." unique_id=2029077358]
 color = Color(0.92, 0.92, 0.96, 0.95)

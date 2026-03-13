@@ -1,5 +1,5 @@
 class_name XpOrb
-extends Area2D
+extends Node2D
 
 @export var xp_amount: int = 1
 @export var attract_radius: float = 120.0

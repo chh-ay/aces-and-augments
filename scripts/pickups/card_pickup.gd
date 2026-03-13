@@ -1,5 +1,5 @@
 class_name CardPickup
-extends Area2D
+extends Node2D
 
 @export var attract_radius: float = 116.0
 @export var move_speed: float = 230.0

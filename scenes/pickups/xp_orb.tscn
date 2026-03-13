@@ -3,16 +3,8 @@
 [ext_resource type="Script" uid="uid://63phkk2lv5" path="res://scripts/pickups/xp_orb.gd" id="1_75vag"]
 [ext_resource type="Texture2D" path="res://assets/sprites/pickups/xp_orbs.png" id="2_10m8e"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_75vag"]
-radius = 6.0
-
-[node name="XpOrb" type="Area2D" unique_id=18865417]
-collision_layer = 0
-collision_mask = 0
+[node name="XpOrb" type="Node2D" unique_id=18865417]
 script = ExtResource("1_75vag")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1242472942]
-shape = SubResource("CircleShape2D_75vag")
 
 [node name="Visual" type="Sprite2D" parent="." unique_id=1774677528]
 texture_filter = 1
