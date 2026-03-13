@@ -1,8 +1,7 @@
 class_name CardSlot
 extends PanelContainer
 
-const CARD_BASE_PATH: String = "res://assets/sprites/cards/kenney_large/card_%s_%s.png"
-const CARD_FALLBACK_BASE_PATH: String = "res://assets/sprites/cards/kenney/card_%s_%s.png"
+const CARD_BASE_PATH: String = "res://assets/sprites/cards/kenney/card_%s_%s.png"
 const EMPTY_BG: Color = Color(0.06, 0.08, 0.11, 0.92)
 const EMPTY_BORDER: Color = Color(0.18, 0.28, 0.35, 0.55)
 const FACE_BG: Color = Color(0.08, 0.11, 0.16, 0.98)
@@ -59,8 +58,6 @@ func _get_card_texture(suit: String, rank_value: int) -> Texture2D:
 	var rank_token: String = _rank_to_token(safe_rank)
 	var texture_path: String = CARD_BASE_PATH % [suit, rank_token]
 	var texture: Texture2D = _load_texture_file(texture_path)
-	if texture == null:
-		texture = _load_texture_file(CARD_FALLBACK_BASE_PATH % [suit, rank_token])
 	_texture_cache[cache_key] = texture
 	return texture
 

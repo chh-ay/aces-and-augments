@@ -19,7 +19,6 @@ config/icon="res://icon.svg"
 
 GDAIMCPRuntime="*uid://dcne7ryelpxmn"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
-EventBus="*res://scripts/autoload/event_bus.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 AssetRegistry="*res://scripts/autoload/asset_registry.gd"
@@ -78,7 +77,7 @@ toggle_aim_mode={
 
 [rendering]
 
-environment/defaults/default_clear_color=Color(0.09, 0.1, 0.12, 1)
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
+environment/defaults/default_clear_color=Color(0.09, 0.1, 0.12, 1)
 2d/snapping/use_pixel_snap=true

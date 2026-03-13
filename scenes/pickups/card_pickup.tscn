@@ -1,10 +1,11 @@
 [gd_scene format=3 uid="uid://5825rpwmaqfe"]
 
 [ext_resource type="Script" uid="uid://34hcitdjqxel" path="res://scripts/pickups/card_pickup.gd" id="1_etp8b"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cards/kenney/card_empty.png" id="2_w3fur"]
 
 [node name="CardPickup" type="Node2D" unique_id=259764486]
 script = ExtResource("1_etp8b")
 
-[node name="Visual" type="Polygon2D" parent="." unique_id=2029077358]
-color = Color(0.92, 0.92, 0.96, 0.95)
-polygon = PackedVector2Array(-5, -7, 5, -7, 6, 7, -6, 7)
+[node name="CardEmpty" type="Sprite2D" parent="." unique_id=1326597813]
+scale = Vector2(0.265625, 0.265625)
+texture = ExtResource("2_w3fur")
