@@ -71,7 +71,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Panel" type="Panel" parent="Center" unique_id=2068518735]
-custom_minimum_size = Vector2(980, 620)
+custom_minimum_size = Vector2(1040, 760)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
@@ -86,7 +86,7 @@ offset_bottom = -22.0
 
 [node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=157001001]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 18
 
 [node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
@@ -109,12 +109,12 @@ text = "Pick one blessing for yourself. The paired curse lands on enemies."
 horizontal_alignment = 1
 
 [node name="SummaryRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=160568587]
-custom_minimum_size = Vector2(0, 186)
+custom_minimum_size = Vector2(0, 198)
 layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="StatsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow" unique_id=1915034679]
-custom_minimum_size = Vector2(0, 186)
+custom_minimum_size = Vector2(0, 198)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -132,7 +132,7 @@ theme_override_font_sizes/font_size = 20
 text = "HP 100 / 100\nMove 200\nDamage 1\nAtk 0.65s\nRange 234"
 
 [node name="HandCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow" unique_id=1691126008]
-custom_minimum_size = Vector2(0, 186)
+custom_minimum_size = Vector2(0, 198)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
@@ -173,12 +173,12 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="ChoicesRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=1337242914]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 266)
 layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="ChoiceA" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=845582140]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 266)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
@@ -233,7 +233,7 @@ horizontal_alignment = 1
 vertical_alignment = 0
 
 [node name="ChoiceB" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=1709800168]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 266)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
@@ -288,7 +288,7 @@ horizontal_alignment = 1
 vertical_alignment = 0
 
 [node name="ChoiceC" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=444903494]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 266)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")

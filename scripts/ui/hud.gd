@@ -77,7 +77,21 @@ func _format_time(remaining_seconds: float) -> String:
 
 func _apply_hand_state(state: Dictionary) -> void:
 	if _hand_summary_label != null:
-		_hand_summary_label.text = "Cards %d / 5" % int(state.get("card_count", 0))
+		var card_count: int = int(state.get("card_count", 0))
+		var hand_summary: String = "Cards %d / 5" % card_count
+		if bool(state.get("selection_pending", false)) or bool(state.get("can_lock", false)):
+			hand_summary += "\nPending %s [%s]" % [
+				String(state.get("pending_hand_name", "No Hand")),
+				String(state.get("pending_tier_name", "None"))
+			]
+		elif card_count > 0:
+			hand_summary += "\nBuilding %s" % String(state.get("pending_hand_name", "Drawing..."))
+		else:
+			hand_summary += "\nActive %s [%s]" % [
+				String(state.get("active_hand_name", "No Hand")),
+				String(state.get("active_tier_name", "None"))
+			]
+		_hand_summary_label.text = hand_summary
 	var cards: Array = state.get("cards", [])
 	for index in range(_card_slots.size()):
 		if _card_slots[index] == null:

@@ -178,10 +178,10 @@ anchor_top = 1.0
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -468.0
-offset_top = -220.0
-offset_right = -44.0
-offset_bottom = -84.0
+offset_left = -500.0
+offset_top = -236.0
+offset_right = -48.0
+offset_bottom = -74.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
 
 [node name="Margin" type="MarginContainer" parent="HandCard" unique_id=1835278010]
@@ -197,7 +197,7 @@ theme_override_constants/separation = 10
 
 [node name="SummaryLabel" type="Label" parent="HandCard/Margin/VBox" unique_id=40947164]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 text = "Cards 0 / 5"
 
