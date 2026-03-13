@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://dtwwuhxxxadey"]
+
+[ext_resource type="Script" uid="uid://bqjrtslayx5ni" path="res://scripts/world/lucky_terminal.gd" id="1_0jr3x"]
+[ext_resource type="Texture2D" uid="uid://dliq7vfmtyf5f" path="res://assets/sprites/environment/prop_terminal.png" id="2_kra2i"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5i4qc"]
+radius = 20.0
+
+[node name="LuckyTerminal" type="Node2D" unique_id=789977006]
+script = ExtResource("1_0jr3x")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=329498605]
+texture_filter = 1
+texture = ExtResource("2_kra2i")
+
+[node name="Trigger" type="Area2D" parent="." unique_id=658840235]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Trigger" unique_id=699126390]
+shape = SubResource("CircleShape2D_5i4qc")
+
+[node name="HideTimer" type="Timer" parent="." unique_id=412976633]
+one_shot = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=762564283]
+
+[node name="MessagePanel" type="Panel" parent="CanvasLayer" unique_id=683164541]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -170.0
+offset_top = 20.0
+offset_right = 170.0
+offset_bottom = 92.0
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/MessagePanel" unique_id=1630211226]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = -12.0
+offset_bottom = -10.0
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/MessagePanel/Margin" unique_id=803536110]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CanvasLayer/MessagePanel/Margin/VBox" unique_id=394595132]
+layout_mode = 2
+text = "Lucky Terminal"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="CanvasLayer/MessagePanel/Margin/VBox" unique_id=405593684]
+layout_mode = 2
+text = "CHEAT CODE FOUND\\nTHE HOUSE ALWAYS DRAWS ACES"
+horizontal_alignment = 1
+autowrap_mode = 1

@@ -1,0 +1,138 @@
+[gd_scene format=3 uid="uid://cwj5yn5i3bihf"]
+
+[ext_resource type="Script" uid="uid://bfwylvkbluxb1" path="res://scripts/ui/hud.gd" id="1_0mwgc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top_card"]
+bg_color = Color(0.06, 0.07, 0.09, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.74, 0.92, 0.55)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bottom_card"]
+bg_color = Color(0.08, 0.09, 0.11, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.94, 0.76, 0.22, 0.42)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="HUD" type="CanvasLayer" unique_id=1171546830]
+script = ExtResource("1_0mwgc")
+
+[node name="TimerCard" type="PanelContainer" parent="." unique_id=109129360]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -58.0
+offset_top = 14.0
+offset_right = 58.0
+offset_bottom = 48.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_top_card")
+
+[node name="Margin" type="MarginContainer" parent="TimerCard" unique_id=802150177]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="TimerLabel" type="Label" parent="TimerCard/Margin" unique_id=759859197]
+layout_mode = 2
+horizontal_alignment = 1
+text = "10:00"
+
+[node name="TopCard" type="PanelContainer" parent="." unique_id=1248161042]
+offset_left = 14.0
+offset_top = 14.0
+offset_right = 206.0
+offset_bottom = 72.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_top_card")
+
+[node name="Margin" type="MarginContainer" parent="TopCard" unique_id=898383448]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="TopCard/Margin" unique_id=1922940245]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HealthHeader" type="HBoxContainer" parent="TopCard/Margin/VBox" unique_id=917631514]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HealthLabel" type="Label" parent="TopCard/Margin/VBox/HealthHeader" unique_id=1395830800]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HP 100 / 100"
+
+[node name="HealthBar" type="ProgressBar" parent="TopCard/Margin/VBox" unique_id=1829456706]
+custom_minimum_size = Vector2(170, 14)
+layout_mode = 2
+show_percentage = false
+value = 100.0
+
+[node name="BottomCard" type="PanelContainer" parent="." unique_id=722198421]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -60.0
+offset_right = 150.0
+offset_bottom = -16.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
+
+[node name="Margin" type="MarginContainer" parent="BottomCard" unique_id=419221990]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="BottomCard/Margin" unique_id=641458993]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="XpLabel" type="Label" parent="BottomCard/Margin/VBox" unique_id=1098334477]
+layout_mode = 2
+horizontal_alignment = 1
+text = "LV 1  XP 0 / 5"
+
+[node name="XpBar" type="ProgressBar" parent="BottomCard/Margin/VBox" unique_id=415147847]
+custom_minimum_size = Vector2(276, 14)
+layout_mode = 2
+max_value = 5.0
+show_percentage = false
+
+[node name="HandCard" type="PanelContainer" parent="." unique_id=1964151890]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -180.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = 84.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
+
+[node name="Margin" type="MarginContainer" parent="HandCard" unique_id=1835278010]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HandLabel" type="Label" parent="HandCard/Margin" unique_id=40947164]
+layout_mode = 2
+horizontal_alignment = 2
+text = "Hand 0 / 5\nNo Hand\nBuff x1.00"

@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dx00oojl67cbw"]
+
+[ext_resource type="Texture2D" uid="uid://bsgqyvqyqc0k4" path="res://assets/sprites/enemies/slime_placeholder.png" id="1_d3dhf"]
+[ext_resource type="Script" path="res://scripts/enemies/boss_core.gd" id="1_fufmt"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fufmt"]
+radius = 22.0
+
+[node name="BossCore" type="CharacterBody2D" unique_id=1640364229]
+script = ExtResource("1_fufmt")
+move_speed = 84.0
+contact_damage = 14
+damage_interval = 0.7
+damage_range = 36.0
+max_health = 90
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=239603289]
+shape = SubResource("CircleShape2D_fufmt")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=297274093]
+texture_filter = 1
+scale = Vector2(2.75, 2.75)
+texture = ExtResource("1_d3dhf")

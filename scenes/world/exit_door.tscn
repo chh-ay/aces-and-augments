@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://bnbee0i2sah2g"]
+
+[ext_resource type="Script" uid="uid://buiufv2wji2lh" path="res://scripts/world/exit_door.gd" id="1_54vjo"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/exit_door_pixellab.png" id="2_vdta3"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_d7edw"]
+radius = 18.0
+
+[node name="ExitDoor" type="Node2D" unique_id=551680771]
+script = ExtResource("1_54vjo")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1851112976]
+texture_filter = 1
+scale = Vector2(1.0, 1.0)
+texture = ExtResource("2_vdta3")
+
+[node name="Trigger" type="Area2D" parent="." unique_id=1609084887]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Trigger" unique_id=1242694649]
+shape = SubResource("CircleShape2D_d7edw")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1267216491]
+
+[node name="PromptPanel" type="Panel" parent="CanvasLayer" unique_id=1846701008]
+visible = false
+offset_left = -42.0
+offset_top = -62.0
+offset_right = 42.0
+offset_bottom = -34.0
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/PromptPanel" unique_id=1192577152]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = -6.0
+
+[node name="Label" type="Label" parent="CanvasLayer/PromptPanel/Margin" unique_id=478050779]
+layout_mode = 2
+text = "EXIT"
+horizontal_alignment = 1
+vertical_alignment = 1

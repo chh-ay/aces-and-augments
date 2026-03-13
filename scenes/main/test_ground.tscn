@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://byvklghdcujkk"]
+
+[ext_resource type="PackedScene" uid="uid://cm4criwagreod" path="res://scenes/main/main.tscn" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://b1mpwwg6y6qny" path="res://scenes/enemies/boss_core_test.tscn" id="2_boss_test"]
+[ext_resource type="Script" uid="uid://bq2dyuwvnt56o" path="res://scripts/world/test_ground.gd" id="3_test_ground"]
+
+[node name="Main" unique_id=1194358205 instance=ExtResource("1_main")]
+script = ExtResource("3_test_ground")
+boss_scene = ExtResource("2_boss_test")
+
+[node name="Player" parent="." index="0" unique_id=10213486]
+move_speed = 240.0
+max_health = 220
+projectile_damage = 5
+attack_interval = 0.42
+attack_range = 360.0
+health_regen_rate = 0.8
+
+[node name="EnemySpawner" parent="." index="1" unique_id=493424533]
+spawn_interval = 1.9
+max_enemies = 5
+peak_enemy_count = 10
+
+[node name="RunDirector" parent="." index="8" unique_id=530692279]
+run_duration_seconds = 18.0

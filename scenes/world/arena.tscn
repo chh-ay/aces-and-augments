@@ -1,20 +1,28 @@
 [gd_scene format=3 uid="uid://csxh78scywda2"]
 
 [ext_resource type="Script" uid="uid://b3aisl6074vru" path="res://scripts/world/arena.gd" id="1_pbd5s"]
+[ext_resource type="Shader" path="res://assets/shaders/arena_void_mask.gdshader" id="2_ldtp4"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_pbd5s"]
-radius = 300.0
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cquxp"]
+shader = ExtResource("2_ldtp4")
+shader_parameter/arena_radius = 14336.0
+shader_parameter/edge_softness = 384.0
+shader_parameter/wobble_primary = 160.0
+shader_parameter/wobble_secondary = 96.0
+shader_parameter/fog_color = Color(0.02, 0.03, 0.05, 0.32)
 
 [node name="Arena" type="Node2D" unique_id=1190346900]
 script = ExtResource("1_pbd5s")
 
 [node name="BoundaryLine" type="Line2D" parent="." unique_id=1138457120]
+z_index = 10
 closed = true
-antialiased = true
+width = 6.0
+default_color = Color(1, 0.36778843, 0.3002166, 0.9490196)
 
-[node name="Boundary" type="StaticBody2D" parent="." unique_id=1564925454]
-collision_layer = 1
-collision_mask = 1
+[node name="FloorFill" type="Polygon2D" parent="." unique_id=658080869]
+z_index = -40
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Boundary" unique_id=2000264908]
-shape = SubResource("CircleShape2D_pbd5s")
+[node name="FogMask" type="Polygon2D" parent="." unique_id=2097488976]
+z_index = 5
+material = SubResource("ShaderMaterial_cquxp")

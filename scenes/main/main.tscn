@@ -6,20 +6,38 @@
 [ext_resource type="Script" uid="uid://8fkw3vvt5odr" path="res://scripts/world/prop_spawner.gd" id="4"]
 [ext_resource type="Script" uid="uid://b2kbhubsiaqyr" path="res://scripts/world/enemy_spawner.gd" id="5"]
 [ext_resource type="PackedScene" uid="uid://cw10jr8r05fy1" path="res://scenes/enemies/basic_enemy.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://dg0vs4hmbpk4t" path="res://scenes/enemies/drone_enemy.tscn" id="6_drone"]
+[ext_resource type="PackedScene" uid="uid://dax8b8kh2fc8o" path="res://scenes/enemies/mutant_enemy.tscn" id="6_mutant"]
+[ext_resource type="Script" path="res://scripts/world/run_director.gd" id="6_tt1x2"]
+[ext_resource type="PackedScene" uid="uid://csxh78scywda2" path="res://scenes/world/arena.tscn" id="7_a8run"]
+[ext_resource type="PackedScene" uid="uid://dkbl1p2achx7v" path="res://scenes/ui/level_up_panel.tscn" id="7_blune"]
+[ext_resource type="PackedScene" uid="uid://dx00oojl67cbw" path="res://scenes/enemies/boss_core.tscn" id="8_tbe87"]
+[ext_resource type="PackedScene" uid="uid://bnbee0i2sah2g" path="res://scenes/world/exit_door.tscn" id="8_xdoor"]
+[ext_resource type="PackedScene" uid="uid://dtwwuhxxxadey" path="res://scenes/world/lucky_terminal.tscn" id="9_blune"]
+[ext_resource type="PackedScene" uid="uid://cwj5yn5i3bihf" path="res://scenes/ui/hud.tscn" id="11_7smn1"]
 
 [node name="Main" type="Node2D" unique_id=538251827]
 script = ExtResource("1")
+boss_scene = ExtResource("8_tbe87")
+exit_door_scene = ExtResource("8_xdoor")
 
 [node name="Player" parent="." unique_id=10213486 instance=ExtResource("3")]
+arena_path = NodePath("../Arena")
 
 [node name="EnemySpawner" type="Node" parent="." unique_id=493424533]
 script = ExtResource("5")
 enemy_scene = ExtResource("6")
+enemy_scenes = Array[PackedScene]([ExtResource("6"), ExtResource("6_drone"), ExtResource("6_mutant")])
 enemy_container_path = NodePath("../Enemies")
 player_path = NodePath("../Player")
 floor_generator_path = NodePath("../FloorGenerator")
+arena_path = NodePath("../Arena")
 
 [node name="Enemies" type="Node2D" parent="." unique_id=844003864]
+
+[node name="Bosses" type="Node2D" parent="." unique_id=340945275]
+
+[node name="Exits" type="Node2D" parent="." unique_id=1702250884]
 
 [node name="PropSpawner" type="Node2D" parent="." unique_id=1140745295]
 script = ExtResource("4")
@@ -36,6 +54,10 @@ script = ExtResource("2")
 player_path = NodePath("../Player")
 floor_base_path = NodePath("../Floor/FloorBase")
 floor_detail_path = NodePath("../Floor/FloorDetail")
+world_radius_chunks = 8
+
+[node name="RunDirector" type="Node" parent="." unique_id=530692279]
+script = ExtResource("6_tt1x2")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1535270300]
 
@@ -85,3 +107,18 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Press Enter to restart or Esc to quit"
 horizontal_alignment = 1
+
+[node name="LevelUpPanel" type="Control" parent="CanvasLayer" unique_id=1916820633 instance=ExtResource("7_blune")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Arena" parent="." unique_id=1190346900 instance=ExtResource("7_a8run")]
+
+[node name="LuckyTerminal" parent="." unique_id=789977006 instance=ExtResource("9_blune")]
+message = "CHEAT CODE FOUND\\nTHE HOUSE ALWAYS DRAWS ACES"
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1171546830 instance=ExtResource("11_7smn1")]
