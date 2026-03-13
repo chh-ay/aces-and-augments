@@ -603,14 +603,14 @@ func _update_screen_shake(delta: float) -> void:
 func _ensure_hit_flash_material() -> void:
 	if _hit_flash_target == null:
 		return
-	var material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
-	if material == null:
-		material = ShaderMaterial.new()
-		material.shader = HIT_FLASH_SHADER
-		_hit_flash_target.material = material
-	elif material.shader == null:
-		material.shader = HIT_FLASH_SHADER
-	material.set_shader_parameter("flash_amount", 0.0)
+	var shader_material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
+	if shader_material == null:
+		shader_material = ShaderMaterial.new()
+		shader_material.shader = HIT_FLASH_SHADER
+		_hit_flash_target.material = shader_material
+	elif shader_material.shader == null:
+		shader_material.shader = HIT_FLASH_SHADER
+	shader_material.set_shader_parameter("flash_amount", 0.0)
 
 func _trigger_hit_flash() -> void:
 	_hit_flash_time_remaining = HIT_FLASH_DURATION
@@ -626,10 +626,10 @@ func _update_hit_flash(delta: float) -> void:
 func _set_hit_flash_amount(amount: float) -> void:
 	if _hit_flash_target == null:
 		return
-	var material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
-	if material == null:
+	var shader_material: ShaderMaterial = _hit_flash_target.material as ShaderMaterial
+	if shader_material == null:
 		return
-	material.set_shader_parameter("flash_amount", clampf(amount, 0.0, 1.0))
+	shader_material.set_shader_parameter("flash_amount", clampf(amount, 0.0, 1.0))
 
 func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	var rarity: Dictionary = _roll_rarity()
