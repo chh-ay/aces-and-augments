@@ -40,7 +40,7 @@ var _boot_completed: bool = false
 
 func _ready() -> void:
 	_set_boot_state(true)
-	_start_run_music()
+	call_deferred("_start_run_music")
 	if floor_generator != null and floor_generator.has_signal("initial_chunks_ready") and not floor_generator.initial_chunks_ready.is_connected(_on_initial_chunks_ready):
 		floor_generator.initial_chunks_ready.connect(_on_initial_chunks_ready, CONNECT_ONE_SHOT)
 	if GameManager != null and GameManager.has_method("begin_run"):
@@ -398,9 +398,34 @@ func _start_run_music() -> void:
 	if AudioManager != null:
 		if AudioManager.has_method("stop_music"):
 			AudioManager.stop_music()
-		if AudioManager.has_method("get_music_stream"):
-			music_player.stream = AudioManager.get_music_stream("run", true)
 		if AudioManager.has_method("get_music_volume_db"):
 			music_player.volume_db = AudioManager.get_music_volume_db("run", -14.0)
+		if AudioManager.has_method("apply_saved_settings"):
+			AudioManager.apply_saved_settings()
 	if music_player.stream != null:
+		music_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		music_player.stream_paused = false
+		music_player.stop()
 		music_player.play()
+	call_deferred("_report_run_music_state")
+
+func _report_run_music_state() -> void:
+	if music_player == null:
+		return
+	var bus_index: int = AudioServer.get_bus_index(music_player.bus)
+	var bus_db: float = AudioServer.get_bus_volume_db(bus_index) if bus_index != -1 else 0.0
+	var bus_muted: bool = AudioServer.is_bus_mute(bus_index) if bus_index != -1 else false
+	if CustomLogger != null and CustomLogger.has_method("info"):
+		CustomLogger.info(
+			"Run player stream=%s playing=%s paused=%s pos=%.2f bus=%s muted=%s bus_db=%.1f vol_db=%.1f" % [
+				"true" if music_player.stream != null else "false",
+				"true" if music_player.playing else "false",
+				"true" if music_player.stream_paused else "false",
+				music_player.get_playback_position(),
+				String(music_player.bus),
+				"true" if bus_muted else "false",
+				bus_db,
+				music_player.volume_db
+			],
+			"Audio"
+		)

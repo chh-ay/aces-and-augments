@@ -24,7 +24,7 @@ extends Control
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	_start_menu_music()
+	call_deferred("_start_menu_music")
 	_difficulty_button.pressed.connect(_on_difficulty_pressed)
 	_start_button.pressed.connect(_on_start_pressed)
 	_test_button.pressed.connect(_on_test_ground_pressed)
@@ -137,9 +137,34 @@ func _start_menu_music() -> void:
 	if AudioManager != null:
 		if AudioManager.has_method("stop_music"):
 			AudioManager.stop_music()
-		if AudioManager.has_method("get_music_stream"):
-			_music_player.stream = AudioManager.get_music_stream("menu", true)
 		if AudioManager.has_method("get_music_volume_db"):
 			_music_player.volume_db = AudioManager.get_music_volume_db("menu", -16.0)
+		if AudioManager.has_method("apply_saved_settings"):
+			AudioManager.apply_saved_settings()
 	if _music_player.stream != null:
+		_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		_music_player.stream_paused = false
+		_music_player.stop()
 		_music_player.play()
+	call_deferred("_report_menu_music_state")
+
+func _report_menu_music_state() -> void:
+	if _music_player == null:
+		return
+	var bus_index: int = AudioServer.get_bus_index(_music_player.bus)
+	var bus_db: float = AudioServer.get_bus_volume_db(bus_index) if bus_index != -1 else 0.0
+	var bus_muted: bool = AudioServer.is_bus_mute(bus_index) if bus_index != -1 else false
+	if CustomLogger != null and CustomLogger.has_method("info"):
+		CustomLogger.info(
+			"Menu player stream=%s playing=%s paused=%s pos=%.2f bus=%s muted=%s bus_db=%.1f vol_db=%.1f" % [
+				"true" if _music_player.stream != null else "false",
+				"true" if _music_player.playing else "false",
+				"true" if _music_player.stream_paused else "false",
+				_music_player.get_playback_position(),
+				String(_music_player.bus),
+				"true" if bus_muted else "false",
+				bus_db,
+				_music_player.volume_db
+			],
+			"Audio"
+		)
