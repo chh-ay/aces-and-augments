@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgb5g2yc1v4n6"
-path="res://.godot/imported/exit_door_pixellab.png-75e7836836e795ceb336d55f61f374aa.ctex"
+uid="uid://8omqnh1qf23p"
+path="res://.godot/imported/xp_orbs.png-1462de09819c32e4b33be0dbeb635aa5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/environment/exit_door_pixellab.png"
-dest_files=["res://.godot/imported/exit_door_pixellab.png-75e7836836e795ceb336d55f61f374aa.ctex"]
+source_file="res://assets/sprites/pickups/xp_orbs.png"
+dest_files=["res://.godot/imported/xp_orbs.png-1462de09819c32e4b33be0dbeb635aa5.ctex"]
 
 [params]
 

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bnbee0i2sah2g"]
 
 [ext_resource type="Script" uid="uid://buiufv2wji2lh" path="res://scripts/world/exit_door.gd" id="1_54vjo"]
-[ext_resource type="Texture2D" path="res://assets/sprites/environment/exit_door_pixellab.png" id="2_vdta3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/environment/exit_door.png" id="2_vdta3"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d7edw"]
 radius = 18.0
