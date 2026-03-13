@@ -13,6 +13,7 @@ contact_damage = 14
 damage_interval = 0.7
 damage_range = 36.0
 max_health = 90
+xp_reward = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=239603289]
 shape = SubResource("CircleShape2D_fufmt")

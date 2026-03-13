@@ -93,7 +93,7 @@ func add_experience(amount: int) -> void:
 	while current_experience >= required_experience:
 		current_experience -= required_experience
 		current_level += 1
-		required_experience = int(round(float(required_experience) * 1.35)) + 2
+		required_experience = _get_required_experience_for_level(current_level)
 		_pending_level_ups += 1
 	experience_changed.emit(current_experience, required_experience, current_level)
 	_emit_level_up_if_ready()
@@ -287,7 +287,7 @@ func _clamp_to_arena() -> void:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
 		if _arena == null:
 			return
-	var margin: float = _get_collision_radius() + arena_padding
+	var margin: float = get_collision_radius() + arena_padding
 	var clamped_position: Vector2 = _arena.clamp_world_position(global_position, margin)
 	if clamped_position.distance_squared_to(global_position) <= 0.01:
 		return
@@ -297,7 +297,7 @@ func _clamp_to_arena() -> void:
 		velocity = velocity.slide(normal)
 
 
-func _get_collision_radius() -> float:
+func get_collision_radius() -> float:
 	if _collision_shape == null:
 		return 12.0
 	var circle: CircleShape2D = _collision_shape.shape as CircleShape2D
@@ -458,3 +458,8 @@ func _roll_rarity() -> Dictionary:
 func _roll_value(rarity: Dictionary, min_value: float, max_value: float) -> float:
 	var t: float = randf_range(float(rarity["band_min"]), float(rarity["band_max"]))
 	return lerpf(min_value, max_value, t)
+
+func _get_required_experience_for_level(level: int) -> int:
+	if level <= 1:
+		return 5
+	return 5 + int(round(pow(float(level - 1), 1.24) * 2.6))

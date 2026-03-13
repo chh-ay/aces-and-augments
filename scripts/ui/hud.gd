@@ -31,7 +31,7 @@ func bind_player(player: PlayerController) -> void:
 	_health_label.text = "HP %d / %d" % [player.current_health, player.max_health]
 	_xp_bar.max_value = player.required_experience
 	_xp_bar.value = player.current_experience
-	_xp_label.text = "LV %d  XP %d / %d" % [player.current_level, player.current_experience, player.required_experience]
+	_xp_label.text = "LV %d" % player.current_level
 	_apply_hand_state(player._build_hand_state())
 
 func bind_run_director(run_director: RunDirector) -> void:
@@ -51,7 +51,7 @@ func _on_health_changed(hp: int) -> void:
 func _on_experience_changed(current_xp: int, required_xp: int, level: int) -> void:
 	_xp_bar.max_value = required_xp
 	_xp_bar.value = current_xp
-	_xp_label.text = "LV %d  XP %d / %d" % [level, current_xp, required_xp]
+	_xp_label.text = "LV %d" % level
 
 func _on_hand_updated(state: Dictionary) -> void:
 	_apply_hand_state(state)

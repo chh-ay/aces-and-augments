@@ -6,6 +6,7 @@ extends CharacterBody2D
 @export var contact_damage: int = 10
 @export var damage_interval: float = 0.5
 @export var damage_range: float = 24.0
+@export var body_spacing: float = 3.0
 @export var max_health: int = 3
 @export var xp_reward: int = 1
 @export var xp_orb_scene: PackedScene
@@ -22,6 +23,8 @@ var _difficulty_health_multiplier: float = 1.0
 var _difficulty_damage_multiplier: float = 1.0
 var _mutation_multiplier: float = 1.0
 
+@onready var _collision_shape: CollisionShape2D = $CollisionShape2D
+
 func _ready() -> void:
 	add_to_group("enemy")
 	if _current_move_speed <= 0.0 or _current_contact_damage <= 0 or _current_max_health <= 0:
@@ -37,8 +40,19 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	var direction: Vector2 = (player.global_position - global_position).normalized()
-	velocity = direction * _current_move_speed
+	var to_player: Vector2 = player.global_position - global_position
+	var distance_sq: float = to_player.length_squared()
+	var stand_off_distance: float = _get_stand_off_distance(player)
+	var stand_off_sq: float = stand_off_distance * stand_off_distance
+	if distance_sq > stand_off_sq:
+		var direction: Vector2 = to_player / max(sqrt(distance_sq), 0.001)
+		velocity = direction * _current_move_speed
+	elif distance_sq > 0.0001:
+		var overlap_distance: float = stand_off_distance - sqrt(distance_sq)
+		var push_strength: float = min(overlap_distance * 10.0, _current_move_speed * 0.65)
+		velocity = (-to_player.normalized()) * push_strength
+	else:
+		velocity = Vector2.ZERO
 	move_and_slide()
 	_try_damage(player)
 
@@ -99,6 +113,20 @@ func _refresh_scaled_stats(reset_health: bool) -> void:
 		_current_health = _current_max_health
 	else:
 		_current_health = max(int(round(float(_current_max_health) * health_ratio)), 1)
+
+func get_collision_radius() -> float:
+	if _collision_shape == null:
+		return 8.0
+	var circle: CircleShape2D = _collision_shape.shape as CircleShape2D
+	if circle != null:
+		return circle.radius
+	return 8.0
+
+func _get_stand_off_distance(player: PlayerController) -> float:
+	var player_radius: float = 12.0
+	if player != null and player.has_method("get_collision_radius"):
+		player_radius = float(player.call("get_collision_radius"))
+	return max(player_radius + get_collision_radius() + body_spacing, damage_range * 0.72)
 
 
 @abstract func _get_target_player() -> PlayerController
