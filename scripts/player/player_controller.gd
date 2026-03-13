@@ -3,8 +3,6 @@ extends CharacterBody2D
 
 const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
 const HIT_FLASH_DURATION: float = 0.10
-const MIN_EFFECTIVE_MOVE_SPEED: float = 80.0
-const MAX_EFFECTIVE_MOVE_SPEED: float = 360.0
 
 signal health_changed(hp: int)
 signal died
@@ -97,6 +95,8 @@ const ENEMY_STAT_LABELS: Dictionary = {
 @export var health_regen_interval: float = 10.0
 @export var health_regen_rate: float = 0.0
 @export_range(0.0, 0.5, 0.01) var lifesteal_ratio: float = 0.0
+@export var min_effective_move_speed: float = 80.0
+@export var max_effective_move_speed: float = 360.0
 
 var current_health: int = 0
 var current_experience: int = 0
@@ -334,8 +334,8 @@ func get_effective_move_speed() -> float:
 	var base_speed: float = move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))
 	return clampf(
 		base_speed * float(_player_augment_profile.get("move_speed", 1.0)),
-		MIN_EFFECTIVE_MOVE_SPEED,
-		MAX_EFFECTIVE_MOVE_SPEED
+		min_effective_move_speed,
+		max(max_effective_move_speed, min_effective_move_speed)
 	)
 
 func get_effective_attack_interval() -> float:
