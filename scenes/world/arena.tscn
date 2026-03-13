@@ -1,15 +1,6 @@
 [gd_scene format=3 uid="uid://csxh78scywda2"]
 
 [ext_resource type="Script" uid="uid://b3aisl6074vru" path="res://scripts/world/arena.gd" id="1_pbd5s"]
-[ext_resource type="Shader" path="res://assets/shaders/arena_void_mask.gdshader" id="2_ldtp4"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cquxp"]
-shader = ExtResource("2_ldtp4")
-shader_parameter/arena_radius = 14336.0
-shader_parameter/edge_softness = 384.0
-shader_parameter/wobble_primary = 160.0
-shader_parameter/wobble_secondary = 96.0
-shader_parameter/fog_color = Color(0.02, 0.03, 0.05, 0.32)
 
 [node name="Arena" type="Node2D" unique_id=1190346900]
 script = ExtResource("1_pbd5s")
@@ -25,4 +16,5 @@ z_index = -40
 
 [node name="FogMask" type="Polygon2D" parent="." unique_id=2097488976]
 z_index = 5
-material = SubResource("ShaderMaterial_cquxp")
+invert_enabled = true
+invert_border = 18432.0

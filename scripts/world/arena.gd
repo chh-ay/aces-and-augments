@@ -1,6 +1,7 @@
 class_name Arena
 extends Node2D
 
+@export var floor_generator_path: NodePath
 @export var radius: float = 14_336.0
 @export var segments: int = 64
 @export var line_width: float = 24.0
@@ -16,9 +17,11 @@ extends Node2D
 @onready var boundary_line: Line2D = $BoundaryLine
 @onready var floor_fill: Polygon2D = $FloorFill
 @onready var fog_mask: Polygon2D = $FogMask
+@onready var _floor_generator: FloorGenerator = get_node_or_null(floor_generator_path) as FloorGenerator
 
 func _ready() -> void:
 	add_to_group("arena")
+	_sync_radius_from_floor_generator()
 	_update_boundary()
 
 func get_inner_radius(margin: float = 0.0) -> float:
@@ -37,44 +40,52 @@ func clamp_world_position(world_position: Vector2, margin: float = 0.0) -> Vecto
 	return global_position + offset.normalized() * max_distance
 
 func _update_boundary() -> void:
-	var points: PackedVector2Array = _build_visual_boundary()
+	var boundary_points: PackedVector2Array = _build_visual_boundary()
 
 	if floor_fill != null:
-		floor_fill.polygon = points
+		floor_fill.visible = false
+		floor_fill.polygon = _build_fill_polygon(boundary_points)
 		floor_fill.color = fill_color
 	if fog_mask != null:
 		fog_mask.visible = enable_fog_mask
-		if not enable_fog_mask:
-			return
-		var mask_extent: float = radius + fog_padding
-		fog_mask.polygon = PackedVector2Array([
-			Vector2(-mask_extent, -mask_extent),
-			Vector2(mask_extent, -mask_extent),
-			Vector2(mask_extent, mask_extent),
-			Vector2(-mask_extent, mask_extent)
-		])
-		var fog_material: ShaderMaterial = fog_mask.material as ShaderMaterial
-		if fog_material != null:
-			fog_material.set_shader_parameter("arena_radius", radius)
-			fog_material.set_shader_parameter("edge_softness", edge_softness)
-			fog_material.set_shader_parameter("fog_color", fog_color)
-			fog_material.set_shader_parameter("wobble_primary", wobble_primary)
-			fog_material.set_shader_parameter("wobble_secondary", wobble_secondary)
+		if enable_fog_mask:
+			fog_mask.polygon = boundary_points
+			fog_mask.color = fog_color
+			fog_mask.invert_enabled = true
+			fog_mask.invert_border = radius + fog_padding
 	if boundary_line == null:
 		return
 
+	boundary_line.visible = true
 	boundary_line.width = line_width
 	boundary_line.default_color = line_color
 	boundary_line.clear_points()
-	for point in points:
+	for point in boundary_points:
 		boundary_line.add_point(point)
 
 func _build_visual_boundary() -> PackedVector2Array:
 	var points: PackedVector2Array = PackedVector2Array()
 	for i: int in range(segments):
 		var angle: float = TAU * float(i) / float(segments)
-		var visual_radius: float = radius
-		visual_radius += sin(angle * 3.0 + 0.4) * wobble_primary
-		visual_radius += cos(angle * 5.0 - 0.2) * wobble_secondary
-		points.append(Vector2(cos(angle), sin(angle)) * visual_radius)
+		var direction: Vector2 = Vector2(cos(angle), sin(angle))
+		points.append(direction * _get_visual_radius(direction))
 	return points
+
+func _build_fill_polygon(boundary_points: PackedVector2Array) -> PackedVector2Array:
+	var fill_points: PackedVector2Array = PackedVector2Array([Vector2.ZERO])
+	for point in boundary_points:
+		fill_points.append(point)
+	return fill_points
+
+func _get_visual_radius(direction: Vector2) -> float:
+	var wobble: float = (direction.x * direction.y * 2.0) * wobble_primary
+	wobble += (direction.x * direction.x - direction.y * direction.y) * wobble_secondary
+	return radius + wobble
+
+func _sync_radius_from_floor_generator() -> void:
+	if _floor_generator == null:
+		return
+	var playable_radius_world: Vector2 = _floor_generator.get_playable_radius_world()
+	if playable_radius_world == Vector2.ZERO:
+		return
+	radius = min(playable_radius_world.x, playable_radius_world.y)

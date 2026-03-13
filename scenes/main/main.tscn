@@ -55,7 +55,7 @@ script = ExtResource("2")
 player_path = NodePath("../Player")
 floor_base_path = NodePath("../Floor/FloorBase")
 floor_detail_path = NodePath("../Floor/FloorDetail")
-world_radius_chunks = 8
+world_radius_chunks = 5
 
 [node name="RunDirector" type="Node" parent="." unique_id=530692279]
 script = ExtResource("6_tt1x2")
@@ -126,6 +126,11 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Arena" parent="." unique_id=1190346900 instance=ExtResource("7_a8run")]
+floor_generator_path = NodePath("../FloorGenerator")
+enable_fog_mask = false
+segments = 96
+wobble_primary = 0.0
+wobble_secondary = 0.0
 
 [node name="LuckyTerminal" parent="." unique_id=789977006 instance=ExtResource("9_blune")]
 message = "CHEAT CODE FOUND\\nTHE HOUSE ALWAYS DRAWS ACES"

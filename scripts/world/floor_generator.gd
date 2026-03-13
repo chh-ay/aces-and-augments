@@ -77,6 +77,15 @@ func get_chunk_size() -> Vector2i:
 func get_tile_size() -> Vector2i:
 	return _tile_size
 
+func get_chunk_world_size() -> Vector2:
+	return _chunk_world_size
+
+func get_playable_radius_world() -> Vector2:
+	return _playable_radius_world
+
+func get_playable_radius_chunks() -> int:
+	return _get_playable_radius_chunks()
+
 func get_noise() -> FastNoiseLite:
 	return _noise
 
