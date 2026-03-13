@@ -107,6 +107,7 @@ enum AimMode {
 @export_range(0.1, 1.0, 0.05) var upper_terrain_move_multiplier: float = 0.72
 @export var aim_mode: int = AimMode.AUTO
 @export var manual_aim_deadzone: float = 10.0
+@export_range(0.5, 1.5, 0.05) var camera_zoom_scale: float = 0.80
 
 var current_health: int = 0
 var current_experience: int = 0
@@ -176,6 +177,7 @@ func _ready() -> void:
 	_emit_hand_updated()
 	_regen_timer = health_regen_interval
 	_ensure_hit_flash_material()
+	_apply_camera_zoom()
 	_update_animation()
 	_clamp_to_arena()
 	_update_aim_mode_visuals()
@@ -195,6 +197,12 @@ func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 	_update_hit_flash(delta)
 	_update_crosshair()
+
+func _apply_camera_zoom() -> void:
+	if _camera == null:
+		return
+	var clamped_zoom: float = clampf(camera_zoom_scale, 0.5, 1.5)
+	_camera.zoom = Vector2.ONE * clamped_zoom
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_dead or get_tree().paused:
