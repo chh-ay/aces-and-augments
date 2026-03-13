@@ -273,6 +273,36 @@ func add_card_to_hand(suit: String, value: int) -> void:
 		return
 	var card: PokerHandEvaluator.Card = PokerHandEvaluator.Card.new(suit, value)
 	_hand_cards.append(card)
+	_refresh_pending_hand_state()
+	_emit_hand_updated()
+
+func convert_random_hand_card_to_ace() -> Dictionary:
+	if _hand_cards.is_empty() or not _pending_hand_choices.is_empty():
+		return {"applied": false, "reason": "no_cards"}
+	var eligible_indices: Array[int] = []
+	for index in range(_hand_cards.size()):
+		var card: PokerHandEvaluator.Card = _hand_cards[index] as PokerHandEvaluator.Card
+		if card != null and card.value != 1:
+			eligible_indices.append(index)
+	if eligible_indices.is_empty():
+		return {"applied": false, "reason": "all_aces"}
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.randomize()
+	var target_index: int = eligible_indices[rng.randi_range(0, eligible_indices.size() - 1)]
+	var target_card: PokerHandEvaluator.Card = _hand_cards[target_index] as PokerHandEvaluator.Card
+	var previous_value: int = target_card.value
+	target_card.value = 1
+	_refresh_pending_hand_state()
+	_emit_hand_updated()
+	return {
+		"applied": true,
+		"suit": target_card.suit,
+		"from_value": previous_value,
+		"to_value": target_card.value,
+		"hand_name": pending_hand_name
+	}
+
+func _refresh_pending_hand_state() -> void:
 	collected_cards = _hand_cards.size()
 	if collected_cards == 5:
 		_pending_hand_result = PokerHandEvaluator.evaluate_hand(_hand_cards)
@@ -280,7 +310,6 @@ func add_card_to_hand(suit: String, value: int) -> void:
 	else:
 		_pending_hand_result = null
 		pending_hand_name = "Drawing..."
-	_emit_hand_updated()
 
 func lock_current_hand() -> void:
 	if not can_lock_hand():

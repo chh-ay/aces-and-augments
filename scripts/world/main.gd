@@ -7,6 +7,7 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
+@export_range(1, 6, 1) var lucky_terminal_count: int = 3
 
 @onready var music_player: AudioStreamPlayer = $RunMusicPlayer
 @onready var player: PlayerController = $Player
@@ -37,6 +38,7 @@ var _exit_spawned: bool = false
 var _last_boss_defeat_position: Vector2 = Vector2.ZERO
 var _run_rewards_committed: bool = false
 var _boot_completed: bool = false
+var _lucky_terminals: Array[LuckyTerminal] = []
 
 func _ready() -> void:
 	_set_boot_state(true)
@@ -48,7 +50,8 @@ func _ready() -> void:
 	if player != null and GameManager != null and GameManager.has_method("get_player_meta_profile"):
 		player.apply_meta_upgrades(GameManager.call("get_player_meta_profile"))
 	_update_game_over_ui(false, "GAME OVER", "Press Enter or Esc to return to menu")
-	_position_lucky_terminal()
+	_setup_lucky_terminals()
+	_position_lucky_terminals()
 	if player != null:
 		player.died.connect(_on_player_died)
 		player.level_up_requested.connect(_on_player_level_up_requested)
@@ -322,8 +325,23 @@ func _on_player_hand_locked(_hand_name: String, _player_profile: Dictionary, ene
 	if enemy_spawner != null:
 		enemy_spawner.set_enemy_mutation_profile(enemy_profile)
 
-func _position_lucky_terminal() -> void:
-	if lucky_terminal == null:
+func _setup_lucky_terminals() -> void:
+	_lucky_terminals.clear()
+	var base_terminal: LuckyTerminal = lucky_terminal as LuckyTerminal
+	if base_terminal == null:
+		return
+	_lucky_terminals.append(base_terminal)
+	var target_count: int = max(lucky_terminal_count, 1)
+	while _lucky_terminals.size() < target_count:
+		var duplicate_terminal: LuckyTerminal = base_terminal.duplicate() as LuckyTerminal
+		if duplicate_terminal == null:
+			break
+		duplicate_terminal.name = "LuckyTerminal%d" % (_lucky_terminals.size() + 1)
+		add_child(duplicate_terminal)
+		_lucky_terminals.append(duplicate_terminal)
+
+func _position_lucky_terminals() -> void:
+	if _lucky_terminals.is_empty():
 		return
 	if player == null:
 		return
@@ -332,12 +350,19 @@ func _position_lucky_terminal() -> void:
 		offset_distance = 960.0
 	if arena != null:
 		offset_distance = min(offset_distance, arena.get_inner_radius(96.0))
-	var angle: float = randf() * TAU
-	var offset: Vector2 = Vector2.RIGHT.rotated(angle) * offset_distance
-	var target_position: Vector2 = player.global_position + offset
-	if arena != null:
-		target_position = arena.clamp_world_position(target_position, 48.0)
-	lucky_terminal.global_position = target_position
+	var terminal_count: int = _lucky_terminals.size()
+	var base_angle: float = randf() * TAU
+	for index in range(terminal_count):
+		var terminal: LuckyTerminal = _lucky_terminals[index]
+		if terminal == null:
+			continue
+		var angle: float = base_angle + (TAU / float(terminal_count)) * float(index) + randf_range(-0.22, 0.22)
+		var distance_scale: float = randf_range(0.74, 1.0)
+		var offset: Vector2 = Vector2.RIGHT.rotated(angle) * offset_distance * distance_scale
+		var target_position: Vector2 = player.global_position + offset
+		if arena != null:
+			target_position = arena.clamp_world_position(target_position, 48.0)
+		terminal.global_position = target_position
 
 func _finalize_run_rewards() -> void:
 	if _run_rewards_committed:
