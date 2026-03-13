@@ -3,6 +3,8 @@ extends CharacterBody2D
 
 const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
 const HIT_FLASH_DURATION: float = 0.10
+const MIN_EFFECTIVE_MOVE_SPEED: float = 80.0
+const MAX_EFFECTIVE_MOVE_SPEED: float = 360.0
 
 signal health_changed(hp: int)
 signal died
@@ -330,7 +332,11 @@ func get_effective_projectile_damage() -> int:
 
 func get_effective_move_speed() -> float:
 	var base_speed: float = move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))
-	return base_speed * float(_player_augment_profile.get("move_speed", 1.0))
+	return clampf(
+		base_speed * float(_player_augment_profile.get("move_speed", 1.0)),
+		MIN_EFFECTIVE_MOVE_SPEED,
+		MAX_EFFECTIVE_MOVE_SPEED
+	)
 
 func get_effective_attack_interval() -> float:
 	var speed_multiplier: float = float(_player_augment_profile.get("attack_speed", 1.0))
