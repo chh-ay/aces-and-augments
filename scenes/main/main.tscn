@@ -209,20 +209,20 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -290.0
-offset_top = -168.0
-offset_right = 290.0
-offset_bottom = 168.0
+offset_left = -380.0
+offset_top = -210.0
+offset_right = 380.0
+offset_bottom = 210.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_panel")
 
 [node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOver/Panel" unique_id=1051045196]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 18.0
-offset_top = 18.0
-offset_right = -18.0
-offset_bottom = -18.0
+offset_left = 24.0
+offset_top = 22.0
+offset_right = -24.0
+offset_bottom = -22.0
 theme_override_constants/separation = 14
 alignment = 1
 
@@ -237,14 +237,17 @@ horizontal_alignment = 1
 [node name="Title" type="Label" parent="CanvasLayer/GameOver/Panel/VBox" unique_id=14945957]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 40
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="EndingArt" type="TextureRect" parent="CanvasLayer/GameOver/Panel/VBox"]
-custom_minimum_size = Vector2(540, 236)
+[node name="ArtCenter" type="CenterContainer" parent="CanvasLayer/GameOver/Panel/VBox"]
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="EndingArt" type="TextureRect" parent="CanvasLayer/GameOver/Panel/VBox/ArtCenter"]
+custom_minimum_size = Vector2(700, 306)
+layout_mode = 2
 stretch_mode = 5
 
 [node name="HintCard" type="PanelContainer" parent="CanvasLayer/GameOver/Panel/VBox"]
@@ -263,7 +266,7 @@ theme_override_constants/margin_bottom = 10
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 text = "Press Enter to restart or Esc to quit"
 horizontal_alignment = 1
 
