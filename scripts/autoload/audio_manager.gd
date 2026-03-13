@@ -30,22 +30,22 @@ const SFX_THROTTLES: Dictionary = {
 	"player_hit": 0.10
 }
 const MUSIC_GAIN_DB: Dictionary = {
-	"menu": 8.0,
-	"run": 6.0
+	"menu": 10.0,
+	"run": 8.0
 }
 const SFX_GAIN_DB: Dictionary = {
-	"shoot": 3.0,
-	"enemy_hit": 4.0,
-	"enemy_die": 3.0,
-	"xp_pickup": 5.0,
-	"card_pickup": 4.0,
-	"player_hit": 3.0,
-	"player_defeat": 2.0,
-	"level_up": 2.0,
-	"hand_lock": 2.0,
-	"boss_defeat": 1.5,
-	"ending_good": 1.5,
-	"ending_bad": 1.5
+	"shoot": 5.0,
+	"enemy_hit": 6.0,
+	"enemy_die": 4.0,
+	"xp_pickup": 8.0,
+	"card_pickup": 6.0,
+	"player_hit": 5.0,
+	"player_defeat": 3.0,
+	"level_up": 4.0,
+	"hand_lock": 4.0,
+	"boss_defeat": 3.0,
+	"ending_good": 3.0,
+	"ending_bad": 3.0
 }
 
 var _master_bus_index: int = -1
