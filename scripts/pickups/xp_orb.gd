@@ -63,6 +63,8 @@ func _run_logic_tick() -> bool:
 	var distance_sq: float = global_position.distance_squared_to(_player.global_position)
 	if distance_sq <= PICKUP_RADIUS_SQ:
 		_player.add_experience(xp_amount)
+		if AudioManager != null and AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("xp_pickup", randf_range(0.96, 1.08), -13.0)
 		_release_to_pool()
 		return true
 	_is_attracting = distance_sq <= attract_radius * attract_radius

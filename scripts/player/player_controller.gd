@@ -174,19 +174,25 @@ func take_damage(amount: int) -> void:
 	var next_health: int = max(current_health - amount, 0)
 	current_health = next_health
 	health_changed.emit(current_health)
+	if AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
 	if current_health <= 0:
 		_die()
 
 func add_experience(amount: int) -> void:
 	if amount <= 0:
 		return
+	var leveled_up: bool = false
 	current_experience += amount
 	while current_experience >= required_experience:
 		current_experience -= required_experience
 		current_level += 1
 		required_experience = _get_required_experience_for_level(current_level)
 		_pending_level_ups += 1
+		leveled_up = true
 	experience_changed.emit(current_experience, required_experience, current_level)
+	if leveled_up and AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx("level_up", 1.0, -2.0)
 	_emit_level_up_if_ready()
 
 func apply_level_up_choice(stat_id: String) -> void:
@@ -292,6 +298,8 @@ func apply_hand_choice(choice_id: String) -> void:
 	_pending_hand_choices.clear()
 	_emit_hand_updated()
 	hand_locked.emit(active_hand_name, _enemy_safe_duplicate(_player_augment_profile), _enemy_safe_duplicate(_enemy_mutation_profile))
+	if AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx("hand_lock", 1.0, -2.0)
 
 func can_lock_hand() -> bool:
 	return _pending_hand_result != null and _hand_cards.size() == 5 and _pending_hand_choices.is_empty()
@@ -383,6 +391,8 @@ func _die() -> void:
 	if _is_dead:
 		return
 	_is_dead = true
+	if AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx("player_defeat", 1.0, -1.0)
 	died.emit()
 	velocity = Vector2.ZERO
 	_update_animation()

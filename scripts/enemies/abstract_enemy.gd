@@ -73,10 +73,14 @@ func take_damage(amount: int) -> void:
 	if amount <= 0:
 		return
 	_current_health = max(_current_health - amount, 0)
+	if _current_health > 0 and AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx("enemy_hit", randf_range(0.95, 1.08), -9.0)
 	if _current_health <= 0:
 		_die()
 
 func _die() -> void:
+	if AudioManager != null and AudioManager.has_method("play_sfx"):
+		AudioManager.play_sfx(_get_death_sfx_id(), randf_range(0.96, 1.04), -5.0)
 	if GameManager != null and GameManager.has_method("add_run_scrap"):
 		GameManager.call("add_run_scrap", scrap_reward)
 	if xp_orb_scene != null:
@@ -184,3 +188,6 @@ func _release_to_pool() -> void:
 
 
 @abstract func _get_target_player() -> PlayerController
+
+func _get_death_sfx_id() -> String:
+	return "enemy_die"

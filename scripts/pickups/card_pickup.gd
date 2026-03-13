@@ -72,6 +72,8 @@ func _run_logic_tick() -> bool:
 	var distance_sq: float = global_position.distance_squared_to(_player.global_position)
 	if distance_sq <= PICKUP_RADIUS_SQ:
 		_player.add_card_to_hand(suit, value)
+		if AudioManager != null and AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("card_pickup", randf_range(0.98, 1.04), -8.0)
 		_release_to_pool()
 		return true
 	_is_attracting = distance_sq <= attract_radius * attract_radius

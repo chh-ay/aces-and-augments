@@ -33,6 +33,8 @@ func _physics_process(delta: float) -> void:
 		projectile.global_position = player.global_position + direction * spawn_distance
 		if projectile.has_method("configure"):
 			projectile.call("configure", direction, player.get_effective_projectile_damage(), player)
+		if AudioManager != null and AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("shoot", randf_range(0.96, 1.04), -8.0)
 		_cooldown = player.get_effective_attack_interval()
 
 func _find_target(player: PlayerController) -> Node2D:

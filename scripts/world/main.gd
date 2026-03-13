@@ -254,8 +254,12 @@ func _on_player_exited_run() -> void:
 	_clear_enemies()
 	var has_royal_flush: bool = player != null and player.has_royal_flush_run()
 	if has_royal_flush:
+		if AudioManager != null and AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("ending_good", 1.0, -2.0)
 		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.")
 	else:
+		if AudioManager != null and AudioManager.has_method("play_sfx"):
+			AudioManager.play_sfx("ending_bad", 1.0, -2.0)
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.")
 
 func _return_to_main_menu() -> void:
