@@ -11,12 +11,14 @@ extends Control
 @onready var _shop_button: Button = $Center/Panel/Margin/VBox/Buttons/ShopButton
 @onready var _settings_button: Button = $Center/Panel/Margin/VBox/Buttons/SettingsButton
 @onready var _how_to_button: Button = $Center/Panel/Margin/VBox/Buttons/HowToButton
+@onready var _credits_button: Button = $Center/Panel/Margin/VBox/Buttons/CreditsButton
 @onready var _wipe_button: Button = $Center/Panel/Margin/VBox/Buttons/WipeButton
 @onready var _quit_button: Button = $Center/Panel/Margin/VBox/Buttons/QuitButton
 @onready var _scrap_label: Label = $Center/Panel/Margin/VBox/ScrapLabel
 @onready var _upgrade_shop = $UpgradeShop
 @onready var _settings_menu = $SettingsMenu
 @onready var _how_to_menu = $HowToPlayMenu
+@onready var _credits_menu = $CreditsMenu
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -29,11 +31,13 @@ func _ready() -> void:
 	_shop_button.pressed.connect(_on_shop_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_how_to_button.pressed.connect(_on_how_to_pressed)
+	_credits_button.pressed.connect(_on_credits_pressed)
 	_wipe_button.pressed.connect(_on_wipe_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
 	_upgrade_shop.closed.connect(_on_shop_closed)
 	_settings_menu.closed.connect(_on_settings_closed)
 	_how_to_menu.closed.connect(_on_how_to_closed)
+	_credits_menu.closed.connect(_on_credits_closed)
 	if GameManager != null:
 		GameManager.scrap_changed.connect(_refresh_meta_ui)
 		GameManager.upgrades_changed.connect(_refresh_meta_ui)
@@ -47,6 +51,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _settings_menu != null and _settings_menu.visible:
 		return
 	if _how_to_menu != null and _how_to_menu.visible:
+		return
+	if _credits_menu != null and _credits_menu.visible:
 		return
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
@@ -90,6 +96,14 @@ func _on_settings_closed() -> void:
 	_start_button.grab_focus()
 
 func _on_how_to_closed() -> void:
+	_start_button.grab_focus()
+
+func _on_credits_pressed() -> void:
+	if _credits_menu == null:
+		return
+	_credits_menu.present()
+
+func _on_credits_closed() -> void:
 	_start_button.grab_focus()
 
 func _on_quit_pressed() -> void:

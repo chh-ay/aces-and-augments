@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/upgrade_shop.tscn" id="4_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/how_to_play_menu.tscn" id="5_howto"]
+[ext_resource type="PackedScene" path="res://scenes/ui/credits_menu.tscn" id="6_credits"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.96)
@@ -183,6 +184,16 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "How To Play"
 
+[node name="CreditsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "Credits"
+
 [node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
@@ -213,5 +224,7 @@ horizontal_alignment = 1
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
 
 [node name="HowToPlayMenu" parent="." instance=ExtResource("5_howto")]
+
+[node name="CreditsMenu" parent="." instance=ExtResource("6_credits")]
 
 [node name="UpgradeShop" parent="." instance=ExtResource("4_shop")]
