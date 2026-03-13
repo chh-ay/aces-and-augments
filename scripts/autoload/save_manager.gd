@@ -5,10 +5,13 @@ const SECTION_META: String = "meta"
 const SECTION_GAMEPLAY: String = "gameplay"
 const SECTION_VIDEO: String = "video"
 const SECTION_AUDIO: String = "audio"
+const SECTION_PROGRESS: String = "progress"
+const SECTION_UPGRADES: String = "upgrades"
 const KEY_VERSION: String = "version"
 const KEY_SELECTED_DIFFICULTY: String = "selected_difficulty"
 const KEY_FULLSCREEN: String = "fullscreen"
 const KEY_MASTER_VOLUME_PERCENT: String = "master_volume_percent"
+const KEY_TOTAL_SCRAP: String = "total_scrap"
 const CURRENT_VERSION: int = 1
 
 var _settings: ConfigFile = ConfigFile.new()
@@ -53,6 +56,35 @@ func get_master_volume_percent(default_value: int = 100) -> int:
 func set_master_volume_percent(percent: int) -> void:
 	_ensure_loaded()
 	_settings.set_value(SECTION_AUDIO, KEY_MASTER_VOLUME_PERCENT, clampi(percent, 0, 100))
+	save_settings()
+
+func get_total_scrap(default_value: int = 0) -> int:
+	_ensure_loaded()
+	return int(_settings.get_value(SECTION_PROGRESS, KEY_TOTAL_SCRAP, default_value))
+
+func set_total_scrap(amount: int) -> void:
+	_ensure_loaded()
+	_settings.set_value(SECTION_PROGRESS, KEY_TOTAL_SCRAP, max(amount, 0))
+	save_settings()
+
+func add_total_scrap(amount: int) -> int:
+	var next_total: int = get_total_scrap() + max(amount, 0)
+	set_total_scrap(next_total)
+	return next_total
+
+func get_upgrade_level(upgrade_id: String, default_value: int = 0) -> int:
+	_ensure_loaded()
+	return int(_settings.get_value(SECTION_UPGRADES, upgrade_id, default_value))
+
+func set_upgrade_level(upgrade_id: String, level: int) -> void:
+	_ensure_loaded()
+	_settings.set_value(SECTION_UPGRADES, upgrade_id, max(level, 0))
+	save_settings()
+
+func clear_progression() -> void:
+	_ensure_loaded()
+	_settings.erase_section(SECTION_PROGRESS)
+	_settings.erase_section(SECTION_UPGRADES)
 	save_settings()
 
 func save_settings() -> void:

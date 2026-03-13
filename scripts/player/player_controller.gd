@@ -128,6 +128,11 @@ var _arena: Arena
 var _pending_level_ups: int = 0
 var _active_level_up_choices: Array = []
 var _regen_timer: float = 0.0
+var _meta_upgrade_bonus: Dictionary = {
+	"max_health": 0,
+	"move_speed": 0.0,
+	"projectile_damage": 0
+}
 
 @onready var _anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
@@ -292,10 +297,12 @@ func can_lock_hand() -> bool:
 	return _pending_hand_result != null and _hand_cards.size() == 5 and _pending_hand_choices.is_empty()
 
 func get_effective_projectile_damage() -> int:
-	return max(int(round(float(projectile_damage) * float(_player_augment_profile.get("damage", 1.0)))), 1)
+	var base_damage: int = projectile_damage + int(_meta_upgrade_bonus.get("projectile_damage", 0))
+	return max(int(round(float(base_damage) * float(_player_augment_profile.get("damage", 1.0)))), 1)
 
 func get_effective_move_speed() -> float:
-	return move_speed * float(_player_augment_profile.get("move_speed", 1.0))
+	var base_speed: float = move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))
+	return base_speed * float(_player_augment_profile.get("move_speed", 1.0))
 
 func get_effective_attack_interval() -> float:
 	var speed_multiplier: float = float(_player_augment_profile.get("attack_speed", 1.0))
@@ -305,7 +312,19 @@ func get_effective_attack_range() -> float:
 	return attack_range * float(_player_augment_profile.get("range", 1.0))
 
 func get_effective_max_health() -> int:
-	return max(int(round(float(max_health) * float(_player_augment_profile.get("max_health", 1.0)))), 1)
+	var base_health: int = max_health + int(_meta_upgrade_bonus.get("max_health", 0))
+	return max(int(round(float(base_health) * float(_player_augment_profile.get("max_health", 1.0)))), 1)
+
+func apply_meta_upgrades(profile: Dictionary) -> void:
+	var previous_max: int = get_effective_max_health()
+	_meta_upgrade_bonus["max_health"] = int(profile.get("max_health", 0))
+	_meta_upgrade_bonus["move_speed"] = float(profile.get("move_speed", 0.0))
+	_meta_upgrade_bonus["projectile_damage"] = int(profile.get("projectile_damage", 0))
+	var next_max: int = get_effective_max_health()
+	if current_health > 0:
+		current_health = min(current_health + max(next_max - previous_max, 0), next_max)
+		health_changed.emit(current_health)
+	_emit_hand_updated()
 
 func get_enemy_mutation_profile() -> Dictionary:
 	return _enemy_safe_duplicate(_enemy_mutation_profile)

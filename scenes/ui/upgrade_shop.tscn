@@ -1,0 +1,147 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/upgrade_shop.gd" id="1_shop"]
+
+[node name="UpgradeShop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_shop")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.52)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -144.0
+offset_right = 210.0
+offset_bottom = 144.0
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Upgrade Shop"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Spend scrap to tune future runs."
+horizontal_alignment = 1
+autowrap_mode = 1
+
+[node name="ScrapLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Scrap 0"
+horizontal_alignment = 1
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Upgrade1" type="VBoxContainer" parent="Panel/Margin/VBox/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade1"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="DescriptionLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade1"]
+layout_mode = 2
+text = "Description"
+
+[node name="Footer" type="HBoxContainer" parent="Panel/Margin/VBox/Rows/Upgrade1"]
+layout_mode = 2
+
+[node name="CostLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade1/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cost 0"
+
+[node name="BuyButton" type="Button" parent="Panel/Margin/VBox/Rows/Upgrade1/Footer"]
+custom_minimum_size = Vector2(76, 30)
+layout_mode = 2
+text = "Buy"
+
+[node name="Upgrade2" type="VBoxContainer" parent="Panel/Margin/VBox/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade2"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="DescriptionLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade2"]
+layout_mode = 2
+text = "Description"
+
+[node name="Footer" type="HBoxContainer" parent="Panel/Margin/VBox/Rows/Upgrade2"]
+layout_mode = 2
+
+[node name="CostLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade2/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cost 0"
+
+[node name="BuyButton" type="Button" parent="Panel/Margin/VBox/Rows/Upgrade2/Footer"]
+custom_minimum_size = Vector2(76, 30)
+layout_mode = 2
+text = "Buy"
+
+[node name="Upgrade3" type="VBoxContainer" parent="Panel/Margin/VBox/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade3"]
+layout_mode = 2
+text = "Upgrade"
+
+[node name="DescriptionLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade3"]
+layout_mode = 2
+text = "Description"
+
+[node name="Footer" type="HBoxContainer" parent="Panel/Margin/VBox/Rows/Upgrade3"]
+layout_mode = 2
+
+[node name="CostLabel" type="Label" parent="Panel/Margin/VBox/Rows/Upgrade3/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cost 0"
+
+[node name="BuyButton" type="Button" parent="Panel/Margin/VBox/Rows/Upgrade3/Footer"]
+custom_minimum_size = Vector2(76, 30)
+layout_mode = 2
+text = "Buy"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/VBox/Buttons"]
+custom_minimum_size = Vector2(140, 32)
+layout_mode = 2
+text = "Back"

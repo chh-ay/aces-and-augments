@@ -9,6 +9,7 @@ extends CharacterBody2D
 @export var body_spacing: float = 3.0
 @export var max_health: int = 3
 @export var xp_reward: int = 1
+@export var scrap_reward: int = 1
 @export var xp_orb_scene: PackedScene
 @export var card_pickup_scene: PackedScene
 @export_range(0.0, 1.0, 0.01) var card_drop_chance: float = 0.18
@@ -76,6 +77,8 @@ func take_damage(amount: int) -> void:
 		_die()
 
 func _die() -> void:
+	if GameManager != null and GameManager.has_method("add_run_scrap"):
+		GameManager.call("add_run_scrap", scrap_reward)
 	if xp_orb_scene != null:
 		var orb_node: Node = _spawn_pooled_node(xp_orb_scene, get_tree().current_scene)
 		if orb_node is Node2D:

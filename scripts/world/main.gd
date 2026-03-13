@@ -28,8 +28,13 @@ var _pause_open: bool = false
 var _boss_spawned: bool = false
 var _exit_spawned: bool = false
 var _last_boss_defeat_position: Vector2 = Vector2.ZERO
+var _run_rewards_committed: bool = false
 
 func _ready() -> void:
+	if GameManager != null and GameManager.has_method("begin_run"):
+		GameManager.call("begin_run")
+	if player != null and GameManager != null and GameManager.has_method("get_player_meta_profile"):
+		player.apply_meta_upgrades(GameManager.call("get_player_meta_profile"))
 	_update_game_over_ui(false, "GAME OVER", "Press Enter or Esc to return to menu")
 	_position_lucky_terminal()
 	if player != null:
@@ -72,6 +77,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _on_player_died() -> void:
+	_finalize_run_rewards()
 	_game_over = true
 	_pause_open = false
 	get_tree().paused = false
@@ -156,6 +162,7 @@ func _on_pause_restart_requested() -> void:
 	get_tree().reload_current_scene()
 
 func _on_pause_menu_requested() -> void:
+	_finalize_run_rewards()
 	_pause_open = false
 	get_tree().paused = false
 	if pause_menu != null:
@@ -227,6 +234,7 @@ func _get_exit_spawn_position() -> Vector2:
 func _on_player_exited_run() -> void:
 	if _game_over:
 		return
+	_finalize_run_rewards()
 	_game_over = true
 	_pause_open = false
 	get_tree().paused = false
@@ -270,3 +278,10 @@ func _position_lucky_terminal() -> void:
 	if arena != null:
 		target_position = arena.clamp_world_position(target_position, 48.0)
 	lucky_terminal.global_position = target_position
+
+func _finalize_run_rewards() -> void:
+	if _run_rewards_committed:
+		return
+	_run_rewards_committed = true
+	if GameManager != null and GameManager.has_method("commit_run_scrap"):
+		GameManager.call("commit_run_scrap")

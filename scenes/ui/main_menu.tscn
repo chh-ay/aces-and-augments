@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://boqubjjwh4814" path="res://scripts/ui/main_menu.gd" id="1_lul8f"]
 [ext_resource type="PackedScene" uid="uid://cm4criwagreod" path="res://scenes/main/main.tscn" id="2_h8m2x"]
 [ext_resource type="PackedScene" uid="uid://byvklghdcujkk" path="res://scenes/main/test_ground.tscn" id="3_7v5wb"]
+[ext_resource type="PackedScene" path="res://scenes/ui/upgrade_shop.tscn" id="4_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
@@ -102,6 +103,13 @@ text = "Survive the run, lock poker hands, and escape with the right ending."
 horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="ScrapLabel" type="Label" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.95)
+theme_override_font_sizes/font_size = 15
+text = "Scrap 0"
+horizontal_alignment = 1
+
 [node name="DifficultyButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=1015534220]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
@@ -144,6 +152,16 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Open Test Ground"
 
+[node name="ShopButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "Upgrade Shop"
+
 [node name="SettingsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=151776902]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
@@ -153,6 +171,16 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Settings"
+
+[node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+text = "Wipe Progress"
 
 [node name="QuitButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=1657698219]
 custom_minimum_size = Vector2(0, 38)
@@ -172,3 +200,5 @@ text = "WASD move  |  mouse aims  |  Esc pauses"
 horizontal_alignment = 1
 
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
+
+[node name="UpgradeShop" parent="." instance=ExtResource("4_shop")]
