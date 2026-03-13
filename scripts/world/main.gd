@@ -2,6 +2,8 @@ class_name Main
 extends Node2D
 
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/ui/main_menu.tscn"
+const GOOD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_good.svg")
+const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_bad.svg")
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
@@ -11,6 +13,7 @@ const MAIN_MENU_SCENE_PATH: String = "res://scenes/ui/main_menu.tscn"
 @onready var floor_generator: FloorGenerator = $FloorGenerator
 @onready var game_over_ui: Control = $CanvasLayer/GameOver
 @onready var game_over_title: Label = $CanvasLayer/GameOver/Panel/VBox/Title
+@onready var game_over_art: TextureRect = $CanvasLayer/GameOver/Panel/VBox/EndingArt
 @onready var game_over_hint: Label = $CanvasLayer/GameOver/Panel/VBox/Hint
 @onready var boot_overlay: Control = $CanvasLayer/BootOverlay
 @onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
@@ -102,11 +105,14 @@ func _on_player_died() -> void:
 		enemy_spawner.set_active(false)
 		enemy_spawner.stop_enemies()
 
-func _update_game_over_ui(should_show: bool, title_text: String, hint_text: String) -> void:
+func _update_game_over_ui(should_show: bool, title_text: String, hint_text: String, art_texture: Texture2D = null) -> void:
 	if game_over_ui != null:
 		game_over_ui.visible = should_show
 	if game_over_title != null:
 		game_over_title.text = title_text
+	if game_over_art != null:
+		game_over_art.texture = art_texture
+		game_over_art.visible = art_texture != null
 	if game_over_hint != null:
 		game_over_hint.text = hint_text
 
@@ -262,13 +268,13 @@ func _on_player_exited_run() -> void:
 			player.add_screen_shake(6.0, 0.18)
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_good", 1.0, -2.0)
-		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.")
+		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.", GOOD_ENDING_TEXTURE)
 	else:
 		if player != null:
 			player.add_screen_shake(6.0, 0.18)
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_bad", 1.0, -2.0)
-		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.")
+		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.", BAD_ENDING_TEXTURE)
 
 func _return_to_main_menu() -> void:
 	get_tree().paused = false

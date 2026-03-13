@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="220" viewBox="0 0 480 220">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#11090f"/>
+      <stop offset="100%" stop-color="#1a1017"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#29141d"/>
+      <stop offset="100%" stop-color="#351824"/>
+    </linearGradient>
+    <filter id="warn">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="480" height="220" rx="20" fill="url(#bg)"/>
+  <rect x="10" y="10" width="460" height="200" rx="16" fill="none" stroke="#ff6c63" stroke-width="2"/>
+  <rect x="28" y="28" width="424" height="164" rx="14" fill="url(#panel)" stroke="#ff7d56" stroke-width="1.5"/>
+
+  <g transform="translate(42 42)">
+    <rect x="0" y="0" width="116" height="136" rx="10" fill="#120b11" stroke="#ff7d56" stroke-width="2"/>
+    <text x="58" y="30" fill="#ff7d56" font-size="16" font-family="monospace" text-anchor="middle" font-weight="700">NO</text>
+    <text x="58" y="52" fill="#ff7d56" font-size="16" font-family="monospace" text-anchor="middle" font-weight="700">ROYAL</text>
+    <g filter="url(#warn)">
+      <line x1="24" y1="108" x2="92" y2="40" stroke="#ffb347" stroke-width="8" stroke-linecap="round"/>
+      <line x1="24" y1="40" x2="92" y2="108" stroke="#ff6c63" stroke-width="8" stroke-linecap="round"/>
+    </g>
+    <text x="58" y="126" fill="#ffd2bf" font-size="16" font-family="monospace" text-anchor="middle" font-weight="700">DIRTY EXIT</text>
+  </g>
+
+  <text x="186" y="70" fill="#ff7d56" font-size="18" font-family="monospace" font-weight="700">BAD ENDING</text>
+  <text x="186" y="102" fill="#fff4ef" font-size="28" font-family="monospace" font-weight="700">You escaped, but not clean.</text>
+  <text x="186" y="132" fill="#f3b8a7" font-size="18" font-family="monospace">No Royal Flush was locked this run.</text>
+  <text x="186" y="158" fill="#f3b8a7" font-size="18" font-family="monospace">The house keeps its edge over you.</text>
+
+  <rect x="186" y="174" width="238" height="10" rx="5" fill="#3a1a24"/>
+  <rect x="186" y="174" width="108" height="10" rx="5" fill="#ff7d56"/>
+</svg>
