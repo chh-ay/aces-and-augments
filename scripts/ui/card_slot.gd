@@ -2,8 +2,7 @@ class_name CardSlot
 extends PanelContainer
 
 const CARD_BASE_PATH: String = "res://assets/sprites/cards/kenney_large/card_%s_%s.png"
-const CARD_BACK_PATH: String = "res://assets/sprites/cards/kenney_large/card_back.png"
-const CARD_EMPTY_PATH: String = "res://assets/sprites/cards/kenney_large/card_empty.png"
+const CARD_FALLBACK_BASE_PATH: String = "res://assets/sprites/cards/kenney/card_%s_%s.png"
 const EMPTY_BG: Color = Color(0.06, 0.08, 0.11, 0.92)
 const EMPTY_BORDER: Color = Color(0.18, 0.28, 0.35, 0.55)
 const FACE_BG: Color = Color(0.08, 0.11, 0.16, 0.98)
@@ -36,11 +35,10 @@ func set_card_data(card_data: Dictionary) -> void:
 	if is_empty:
 		panel_style.bg_color = EMPTY_BG
 		panel_style.border_color = EMPTY_BORDER
-		_card_texture.visible = true
-		_card_texture.modulate = Color(1.0, 1.0, 1.0, 0.45)
-		_card_texture.texture = _get_static_texture(CARD_BACK_PATH, CARD_EMPTY_PATH)
+		_card_texture.visible = false
+		_card_texture.texture = null
 		_placeholder_label.visible = true
-		_placeholder_label.text = "DRAW"
+		_placeholder_label.text = "+"
 		_placeholder_label.modulate = Color(0.54, 0.60, 0.68, 0.88)
 	else:
 		var suit: String = String(card_data.get("suit", "spades"))
@@ -60,19 +58,10 @@ func _get_card_texture(suit: String, rank_value: int) -> Texture2D:
 		return _texture_cache[cache_key] as Texture2D
 	var rank_token: String = _rank_to_token(safe_rank)
 	var texture_path: String = CARD_BASE_PATH % [suit, rank_token]
-	var texture: Texture2D = load(texture_path) as Texture2D
+	var texture: Texture2D = _load_texture_file(texture_path)
 	if texture == null:
-		texture = _get_static_texture(CARD_EMPTY_PATH)
+		texture = _load_texture_file(CARD_FALLBACK_BASE_PATH % [suit, rank_token])
 	_texture_cache[cache_key] = texture
-	return texture
-
-func _get_static_texture(primary_path: String, fallback_path: String = "") -> Texture2D:
-	if _texture_cache.has(primary_path):
-		return _texture_cache[primary_path] as Texture2D
-	var texture: Texture2D = _load_texture_file(primary_path)
-	if texture == null and not fallback_path.is_empty():
-		texture = _load_texture_file(fallback_path)
-	_texture_cache[primary_path] = texture
 	return texture
 
 func _load_texture_file(resource_path: String) -> Texture2D:
