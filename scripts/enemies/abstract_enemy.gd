@@ -13,6 +13,7 @@ const HIT_FLASH_DURATION: float = 0.08
 @export var max_health: int = 3
 @export var xp_reward: int = 1
 @export var scrap_reward: int = 1
+@export_range(0.0, 1.0, 0.05) var hit_flash_strength: float = 0.6
 @export var xp_orb_scene: PackedScene
 @export var card_pickup_scene: PackedScene
 @export_range(0.0, 1.0, 0.01) var card_drop_chance: float = 0.18
@@ -218,13 +219,13 @@ func _ensure_hit_flash_material() -> void:
 
 func _trigger_hit_flash() -> void:
 	_hit_flash_time_remaining = HIT_FLASH_DURATION
-	_set_hit_flash_amount(1.0)
+	_set_hit_flash_amount(hit_flash_strength)
 
 func _update_hit_flash(delta: float) -> void:
 	if _hit_flash_time_remaining <= 0.0:
 		return
 	_hit_flash_time_remaining = max(_hit_flash_time_remaining - delta, 0.0)
-	_set_hit_flash_amount(_hit_flash_time_remaining / HIT_FLASH_DURATION)
+	_set_hit_flash_amount((_hit_flash_time_remaining / HIT_FLASH_DURATION) * hit_flash_strength)
 
 func _set_hit_flash_amount(amount: float) -> void:
 	if _sprite_target == null:
