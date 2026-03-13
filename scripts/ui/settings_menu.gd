@@ -5,12 +5,12 @@ signal closed
 
 const VOLUME_STEP: int = 10
 
-@onready var _volume_value: Label = $Panel/Margin/VBox/VolumeRow/Value
-@onready var _fullscreen_value: Label = $Panel/Margin/VBox/FullscreenRow/Value
-@onready var _close_button: Button = $Panel/Margin/VBox/Buttons/CloseButton
-@onready var _volume_down_button: Button = $Panel/Margin/VBox/VolumeRow/VolumeDownButton
-@onready var _volume_up_button: Button = $Panel/Margin/VBox/VolumeRow/VolumeUpButton
-@onready var _fullscreen_button: Button = $Panel/Margin/VBox/FullscreenRow/FullscreenButton
+@onready var _volume_value: Label = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill/Margin/Value
+@onready var _fullscreen_value: Label = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill/Margin/Value
+@onready var _close_button: Button = $Center/Panel/Margin/VBox/Buttons/CloseButton
+@onready var _volume_down_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeDownButton
+@onready var _volume_up_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeUpButton
+@onready var _fullscreen_button: Button = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/FullscreenButton
 
 func _ready() -> void:
 	visible = false
