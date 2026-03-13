@@ -26,6 +26,52 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_under"]
+bg_color = Color(0.1, 0.08, 0.1, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.18, 0.3, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
+bg_color = Color(0.92, 0.22, 0.42, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_under"]
+bg_color = Color(0.06, 0.1, 0.12, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.68, 0.82, 0.78)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_fill"]
+bg_color = Color(0.11, 0.86, 0.98, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="HUD" type="CanvasLayer" unique_id=1171546830]
 script = ExtResource("1_0mwgc")
 
@@ -82,6 +128,8 @@ custom_minimum_size = Vector2(170, 14)
 layout_mode = 2
 show_percentage = false
 value = 100.0
+theme_override_styles/background = SubResource("StyleBoxFlat_health_under")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
 
 [node name="BottomCard" type="PanelContainer" parent="." unique_id=722198421]
 anchor_left = 0.5
@@ -115,6 +163,8 @@ custom_minimum_size = Vector2(276, 14)
 layout_mode = 2
 max_value = 5.0
 show_percentage = false
+theme_override_styles/background = SubResource("StyleBoxFlat_xp_under")
+theme_override_styles/fill = SubResource("StyleBoxFlat_xp_fill")
 
 [node name="HandCard" type="PanelContainer" parent="." unique_id=1964151890]
 anchor_left = 1.0
