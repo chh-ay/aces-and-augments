@@ -1,9 +1,9 @@
 class_name CardSlot
 extends PanelContainer
 
-const CARD_BASE_PATH: String = "res://assets/sprites/cards/kenney/card_%s_%s.png"
-const CARD_BACK_PATH: String = "res://assets/sprites/cards/kenney/card_back.png"
-const CARD_EMPTY_PATH: String = "res://assets/sprites/cards/kenney/card_empty.png"
+const CARD_BASE_PATH: String = "res://assets/sprites/cards/kenney_large/card_%s_%s.png"
+const CARD_BACK_PATH: String = "res://assets/sprites/cards/kenney_large/card_back.png"
+const CARD_EMPTY_PATH: String = "res://assets/sprites/cards/kenney_large/card_empty.png"
 const EMPTY_BG: Color = Color(0.06, 0.08, 0.11, 0.92)
 const EMPTY_BORDER: Color = Color(0.18, 0.28, 0.35, 0.55)
 const FACE_BG: Color = Color(0.08, 0.11, 0.16, 0.98)
@@ -69,11 +69,17 @@ func _get_card_texture(suit: String, rank_value: int) -> Texture2D:
 func _get_static_texture(primary_path: String, fallback_path: String = "") -> Texture2D:
 	if _texture_cache.has(primary_path):
 		return _texture_cache[primary_path] as Texture2D
-	var texture: Texture2D = load(primary_path) as Texture2D
+	var texture: Texture2D = _load_texture_file(primary_path)
 	if texture == null and not fallback_path.is_empty():
-		texture = load(fallback_path) as Texture2D
+		texture = _load_texture_file(fallback_path)
 	_texture_cache[primary_path] = texture
 	return texture
+
+func _load_texture_file(resource_path: String) -> Texture2D:
+	var image: Image = Image.load_from_file(ProjectSettings.globalize_path(resource_path))
+	if image == null or image.is_empty():
+		return null
+	return ImageTexture.create_from_image(image)
 
 func _rank_to_token(rank_value: int) -> String:
 	match rank_value:

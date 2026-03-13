@@ -15,7 +15,6 @@ extends CanvasLayer
 	$HandCard/Margin/VBox/CardsRow/CardSlot5
 ]
 @onready var _lock_button: Button = $HandCard/Margin/VBox/LockButton
-@onready var _history_label: Label = $HandCard/Margin/VBox/HistoryLabel
 @onready var _timer_label: Label = $TimerCard/Margin/TimerLabel
 
 var _player: PlayerController
@@ -78,17 +77,7 @@ func _format_time(remaining_seconds: float) -> String:
 
 func _apply_hand_state(state: Dictionary) -> void:
 	if _hand_summary_label != null:
-		var selection_pending: bool = bool(state.get("selection_pending", false))
-		var blessing_name: String = "Route pending" if selection_pending else String(state.get("active_blessing_title", "No Blessing"))
-		_hand_summary_label.text = "Cards %d / 5\nPending %s [%s]\nActive %s [%s]\nBlessing %s\nCurse %s" % [
-			int(state.get("card_count", 0)),
-			String(state.get("pending_hand_name", "No Hand")),
-			String(state.get("pending_tier_name", "None")),
-			String(state.get("active_hand_name", "No Hand")),
-			String(state.get("active_tier_name", "None")),
-			blessing_name,
-			String(state.get("active_curse_name", "No Curse"))
-		]
+		_hand_summary_label.text = "Cards %d / 5" % int(state.get("card_count", 0))
 	var cards: Array = state.get("cards", [])
 	for index in range(_card_slots.size()):
 		if _card_slots[index] == null:
@@ -98,14 +87,11 @@ func _apply_hand_state(state: Dictionary) -> void:
 		var can_lock: bool = bool(state.get("can_lock", false))
 		_lock_button.disabled = not can_lock
 		if can_lock:
-			_lock_button.text = "Lock %s [Space]" % String(state.get("pending_hand_name", "Hand"))
+			_lock_button.text = "Press Space To Lock %s" % String(state.get("pending_hand_name", "Hand"))
 		elif bool(state.get("selection_pending", false)):
 			_lock_button.text = "Choose Route"
 		else:
-			_lock_button.text = "Need 5 Cards [Space]"
-	if _history_label != null:
-		var history_text: String = String(state.get("history_text", ""))
-		_history_label.text = "History\n%s" % (history_text if history_text != "" else "None yet")
+			_lock_button.text = "Collect 5 Cards To Lock [Space]"
 
 func _on_lock_button_pressed() -> void:
 	if _player == null:
