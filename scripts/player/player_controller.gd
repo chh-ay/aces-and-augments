@@ -6,7 +6,8 @@ signal died
 signal experience_changed(current_xp: int, required_xp: int, level: int)
 signal level_up_requested(choices: Array)
 signal hand_updated(state: Dictionary)
-signal hand_locked(hand_name: String, player_multiplier: float, enemy_multiplier: float)
+signal hand_selection_requested(choices: Array, summary: Dictionary)
+signal hand_locked(hand_name: String, player_profile: Dictionary, enemy_profile: Dictionary)
 
 const UPGRADE_RARITIES: Array[Dictionary] = [
 	{"name": "Common", "weight": 60.0, "band_min": 0.00, "band_max": 0.24, "color": Color("c7d0d9")},
@@ -16,13 +17,73 @@ const UPGRADE_RARITIES: Array[Dictionary] = [
 	{"name": "Legendary", "weight": 0.5, "band_min": 0.91, "band_max": 1.00, "color": Color("ffcc55")}
 ]
 
+const HAND_TIER_DATA: Dictionary = {
+	PokerHandEvaluator.HandRank.HIGH_CARD: {"name": "Common", "color": Color("c7d0d9"), "player_scale": 0.55, "enemy_scale": 0.60},
+	PokerHandEvaluator.HandRank.PAIR: {"name": "Common", "color": Color("c7d0d9"), "player_scale": 0.72, "enemy_scale": 0.76},
+	PokerHandEvaluator.HandRank.TWO_PAIR: {"name": "Uncommon", "color": Color("73d98c"), "player_scale": 0.86, "enemy_scale": 0.88},
+	PokerHandEvaluator.HandRank.THREE_OF_A_KIND: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.00, "enemy_scale": 1.00},
+	PokerHandEvaluator.HandRank.STRAIGHT: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.08, "enemy_scale": 1.06},
+	PokerHandEvaluator.HandRank.FLUSH: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.08, "enemy_scale": 1.06},
+	PokerHandEvaluator.HandRank.FULL_HOUSE: {"name": "Epic", "color": Color("d182ff"), "player_scale": 1.20, "enemy_scale": 1.16},
+	PokerHandEvaluator.HandRank.FOUR_OF_A_KIND: {"name": "Epic", "color": Color("d182ff"), "player_scale": 1.30, "enemy_scale": 1.22},
+	PokerHandEvaluator.HandRank.STRAIGHT_FLUSH: {"name": "Legendary", "color": Color("ffcc55"), "player_scale": 1.45, "enemy_scale": 1.30},
+	PokerHandEvaluator.HandRank.ROYAL_FLUSH: {"name": "Mythic", "color": Color("ff8b39"), "player_scale": 1.80, "enemy_scale": 1.40}
+}
+
+const HAND_CHOICE_TEMPLATES: Array[Dictionary] = [
+	{
+		"id": "kill_chain",
+		"title": "Kill Chain",
+		"player_stats": {"damage": 0.11, "attack_speed": 0.09},
+		"enemy_stats": {"health": 0.07}
+	},
+	{
+		"id": "vector_lens",
+		"title": "Vector Lens",
+		"player_stats": {"range": 0.14, "move_speed": 0.07},
+		"enemy_stats": {"speed": 0.07}
+	},
+	{
+		"id": "fortress_stack",
+		"title": "Fortress Stack",
+		"player_stats": {"max_health": 0.15},
+		"enemy_stats": {"health": 0.08, "damage": 0.05}
+	},
+	{
+		"id": "overdrive_loop",
+		"title": "Overdrive Loop",
+		"player_stats": {"move_speed": 0.08, "attack_speed": 0.08},
+		"enemy_stats": {"speed": 0.08, "damage": 0.03}
+	},
+	{
+		"id": "breach_rounds",
+		"title": "Breach Rounds",
+		"player_stats": {"damage": 0.08, "range": 0.10},
+		"enemy_stats": {"health": 0.08, "speed": 0.04}
+	}
+]
+
+const PLAYER_STAT_LABELS: Dictionary = {
+	"damage": "damage",
+	"move_speed": "move speed",
+	"attack_speed": "atk speed",
+	"range": "range",
+	"max_health": "max HP"
+}
+
+const ENEMY_STAT_LABELS: Dictionary = {
+	"health": "enemy HP",
+	"damage": "enemy damage",
+	"speed": "enemy speed"
+}
+
 @export var move_speed: float = 200.0
 @export var max_health: int = 100
 @export var arena_path: NodePath
 @export var arena_padding: float = 8.0
 @export var projectile_damage: int = 1
 @export var attack_interval: float = 0.65
-@export var attack_range: float = 260.0
+@export var attack_range: float = 234.0
 @export var health_regen_interval: float = 10.0
 @export var health_regen_rate: float = 0.0
 @export_range(0.0, 0.5, 0.01) var lifesteal_ratio: float = 0.0
@@ -30,16 +91,30 @@ const UPGRADE_RARITIES: Array[Dictionary] = [
 var current_health: int = 0
 var current_experience: int = 0
 var current_level: int = 1
-var required_experience: int = 5
+var required_experience: int = 6
 var collected_cards: int = 0
 var active_hand_name: String = "No Hand"
-var active_augment_bonus: float = 1.0
+var active_hand_tier: String = "None"
+var active_blessing_title: String = "No Blessing"
+var active_blessing_text: String = "No active blessing"
+var active_curse_text: String = "No enemy mutation"
 var pending_hand_name: String = "No Hand"
 var _hand_cards: Array = []
 var _pending_hand_result: PokerHandEvaluator.HandResult
+var _pending_hand_choices: Array[Dictionary] = []
 var _applied_hand_history: Array[Dictionary] = []
-var _player_augment_multiplier: float = 1.0
-var _enemy_mutation_multiplier: float = 1.0
+var _player_augment_profile: Dictionary = {
+	"damage": 1.0,
+	"move_speed": 1.0,
+	"attack_speed": 1.0,
+	"range": 1.0,
+	"max_health": 1.0
+}
+var _enemy_mutation_profile: Dictionary = {
+	"health": 1.0,
+	"damage": 1.0,
+	"speed": 1.0
+}
 var _royal_flush_achieved: bool = false
 var _is_dead: bool = false
 var _facing: Vector2 = Vector2.DOWN
@@ -56,7 +131,8 @@ func _ready() -> void:
 	_arena = get_node_or_null(arena_path) as Arena
 	if _arena == null:
 		_arena = get_tree().get_first_node_in_group("arena") as Arena
-	current_health = max_health
+	required_experience = _get_required_experience_for_level(current_level)
+	current_health = get_effective_max_health()
 	health_changed.emit(current_health)
 	experience_changed.emit(current_experience, required_experience, current_level)
 	_emit_hand_updated()
@@ -64,17 +140,22 @@ func _ready() -> void:
 	_update_animation()
 	_clamp_to_arena()
 
-
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
 	var input_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_vector * move_speed
+	velocity = input_vector * get_effective_move_speed()
 	move_and_slide()
 	_clamp_to_arena()
 	_update_animation()
 	_tick_regen(delta)
 
+func _unhandled_input(event: InputEvent) -> void:
+	if _is_dead or get_tree().paused:
+		return
+	if event.is_action_pressed("lock_hand"):
+		get_viewport().set_input_as_handled()
+		lock_current_hand()
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
@@ -84,7 +165,6 @@ func take_damage(amount: int) -> void:
 	health_changed.emit(current_health)
 	if current_health <= 0:
 		_die()
-
 
 func add_experience(amount: int) -> void:
 	if amount <= 0:
@@ -98,7 +178,6 @@ func add_experience(amount: int) -> void:
 	experience_changed.emit(current_experience, required_experience, current_level)
 	_emit_level_up_if_ready()
 
-
 func apply_level_up_choice(stat_id: String) -> void:
 	var choice: Dictionary = {}
 	for entry in _active_level_up_choices:
@@ -109,9 +188,11 @@ func apply_level_up_choice(stat_id: String) -> void:
 		return
 	match stat_id:
 		"max_health":
+			var previous_effective_max: int = get_effective_max_health()
 			var gain: int = int(round(float(choice.get("value", 0.0))))
 			max_health += gain
-			current_health = min(current_health + gain, max_health)
+			var next_effective_max: int = get_effective_max_health()
+			current_health = min(current_health + (next_effective_max - previous_effective_max), next_effective_max)
 			health_changed.emit(current_health)
 		"move_speed":
 			move_speed += float(choice.get("value", 0.0))
@@ -129,13 +210,13 @@ func apply_level_up_choice(stat_id: String) -> void:
 			return
 	_active_level_up_choices.clear()
 	_emit_level_up_if_ready()
-
+	_emit_hand_updated()
 
 func is_dead() -> bool:
 	return _is_dead
 
 func add_card_to_hand(suit: String, value: int) -> void:
-	if _hand_cards.size() >= 5:
+	if _hand_cards.size() >= 5 or not _pending_hand_choices.is_empty():
 		return
 	var card: PokerHandEvaluator.Card = PokerHandEvaluator.Card.new(suit, value)
 	_hand_cards.append(card)
@@ -149,37 +230,82 @@ func add_card_to_hand(suit: String, value: int) -> void:
 	_emit_hand_updated()
 
 func lock_current_hand() -> void:
-	if _pending_hand_result == null or _hand_cards.size() < 5:
+	if not can_lock_hand():
 		return
+	_pending_hand_choices = _build_hand_choices(_pending_hand_result)
+	_emit_hand_updated()
+	hand_selection_requested.emit(_pending_hand_choices, _build_hand_choice_summary())
+
+func apply_hand_choice(choice_id: String) -> void:
+	if _pending_hand_result == null:
+		return
+	var choice: Dictionary = {}
+	for entry in _pending_hand_choices:
+		if String(entry.get("id", "")) == choice_id:
+			choice = entry
+			break
+	if choice.is_empty():
+		return
+	var previous_effective_max: int = get_effective_max_health()
+	_apply_profile_modifiers(_player_augment_profile, choice.get("player_profile", {}))
+	_apply_profile_modifiers(_enemy_mutation_profile, choice.get("enemy_profile", {}))
 	active_hand_name = _pending_hand_result.name
-	_player_augment_multiplier *= _pending_hand_result.augment_multiplier
-	_enemy_mutation_multiplier *= _pending_hand_result.mutation_multiplier
-	active_augment_bonus = _player_augment_multiplier
-	var history_entry: Dictionary = {
+	active_hand_tier = String(choice.get("tier_name", "Common"))
+	active_blessing_title = String(choice.get("title", "Blessing"))
+	active_blessing_text = String(choice.get("player_text", ""))
+	active_curse_text = String(choice.get("enemy_text", ""))
+	var next_effective_max: int = get_effective_max_health()
+	if next_effective_max >= previous_effective_max:
+		current_health = min(current_health + (next_effective_max - previous_effective_max), next_effective_max)
+	else:
+		current_health = min(current_health, next_effective_max)
+	health_changed.emit(current_health)
+	_applied_hand_history.append({
 		"name": _pending_hand_result.name,
-		"player_multiplier": _pending_hand_result.augment_multiplier,
-		"enemy_multiplier": _pending_hand_result.mutation_multiplier
-	}
-	_applied_hand_history.append(history_entry)
+		"tier": active_hand_tier,
+		"title": active_blessing_title,
+		"player_text": active_blessing_text,
+		"enemy_text": active_curse_text
+	})
 	if _pending_hand_result.is_royal_flush:
 		_royal_flush_achieved = true
-	CustomLogger.card("Locked %s x%.2f / enemy x%.2f" % [
+	CustomLogger.card("Locked %s -> %s | %s" % [
 		_pending_hand_result.name,
-		_pending_hand_result.augment_multiplier,
-		_pending_hand_result.mutation_multiplier
+		active_blessing_text,
+		active_curse_text
 	])
 	_hand_cards.clear()
 	collected_cards = 0
 	pending_hand_name = "No Hand"
 	_pending_hand_result = null
+	_pending_hand_choices.clear()
 	_emit_hand_updated()
-	hand_locked.emit(active_hand_name, _player_augment_multiplier, _enemy_mutation_multiplier)
+	hand_locked.emit(active_hand_name, _enemy_safe_duplicate(_player_augment_profile), _enemy_safe_duplicate(_enemy_mutation_profile))
+
+func can_lock_hand() -> bool:
+	return _pending_hand_result != null and _hand_cards.size() == 5 and _pending_hand_choices.is_empty()
 
 func get_effective_projectile_damage() -> int:
-	return max(int(round(float(projectile_damage) * _player_augment_multiplier)), 1)
+	return max(int(round(float(projectile_damage) * float(_player_augment_profile.get("damage", 1.0)))), 1)
+
+func get_effective_move_speed() -> float:
+	return move_speed * float(_player_augment_profile.get("move_speed", 1.0))
+
+func get_effective_attack_interval() -> float:
+	var speed_multiplier: float = float(_player_augment_profile.get("attack_speed", 1.0))
+	return max(attack_interval / max(speed_multiplier, 0.01), 0.18)
+
+func get_effective_attack_range() -> float:
+	return attack_range * float(_player_augment_profile.get("range", 1.0))
+
+func get_effective_max_health() -> int:
+	return max(int(round(float(max_health) * float(_player_augment_profile.get("max_health", 1.0)))), 1)
+
+func get_enemy_mutation_profile() -> Dictionary:
+	return _enemy_safe_duplicate(_enemy_mutation_profile)
 
 func apply_lifesteal(damage_dealt: int) -> void:
-	if lifesteal_ratio <= 0.0 or damage_dealt <= 0 or current_health >= max_health:
+	if lifesteal_ratio <= 0.0 or damage_dealt <= 0 or current_health >= get_effective_max_health():
 		return
 	var heal_amount: int = max(int(ceil(float(damage_dealt) * lifesteal_ratio)), 1)
 	heal(heal_amount)
@@ -187,52 +313,46 @@ func apply_lifesteal(damage_dealt: int) -> void:
 func heal(amount: int) -> void:
 	if amount <= 0 or _is_dead:
 		return
-	current_health = min(current_health + amount, max_health)
+	current_health = min(current_health + amount, get_effective_max_health())
 	health_changed.emit(current_health)
-
 
 func get_level_up_summary() -> Dictionary:
 	var regen_per_tick: float = health_regen_rate * health_regen_interval
+	var hand_label: String = active_hand_name
+	if not _pending_hand_choices.is_empty():
+		hand_label = "%s locked" % pending_hand_name
 	return {
 		"stats_text": "HP %d / %d\nMove %.0f\nDamage %d\nAtk %.2fs\nRange %.0f\nRegen %.1f / s (%.1f / 10s)\nLifesteal %.0f%%" % [
 			current_health,
-			max_health,
-			move_speed,
-			projectile_damage,
-			attack_interval,
-			attack_range,
+			get_effective_max_health(),
+			get_effective_move_speed(),
+			get_effective_projectile_damage(),
+			get_effective_attack_interval(),
+			get_effective_attack_range(),
 			health_regen_rate,
 			regen_per_tick,
 			lifesteal_ratio * 100.0
 		],
-		"hand_text": "Cards %d / 5\nPending %s\nPlayer x%.2f\nEnemy x%.2f" % [
+		"hand_text": "Cards %d / 5\nPending %s\nActive %s [%s]\nBlessing %s\nCurse %s" % [
 			collected_cards,
 			pending_hand_name,
-			_player_augment_multiplier,
-			_enemy_mutation_multiplier
+			hand_label,
+			active_hand_tier,
+			active_blessing_title,
+			active_curse_text
 		]
 	}
-
-func get_enemy_mutation_multiplier() -> float:
-	return _enemy_mutation_multiplier
 
 func has_royal_flush_run() -> bool:
 	return _royal_flush_achieved
 
 func debug_force_royal_flush() -> void:
-	active_hand_name = "Royal Flush"
-	_player_augment_multiplier = max(_player_augment_multiplier, 2.0)
-	_enemy_mutation_multiplier = max(_enemy_mutation_multiplier, 1.25)
-	active_augment_bonus = _player_augment_multiplier
-	_royal_flush_achieved = true
-	_applied_hand_history.append({
-		"name": "Royal Flush",
-		"player_multiplier": 2.0,
-		"enemy_multiplier": 1.25
-	})
-	_emit_hand_updated()
-	hand_locked.emit(active_hand_name, _player_augment_multiplier, _enemy_mutation_multiplier)
-
+	_pending_hand_result = PokerHandEvaluator.HandResult.new(PokerHandEvaluator.HandRank.ROYAL_FLUSH, [])
+	pending_hand_name = _pending_hand_result.name
+	_pending_hand_choices = _build_hand_choices(_pending_hand_result)
+	if _pending_hand_choices.is_empty():
+		return
+	apply_hand_choice(String(_pending_hand_choices[0].get("id", "")))
 
 func _die() -> void:
 	if _is_dead:
@@ -241,7 +361,6 @@ func _die() -> void:
 	died.emit()
 	velocity = Vector2.ZERO
 	_update_animation()
-
 
 func _update_animation() -> void:
 	if _anim == null:
@@ -262,7 +381,6 @@ func _update_animation() -> void:
 			_play_animation("idle_south")
 	_anim.flip_h = _facing.x < 0.0
 
-
 func _play_animation(animation_name: String) -> void:
 	if _anim == null:
 		return
@@ -274,13 +392,11 @@ func _play_animation(animation_name: String) -> void:
 			_anim.animation = animation_name
 		if not _anim.is_playing():
 			_anim.play()
-	else:
-		if frames.has_animation("walk_south"):
-			if _anim.animation != "walk_south":
-				_anim.animation = "walk_south"
-			if not _anim.is_playing():
-				_anim.play()
-
+	elif frames.has_animation("walk_south"):
+		if _anim.animation != "walk_south":
+			_anim.animation = "walk_south"
+		if not _anim.is_playing():
+			_anim.play()
 
 func _clamp_to_arena() -> void:
 	if _arena == null or not is_instance_valid(_arena):
@@ -296,7 +412,6 @@ func _clamp_to_arena() -> void:
 	if normal != Vector2.ZERO and velocity.dot(normal) > 0.0:
 		velocity = velocity.slide(normal)
 
-
 func get_collision_radius() -> float:
 	if _collision_shape == null:
 		return 12.0
@@ -304,7 +419,6 @@ func get_collision_radius() -> float:
 	if circle != null:
 		return circle.radius
 	return 12.0
-
 
 func _emit_level_up_if_ready() -> void:
 	if _pending_level_ups <= 0 or not _active_level_up_choices.is_empty():
@@ -319,27 +433,28 @@ func _emit_hand_updated() -> void:
 func _build_hand_state() -> Dictionary:
 	var history_lines: Array[String] = []
 	for entry in _applied_hand_history.slice(max(_applied_hand_history.size() - 3, 0), _applied_hand_history.size()):
-		history_lines.append("%s  P x%.2f / E x%.2f" % [
+		history_lines.append("%s [%s]\n%s\n%s" % [
 			String(entry.get("name", "")),
-			float(entry.get("player_multiplier", 1.0)),
-			float(entry.get("enemy_multiplier", 1.0))
+			String(entry.get("tier", "Common")),
+			String(entry.get("player_text", "")),
+			String(entry.get("enemy_text", ""))
 		])
-	var pending_multiplier: float = 1.0
-	var pending_enemy_multiplier: float = 1.0
+	var pending_tier_name: String = "None"
 	if _pending_hand_result != null:
-		pending_multiplier = _pending_hand_result.augment_multiplier
-		pending_enemy_multiplier = _pending_hand_result.mutation_multiplier
+		pending_tier_name = String(_get_hand_tier_data(_pending_hand_result.rank).get("name", "Common"))
 	return {
 		"card_count": collected_cards,
 		"cards": _build_card_slot_labels(),
 		"pending_hand_name": pending_hand_name,
-		"pending_player_multiplier": pending_multiplier,
-		"pending_enemy_multiplier": pending_enemy_multiplier,
+		"pending_tier_name": pending_tier_name,
 		"active_hand_name": active_hand_name,
-		"active_augment_bonus": _player_augment_multiplier,
-		"enemy_mutation_multiplier": _enemy_mutation_multiplier,
-		"can_lock": _pending_hand_result != null and _hand_cards.size() == 5,
-		"history_text": "\n".join(history_lines),
+		"active_tier_name": active_hand_tier,
+		"active_blessing_title": active_blessing_title,
+		"active_blessing_text": active_blessing_text,
+		"active_curse_text": active_curse_text,
+		"can_lock": can_lock_hand(),
+		"selection_pending": not _pending_hand_choices.is_empty(),
+		"history_text": "\n\n".join(history_lines),
 		"royal_flush_achieved": _royal_flush_achieved
 	}
 
@@ -364,7 +479,6 @@ func _card_to_short_text(card: PokerHandEvaluator.Card) -> String:
 		"diamonds":
 			suit_icon = "D"
 	return "%s%s" % [card.get_display_value(), suit_icon]
-
 
 func _build_level_up_choices() -> Array:
 	var pool: Array[Dictionary] = [
@@ -392,7 +506,6 @@ func _build_level_up_choices() -> Array:
 				break
 	return choices
 
-
 func _tick_regen(delta: float) -> void:
 	if health_regen_rate <= 0.0 or health_regen_interval <= 0.0:
 		return
@@ -400,10 +513,9 @@ func _tick_regen(delta: float) -> void:
 	if _regen_timer > 0.0:
 		return
 	_regen_timer = health_regen_interval
-	if current_health < max_health:
+	if current_health < get_effective_max_health():
 		var heal_amount: int = max(int(round(health_regen_rate * health_regen_interval)), 1)
 		heal(heal_amount)
-
 
 func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	var rarity: Dictionary = _roll_rarity()
@@ -412,35 +524,34 @@ func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	entry["rarity_color"] = rarity["color"]
 	match String(entry.get("id", "")):
 		"max_health":
-			var value: int = int(round(_roll_value(rarity, 12.0, 80.0)))
-			entry["value"] = value
-			entry["description"] = "+%d max health and heal %d" % [value, value]
+			var max_health_value: int = int(round(_roll_value(rarity, 12.0, 80.0)))
+			entry["value"] = max_health_value
+			entry["description"] = "+%d max health and heal %d" % [max_health_value, max_health_value]
 		"move_speed":
-			var value: float = _roll_value(rarity, 10.0, 52.0)
-			entry["value"] = value
-			entry["description"] = "+%.0f move speed" % value
+			var move_speed_value: float = _roll_value(rarity, 10.0, 52.0)
+			entry["value"] = move_speed_value
+			entry["description"] = "+%.0f move speed" % move_speed_value
 		"projectile_damage":
-			var value: int = max(int(round(_roll_value(rarity, 1.0, 3.4))), 1)
-			entry["value"] = value
-			entry["description"] = "+%d projectile damage" % value
+			var projectile_damage_value: int = max(int(round(_roll_value(rarity, 1.0, 3.4))), 1)
+			entry["value"] = projectile_damage_value
+			entry["description"] = "+%d projectile damage" % projectile_damage_value
 		"attack_speed":
-			var value: float = _roll_value(rarity, 0.04, 0.22)
-			entry["value"] = value
-			entry["description"] = "+%.0f%% attack speed" % (value * 100.0)
+			var attack_speed_value: float = _roll_value(rarity, 0.04, 0.22)
+			entry["value"] = attack_speed_value
+			entry["description"] = "+%.0f%% attack speed" % (attack_speed_value * 100.0)
 		"range":
-			var value: float = _roll_value(rarity, 12.0, 72.0)
-			entry["value"] = value
-			entry["description"] = "+%.0f attack range" % value
+			var range_value: float = _roll_value(rarity, 12.0, 72.0)
+			entry["value"] = range_value
+			entry["description"] = "+%.0f attack range" % range_value
 		"regen":
-			var value: float = _roll_value(rarity, 0.1, 1.0)
-			entry["value"] = snappedf(value, 0.1)
+			var regen_value: float = _roll_value(rarity, 0.1, 1.0)
+			entry["value"] = snappedf(regen_value, 0.1)
 			entry["description"] = "+%.1f HP/s regen" % entry["value"]
 		"lifesteal":
-			var value: float = _roll_value(rarity, 0.01, 0.08)
-			entry["value"] = snappedf(value, 0.01)
+			var lifesteal_value: float = _roll_value(rarity, 0.01, 0.08)
+			entry["value"] = snappedf(lifesteal_value, 0.01)
 			entry["description"] = "+%.0f%% lifesteal" % (entry["value"] * 100.0)
 	return entry
-
 
 func _roll_rarity() -> Dictionary:
 	var total_weight: float = 0.0
@@ -454,12 +565,86 @@ func _roll_rarity() -> Dictionary:
 			return rarity
 	return UPGRADE_RARITIES[0]
 
-
 func _roll_value(rarity: Dictionary, min_value: float, max_value: float) -> float:
 	var t: float = randf_range(float(rarity["band_min"]), float(rarity["band_max"]))
 	return lerpf(min_value, max_value, t)
 
 func _get_required_experience_for_level(level: int) -> int:
-	if level <= 1:
-		return 5
-	return 5 + int(round(pow(float(level - 1), 1.24) * 2.6))
+	var base_requirement: int = 5
+	if level > 1:
+		base_requirement += int(round(pow(float(level - 1), 1.24) * 2.6))
+	return max(int(round(float(base_requirement) * 1.2)), 1)
+
+func _build_hand_choices(result: PokerHandEvaluator.HandResult) -> Array[Dictionary]:
+	var templates: Array = HAND_CHOICE_TEMPLATES.duplicate(true)
+	var choices: Array[Dictionary] = []
+	while choices.size() < 3 and not templates.is_empty():
+		var index: int = randi_range(0, templates.size() - 1)
+		var template: Dictionary = templates[index]
+		templates.remove_at(index)
+		choices.append(_materialize_hand_choice(template, result))
+	return choices
+
+func _materialize_hand_choice(template: Dictionary, result: PokerHandEvaluator.HandResult) -> Dictionary:
+	var tier: Dictionary = _get_hand_tier_data(result.rank)
+	var choice_id: String = "%s_%d" % [template.get("id", "choice"), int(result.rank)]
+	var player_profile: Dictionary = _scale_percentage_profile(
+		template.get("player_stats", {}),
+		float(tier.get("player_scale", 1.0))
+	)
+	var enemy_profile: Dictionary = _scale_percentage_profile(
+		template.get("enemy_stats", {}),
+		float(tier.get("enemy_scale", 1.0))
+	)
+	return {
+		"id": choice_id,
+		"title": String(template.get("title", "Route")),
+		"tier_name": String(tier.get("name", "Common")),
+		"rarity": String(tier.get("name", "Common")),
+		"rarity_color": tier.get("color", Color.WHITE),
+		"hand_name": result.name,
+		"player_profile": player_profile,
+		"enemy_profile": enemy_profile,
+		"player_text": _format_profile_text(player_profile, PLAYER_STAT_LABELS, "Blessing"),
+		"enemy_text": _format_profile_text(enemy_profile, ENEMY_STAT_LABELS, "Curse"),
+		"description": "%s\n%s" % [
+			_format_profile_text(player_profile, PLAYER_STAT_LABELS, "Blessing"),
+			_format_profile_text(enemy_profile, ENEMY_STAT_LABELS, "Curse")
+		]
+	}
+
+func _build_hand_choice_summary() -> Dictionary:
+	var summary: Dictionary = get_level_up_summary()
+	if _pending_hand_result != null:
+		summary["hand_text"] = "Cards %d / 5\nLocked %s [%s]\nPick one route\nNext curse applies immediately" % [
+			collected_cards,
+			_pending_hand_result.name,
+			String(_get_hand_tier_data(_pending_hand_result.rank).get("name", "Common"))
+		]
+	return summary
+
+func _get_hand_tier_data(rank: int) -> Dictionary:
+	if HAND_TIER_DATA.has(rank):
+		return HAND_TIER_DATA[rank]
+	return HAND_TIER_DATA[PokerHandEvaluator.HandRank.HIGH_CARD]
+
+func _scale_percentage_profile(base_profile: Dictionary, profile_scale: float) -> Dictionary:
+	var scaled: Dictionary = {}
+	for key in base_profile.keys():
+		scaled[key] = 1.0 + float(base_profile[key]) * profile_scale
+	return scaled
+
+func _apply_profile_modifiers(target: Dictionary, modifiers: Dictionary) -> void:
+	for key in modifiers.keys():
+		target[key] = float(target.get(key, 1.0)) * float(modifiers[key])
+
+func _format_profile_text(profile: Dictionary, labels: Dictionary, prefix: String) -> String:
+	var parts: Array[String] = []
+	for key in profile.keys():
+		var label: String = String(labels.get(key, key))
+		var percent: float = (float(profile[key]) - 1.0) * 100.0
+		parts.append("+%d%% %s" % [int(round(percent)), label])
+	return "%s %s" % [prefix, ", ".join(parts)]
+
+func _enemy_safe_duplicate(source: Dictionary) -> Dictionary:
+	return source.duplicate(true)

@@ -26,11 +26,11 @@ func _physics_process(delta: float) -> void:
 		if projectile.has_method("configure"):
 			projectile.call("configure", direction, player.get_effective_projectile_damage(), player)
 		get_tree().current_scene.add_child(projectile)
-		_cooldown = player.attack_interval
+		_cooldown = player.get_effective_attack_interval()
 
 func _find_target(player: PlayerController) -> Node2D:
 	var best_target: Node2D
-	var best_distance_sq: float = player.attack_range * player.attack_range
+	var best_distance_sq: float = player.get_effective_attack_range() * player.get_effective_attack_range()
 	for enemy_node in get_tree().get_nodes_in_group("enemy"):
 		if enemy_node is Node2D:
 			var enemy: Node2D = enemy_node as Node2D

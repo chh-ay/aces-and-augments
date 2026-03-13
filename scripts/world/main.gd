@@ -12,6 +12,7 @@ extends Node2D
 @onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
 @onready var hud: Hud = $HUD
 @onready var level_up_panel: LevelUpPanel = $CanvasLayer/LevelUpPanel
+@onready var hand_augment_panel: Control = $CanvasLayer/HandAugmentPanel
 @onready var run_director: RunDirector = $RunDirector
 @onready var arena: Arena = $Arena
 @onready var enemies: Node2D = $Enemies
@@ -31,6 +32,7 @@ func _ready() -> void:
 	if player != null:
 		player.died.connect(_on_player_died)
 		player.level_up_requested.connect(_on_player_level_up_requested)
+		player.hand_selection_requested.connect(_on_player_hand_selection_requested)
 		player.hand_locked.connect(_on_player_hand_locked)
 	if hud != null and player != null:
 		hud.bind_player(player)
@@ -38,6 +40,8 @@ func _ready() -> void:
 		hud.bind_run_director(run_director)
 	if level_up_panel != null:
 		level_up_panel.option_selected.connect(_on_level_up_option_selected)
+	if hand_augment_panel != null and hand_augment_panel.has_signal("option_selected"):
+		hand_augment_panel.connect("option_selected", Callable(self, "_on_hand_augment_option_selected"))
 	if pause_menu != null:
 		pause_menu.resume_requested.connect(_on_pause_resume_requested)
 		pause_menu.restart_requested.connect(_on_pause_restart_requested)
@@ -57,6 +61,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		if level_up_panel != null and level_up_panel.visible:
 			return
+		if hand_augment_panel != null and hand_augment_panel.visible:
+			return
 		if _pause_open:
 			return
 		_open_pause_menu()
@@ -68,6 +74,10 @@ func _on_player_died() -> void:
 	get_tree().paused = false
 	if pause_menu != null:
 		pause_menu.dismiss()
+	if hand_augment_panel != null and hand_augment_panel.has_method("dismiss"):
+		hand_augment_panel.call("dismiss")
+	if level_up_panel != null:
+		level_up_panel.dismiss()
 	_update_game_over_ui(true, "GAME OVER", "Press Enter to restart or Esc to quit")
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
@@ -97,6 +107,23 @@ func _on_level_up_option_selected(stat_id: String) -> void:
 		player.apply_level_up_choice(stat_id)
 	if level_up_panel != null:
 		level_up_panel.dismiss()
+	if hud != null:
+		hud.visible = true
+	get_tree().paused = false
+
+func _on_player_hand_selection_requested(choices: Array, summary: Dictionary) -> void:
+	if hand_augment_panel == null:
+		return
+	if hud != null:
+		hud.visible = false
+	hand_augment_panel.call("present", choices, summary)
+	get_tree().paused = true
+
+func _on_hand_augment_option_selected(choice_id: String) -> void:
+	if player != null:
+		player.apply_hand_choice(choice_id)
+	if hand_augment_panel != null and hand_augment_panel.has_method("dismiss"):
+		hand_augment_panel.call("dismiss")
 	if hud != null:
 		hud.visible = true
 	get_tree().paused = false
@@ -144,8 +171,8 @@ func _on_run_time_expired() -> void:
 		var boss: Node2D = boss_node as Node2D
 		bosses.add_child(boss)
 		boss.global_position = _get_boss_spawn_position()
-		if boss.has_method("apply_mutation_scaling") and player != null:
-			boss.call("apply_mutation_scaling", player.get_enemy_mutation_multiplier())
+		if boss.has_method("apply_mutation_profile") and player != null:
+			boss.call("apply_mutation_profile", player.get_enemy_mutation_profile())
 		if boss.has_signal("defeated"):
 			boss.connect("defeated", Callable(self, "_on_boss_defeated"))
 
@@ -204,9 +231,9 @@ func _on_player_exited_run() -> void:
 	else:
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter to restart.")
 
-func _on_player_hand_locked(_hand_name: String, _player_multiplier: float, enemy_multiplier: float) -> void:
+func _on_player_hand_locked(_hand_name: String, _player_profile: Dictionary, enemy_profile: Dictionary) -> void:
 	if enemy_spawner != null:
-		enemy_spawner.set_enemy_mutation_multiplier(enemy_multiplier)
+		enemy_spawner.set_enemy_mutation_profile(enemy_profile)
 
 func _position_lucky_terminal() -> void:
 	if lucky_terminal == null:

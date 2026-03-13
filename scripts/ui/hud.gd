@@ -26,9 +26,9 @@ func bind_player(player: PlayerController) -> void:
 	player.hand_updated.connect(_on_hand_updated)
 	if _lock_button != null and not _lock_button.pressed.is_connected(_on_lock_button_pressed):
 		_lock_button.pressed.connect(_on_lock_button_pressed)
-	_health_bar.max_value = player.max_health
+	_health_bar.max_value = player.get_effective_max_health()
 	_health_bar.value = player.current_health
-	_health_label.text = "HP %d / %d" % [player.current_health, player.max_health]
+	_health_label.text = "HP %d / %d" % [player.current_health, player.get_effective_max_health()]
 	_xp_bar.max_value = player.required_experience
 	_xp_bar.value = player.current_experience
 	_xp_label.text = "LV %d" % player.current_level
@@ -44,9 +44,9 @@ func _on_health_changed(hp: int) -> void:
 	var player: PlayerController = get_tree().get_first_node_in_group("player") as PlayerController
 	if player == null:
 		return
-	_health_bar.max_value = player.max_health
+	_health_bar.max_value = player.get_effective_max_health()
 	_health_bar.value = hp
-	_health_label.text = "HP %d / %d" % [hp, player.max_health]
+	_health_label.text = "HP %d / %d" % [hp, player.get_effective_max_health()]
 
 func _on_experience_changed(current_xp: int, required_xp: int, level: int) -> void:
 	_xp_bar.max_value = required_xp
@@ -70,11 +70,16 @@ func _format_time(remaining_seconds: float) -> String:
 
 func _apply_hand_state(state: Dictionary) -> void:
 	if _hand_summary_label != null:
-		_hand_summary_label.text = "Cards %d / 5\nPending %s\nPlayer x%.2f  Enemy x%.2f" % [
+		var selection_pending: bool = bool(state.get("selection_pending", false))
+		var prompt_text: String = "Route pending" if selection_pending else String(state.get("active_blessing_title", "No Blessing"))
+		_hand_summary_label.text = "Cards %d / 5\nPending %s [%s]\nActive %s [%s]\n%s\n%s" % [
 			int(state.get("card_count", 0)),
 			String(state.get("pending_hand_name", "No Hand")),
-			float(state.get("active_augment_bonus", 1.0)),
-			float(state.get("enemy_mutation_multiplier", 1.0))
+			String(state.get("pending_tier_name", "None")),
+			String(state.get("active_hand_name", "No Hand")),
+			String(state.get("active_tier_name", "None")),
+			prompt_text,
+			String(state.get("active_curse_text", "No enemy mutation"))
 		]
 	var cards: Array = state.get("cards", [])
 	for index in range(_card_labels.size()):
@@ -85,9 +90,11 @@ func _apply_hand_state(state: Dictionary) -> void:
 		var can_lock: bool = bool(state.get("can_lock", false))
 		_lock_button.disabled = not can_lock
 		if can_lock:
-			_lock_button.text = "Lock %s" % String(state.get("pending_hand_name", "Hand"))
+			_lock_button.text = "Lock %s [Space]" % String(state.get("pending_hand_name", "Hand"))
+		elif bool(state.get("selection_pending", false)):
+			_lock_button.text = "Choose Route"
 		else:
-			_lock_button.text = "Need 5 Cards"
+			_lock_button.text = "Need 5 Cards [Space]"
 	if _history_label != null:
 		var history_text: String = String(state.get("history_text", ""))
 		_history_label.text = "History\n%s" % (history_text if history_text != "" else "None yet")

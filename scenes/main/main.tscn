@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/world/run_director.gd" id="6_tt1x2"]
 [ext_resource type="PackedScene" uid="uid://csxh78scywda2" path="res://scenes/world/arena.tscn" id="7_a8run"]
 [ext_resource type="PackedScene" uid="uid://dkbl1p2achx7v" path="res://scenes/ui/level_up_panel.tscn" id="7_blune"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hand_augment_panel.tscn" id="7_hand"]
 [ext_resource type="PackedScene" uid="uid://dx00oojl67cbw" path="res://scenes/enemies/boss_core.tscn" id="8_tbe87"]
 [ext_resource type="PackedScene" uid="uid://bnbee0i2sah2g" path="res://scenes/world/exit_door.tscn" id="8_xdoor"]
 [ext_resource type="PackedScene" uid="uid://dtwwuhxxxadey" path="res://scenes/world/lucky_terminal.tscn" id="9_blune"]
@@ -110,6 +111,14 @@ text = "Press Enter to restart or Esc to quit"
 horizontal_alignment = 1
 
 [node name="LevelUpPanel" type="Control" parent="CanvasLayer" unique_id=1916820633 instance=ExtResource("7_blune")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HandAugmentPanel" type="Control" parent="CanvasLayer" instance=ExtResource("7_hand")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

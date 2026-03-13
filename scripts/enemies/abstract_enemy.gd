@@ -21,7 +21,11 @@ var _current_max_health: int = -1
 var _difficulty_speed_multiplier: float = 1.0
 var _difficulty_health_multiplier: float = 1.0
 var _difficulty_damage_multiplier: float = 1.0
-var _mutation_multiplier: float = 1.0
+var _mutation_profile: Dictionary = {
+	"health": 1.0,
+	"damage": 1.0,
+	"speed": 1.0
+}
 
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 
@@ -98,17 +102,20 @@ func apply_difficulty_scaling(speed_multiplier: float, health_multiplier: float,
 	_difficulty_damage_multiplier = damage_multiplier
 	_refresh_scaled_stats(_current_max_health <= 0)
 
-func apply_mutation_scaling(mutation_multiplier: float) -> void:
-	_mutation_multiplier = max(mutation_multiplier, 1.0)
+func apply_mutation_profile(profile: Dictionary) -> void:
+	_mutation_profile = profile.duplicate(true)
 	_refresh_scaled_stats(_current_max_health <= 0)
 
 func _refresh_scaled_stats(reset_health: bool) -> void:
 	var health_ratio: float = 1.0
 	if _current_max_health > 0:
 		health_ratio = clamp(float(_current_health) / float(_current_max_health), 0.0, 1.0)
-	_current_move_speed = max(move_speed * _difficulty_speed_multiplier * _mutation_multiplier, 1.0)
-	_current_contact_damage = max(int(round(float(contact_damage) * _difficulty_damage_multiplier * _mutation_multiplier)), 1)
-	_current_max_health = max(int(round(float(max_health) * _difficulty_health_multiplier * _mutation_multiplier)), 1)
+	var speed_multiplier: float = float(_mutation_profile.get("speed", 1.0))
+	var damage_multiplier: float = float(_mutation_profile.get("damage", 1.0))
+	var health_multiplier: float = float(_mutation_profile.get("health", 1.0))
+	_current_move_speed = max(move_speed * _difficulty_speed_multiplier * speed_multiplier, 1.0)
+	_current_contact_damage = max(int(round(float(contact_damage) * _difficulty_damage_multiplier * damage_multiplier)), 1)
+	_current_max_health = max(int(round(float(max_health) * _difficulty_health_multiplier * health_multiplier)), 1)
 	if reset_health:
 		_current_health = _current_max_health
 	else:

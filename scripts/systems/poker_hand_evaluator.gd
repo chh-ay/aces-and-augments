@@ -35,30 +35,30 @@ const HAND_NAMES: Dictionary = {
 
 ## Augment power multipliers per hand rank
 const AUGMENT_POWER: Dictionary = {
-	HandRank.HIGH_CARD: 1.05,        # +5%
-	HandRank.PAIR: 1.10,             # +10%
-	HandRank.TWO_PAIR: 1.15,         # +15%
-	HandRank.THREE_OF_A_KIND: 1.20,  # +20%
-	HandRank.STRAIGHT: 1.25,         # +25%
-	HandRank.FLUSH: 1.25,            # +25%
-	HandRank.FULL_HOUSE: 1.30,       # +30%
-	HandRank.FOUR_OF_A_KIND: 1.35,   # +35%
-	HandRank.STRAIGHT_FLUSH: 1.40,   # +40%
-	HandRank.ROYAL_FLUSH: 2.00       # +100% (also triggers good ending)
+	HandRank.HIGH_CARD: 1.03,        # +3%
+	HandRank.PAIR: 1.07,             # +7%
+	HandRank.TWO_PAIR: 1.11,         # +11%
+	HandRank.THREE_OF_A_KIND: 1.15,  # +15%
+	HandRank.STRAIGHT: 1.18,         # +18%
+	HandRank.FLUSH: 1.18,            # +18%
+	HandRank.FULL_HOUSE: 1.22,       # +22%
+	HandRank.FOUR_OF_A_KIND: 1.28,   # +28%
+	HandRank.STRAIGHT_FLUSH: 1.36,   # +36%
+	HandRank.ROYAL_FLUSH: 1.75       # +75% (also triggers good ending)
 }
 
 ## Enemy mutation multipliers (weaker than augments)
 const MUTATION_POWER: Dictionary = {
-	HandRank.HIGH_CARD: 1.02,        # +2%
-	HandRank.PAIR: 1.05,             # +5%
-	HandRank.TWO_PAIR: 1.07,         # +7%
-	HandRank.THREE_OF_A_KIND: 1.10,  # +10%
-	HandRank.STRAIGHT: 1.12,         # +12%
-	HandRank.FLUSH: 1.12,            # +12%
-	HandRank.FULL_HOUSE: 1.15,       # +15%
-	HandRank.FOUR_OF_A_KIND: 1.17,   # +17%
-	HandRank.STRAIGHT_FLUSH: 1.20,   # +20%
-	HandRank.ROYAL_FLUSH: 1.25       # +25%
+	HandRank.HIGH_CARD: 1.04,        # +4%
+	HandRank.PAIR: 1.08,             # +8%
+	HandRank.TWO_PAIR: 1.11,         # +11%
+	HandRank.THREE_OF_A_KIND: 1.15,  # +15%
+	HandRank.STRAIGHT: 1.18,         # +18%
+	HandRank.FLUSH: 1.18,            # +18%
+	HandRank.FULL_HOUSE: 1.22,       # +22%
+	HandRank.FOUR_OF_A_KIND: 1.26,   # +26%
+	HandRank.STRAIGHT_FLUSH: 1.30,   # +30%
+	HandRank.ROYAL_FLUSH: 1.35       # +35%
 }
 
 
