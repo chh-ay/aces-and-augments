@@ -35,14 +35,16 @@ var selected_difficulty_id: String = DEFAULT_DIFFICULTY
 
 func _ready() -> void:
 	var persisted_difficulty: String = selected_difficulty_id
-	if SaveManager != null and SaveManager.has_method("get_selected_difficulty"):
-		persisted_difficulty = String(SaveManager.call("get_selected_difficulty", selected_difficulty_id))
+	var save_manager: Node = _get_save_manager()
+	if save_manager != null and save_manager.has_method("get_selected_difficulty"):
+		persisted_difficulty = String(save_manager.call("get_selected_difficulty", selected_difficulty_id))
 	selected_difficulty_id = _sanitize_difficulty_id(persisted_difficulty)
 
 func set_selected_difficulty(difficulty_id: String) -> Dictionary:
 	selected_difficulty_id = _sanitize_difficulty_id(difficulty_id)
-	if SaveManager != null and SaveManager.has_method("set_selected_difficulty"):
-		SaveManager.call("set_selected_difficulty", selected_difficulty_id)
+	var save_manager: Node = _get_save_manager()
+	if save_manager != null and save_manager.has_method("set_selected_difficulty"):
+		save_manager.call("set_selected_difficulty", selected_difficulty_id)
 	var config: Dictionary = get_selected_difficulty()
 	difficulty_changed.emit(selected_difficulty_id, config)
 	return config
@@ -67,3 +69,12 @@ func _sanitize_difficulty_id(difficulty_id: String) -> String:
 	if DIFFICULTY_CONFIGS.has(difficulty_id):
 		return difficulty_id
 	return DEFAULT_DIFFICULTY
+
+func _get_save_manager() -> Node:
+	var main_loop: MainLoop = Engine.get_main_loop()
+	if main_loop == null:
+		return null
+	var scene_tree: SceneTree = main_loop as SceneTree
+	if scene_tree == null:
+		return null
+	return scene_tree.root.get_node_or_null("SaveManager")

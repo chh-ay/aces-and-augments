@@ -1,0 +1,108 @@
+[gd_scene format=3 uid="uid://d18nsevj6c67y"]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="1_settings"]
+
+[node name="SettingsMenu" type="Control" unique_id=1429798592]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_settings")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1213099782]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.42)
+
+[node name="Panel" type="Panel" parent="." unique_id=312745066]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -176.0
+offset_top = -110.0
+offset_right = 176.0
+offset_bottom = 110.0
+
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=252978356]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin" unique_id=649176657]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox" unique_id=1102527245]
+layout_mode = 2
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Panel/Margin/VBox" unique_id=314268608]
+layout_mode = 2
+text = "Tune the run before you dive back in."
+horizontal_alignment = 1
+autowrap_mode = 1
+
+[node name="VolumeRow" type="HBoxContainer" parent="Panel/Margin/VBox" unique_id=158604553]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="VolumeLabel" type="Label" parent="Panel/Margin/VBox/VolumeRow" unique_id=209400514]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Master Volume"
+
+[node name="VolumeDownButton" type="Button" parent="Panel/Margin/VBox/VolumeRow" unique_id=181203551]
+custom_minimum_size = Vector2(42, 30)
+layout_mode = 2
+text = "-"
+
+[node name="Value" type="Label" parent="Panel/Margin/VBox/VolumeRow" unique_id=180285132]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 1
+
+[node name="VolumeUpButton" type="Button" parent="Panel/Margin/VBox/VolumeRow" unique_id=109413470]
+custom_minimum_size = Vector2(42, 30)
+layout_mode = 2
+text = "+"
+
+[node name="FullscreenRow" type="HBoxContainer" parent="Panel/Margin/VBox" unique_id=109800115]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FullscreenLabel" type="Label" parent="Panel/Margin/VBox/FullscreenRow" unique_id=925145420]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Fullscreen"
+
+[node name="Value" type="Label" parent="Panel/Margin/VBox/FullscreenRow" unique_id=151266919]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+text = "Off"
+horizontal_alignment = 1
+
+[node name="FullscreenButton" type="Button" parent="Panel/Margin/VBox/FullscreenRow" unique_id=67328952]
+custom_minimum_size = Vector2(92, 30)
+layout_mode = 2
+text = "Toggle"
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/VBox" unique_id=956212155]
+layout_mode = 2
+alignment = 1
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/VBox/Buttons" unique_id=742203167]
+custom_minimum_size = Vector2(140, 32)
+layout_mode = 2
+text = "Back"
