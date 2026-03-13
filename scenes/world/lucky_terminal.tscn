@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bqjrtslayx5ni" path="res://scripts/world/lucky_terminal.gd" id="1_0jr3x"]
 [ext_resource type="Texture2D" uid="uid://dliq7vfmtyf5f" path="res://assets/sprites/environment/prop_terminal.png" id="2_kra2i"]
+[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="3_theme"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5i4qc"]
 radius = 20.0
@@ -39,6 +40,7 @@ one_shot = true
 
 [node name="MessagePanel" type="PanelContainer" parent="CanvasLayer" unique_id=683164541]
 visible = false
+theme = ExtResource("3_theme")
 anchors_preset = 6
 anchor_top = 1.0
 anchor_bottom = 1.0

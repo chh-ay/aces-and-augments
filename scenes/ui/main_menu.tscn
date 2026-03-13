@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/how_to_play_menu.tscn" id="5_howto"]
 [ext_resource type="PackedScene" path="res://scenes/ui/credits_menu.tscn" id="6_credits"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/menu_loop.wav" id="7_menu_music"]
+[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="8_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.96)
@@ -54,6 +55,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("8_theme")
 script = ExtResource("1_lul8f")
 run_scene = ExtResource("2_h8m2x")
 test_scene = ExtResource("3_7v5wb")

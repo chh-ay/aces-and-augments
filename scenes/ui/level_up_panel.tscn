@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dkbl1p2achx7v"]
 
 [ext_resource type="Script" uid="uid://64ra1em8uvig" path="res://scripts/ui/level_up_panel.gd" id="1_fclbr"]
+[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.06, 0.08, 0.95)
@@ -55,6 +56,7 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme = ExtResource("2_theme")
 script = ExtResource("1_fclbr")
 
 [node name="Backdrop" type="ColorRect" parent="." unique_id=478514717]

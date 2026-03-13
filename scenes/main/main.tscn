@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="14_orb"]
 [ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="15_card"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/run_loop.wav" id="16_run_music"]
+[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="17_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boot_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.98)
@@ -132,6 +133,7 @@ script = ExtResource("6_tt1x2")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1535270300]
 
 [node name="BootOverlay" type="Control" parent="CanvasLayer"]
+theme = ExtResource("17_theme")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -184,6 +186,7 @@ horizontal_alignment = 1
 
 [node name="GameOver" type="Control" parent="CanvasLayer" unique_id=205351826]
 visible = false
+theme = ExtResource("17_theme")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

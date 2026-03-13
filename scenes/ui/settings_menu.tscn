@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://d18nsevj6c67y"]
 
 [ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="1_settings"]
+[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.98)
@@ -71,6 +72,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_settings")
 
 [node name="Backdrop" type="ColorRect" parent="." unique_id=1213099782]
