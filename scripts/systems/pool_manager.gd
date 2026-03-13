@@ -21,8 +21,8 @@ func _exit_tree() -> void:
 	for pool in _available_nodes.values():
 		var nodes: Array = pool as Array
 		for node_variant in nodes:
-			var pooled_node: Node = node_variant as Node
-			if pooled_node != null and is_instance_valid(pooled_node):
+			var pooled_node: Node = _resolve_pooled_node(node_variant)
+			if pooled_node != null:
 				pooled_node.free()
 	_available_nodes.clear()
 	_active_keys.clear()
@@ -56,7 +56,7 @@ func release(node: Node) -> void:
 	if node.get_parent() != null:
 		node.get_parent().remove_child(node)
 	var pool: Array = _available_nodes.get(key, [])
-	pool.append(node)
+	pool.append(_wrap_pooled_node(node))
 	_available_nodes[key] = pool
 
 func _prewarm_scene_list(scenes: Array[PackedScene], count: int) -> void:
@@ -74,20 +74,36 @@ func _prewarm_scene(scene: PackedScene, count: int) -> void:
 	for _i in range(needed):
 		var pooled_node: Node = scene.instantiate()
 		if pooled_node != null:
-			pool.append(pooled_node)
+			pool.append(_wrap_pooled_node(pooled_node))
 	_available_nodes[key] = pool
 
 func _take_node(scene: PackedScene, key: String) -> Node:
 	var pool: Array = _available_nodes.get(key, [])
 	while not pool.is_empty():
 		var pooled_variant: Variant = pool.pop_back()
-		if pooled_variant is Node:
-			var pooled_node: Node = pooled_variant as Node
-			if pooled_node != null and is_instance_valid(pooled_node):
-				_available_nodes[key] = pool
-				return pooled_node
+		var pooled_node: Node = _resolve_pooled_node(pooled_variant)
+		if pooled_node != null:
+			_available_nodes[key] = pool
+			return pooled_node
 	_available_nodes[key] = pool
 	return scene.instantiate()
 
 func _scene_key(scene: PackedScene) -> String:
 	return scene.resource_path
+
+func _wrap_pooled_node(node: Node) -> Variant:
+	return weakref(node)
+
+func _resolve_pooled_node(pooled_variant: Variant) -> Node:
+	var pooled_object: Object = pooled_variant as Object
+	if pooled_object == null or not is_instance_valid(pooled_object):
+		return null
+	if pooled_object is WeakRef:
+		var weak_node: Node = (pooled_object as WeakRef).get_ref() as Node
+		if weak_node != null and is_instance_valid(weak_node):
+			return weak_node
+		return null
+	var pooled_node: Node = pooled_object as Node
+	if pooled_node != null and is_instance_valid(pooled_node):
+		return pooled_node
+	return null
