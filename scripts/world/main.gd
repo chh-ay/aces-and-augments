@@ -35,6 +35,8 @@ var _boot_completed: bool = false
 
 func _ready() -> void:
 	_set_boot_state(true)
+	if AudioManager != null and AudioManager.has_method("play_music"):
+		AudioManager.play_music("run", -14.0)
 	if floor_generator != null and floor_generator.has_signal("initial_chunks_ready") and not floor_generator.initial_chunks_ready.is_connected(_on_initial_chunks_ready):
 		floor_generator.initial_chunks_ready.connect(_on_initial_chunks_ready, CONNECT_ONE_SHOT)
 	if GameManager != null and GameManager.has_method("begin_run"):

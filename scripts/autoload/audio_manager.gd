@@ -3,6 +3,10 @@ extends Node
 const MASTER_BUS_NAME: String = "Master"
 const MIN_AUDIBLE_LINEAR: float = 0.0001
 const SFX_PLAYER_COUNT: int = 10
+const MUSIC_STREAMS: Dictionary = {
+	"menu": preload("res://assets/audio/music/menu_loop.wav"),
+	"run": preload("res://assets/audio/music/run_loop.wav")
+}
 const SFX_STREAMS: Dictionary = {
 	"shoot": preload("res://assets/audio/sfx/shoot.wav"),
 	"enemy_hit": preload("res://assets/audio/sfx/enemy_hit.wav"),
@@ -30,9 +34,12 @@ var _master_bus_index: int = -1
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_cursor: int = 0
 var _sfx_last_played_at: Dictionary = {}
+var _music_player: AudioStreamPlayer
+var _current_music_id: String = ""
 
 func _ready() -> void:
 	_master_bus_index = AudioServer.get_bus_index(MASTER_BUS_NAME)
+	_ensure_music_player()
 	_ensure_sfx_players()
 	apply_saved_settings()
 
@@ -93,6 +100,26 @@ func play_sfx(sfx_id: String, pitch_scale: float = 1.0, volume_db: float = 0.0) 
 	player.volume_db = volume_db
 	player.play()
 
+func play_music(music_id: String, volume_db: float = -14.0) -> void:
+	var stream: AudioStream = MUSIC_STREAMS.get(music_id, null)
+	if stream == null:
+		return
+	_ensure_music_player()
+	if _music_player == null:
+		return
+	if _current_music_id == music_id and _music_player.playing:
+		return
+	_current_music_id = music_id
+	_music_player.stop()
+	_music_player.stream = _make_looping_stream(stream)
+	_music_player.volume_db = volume_db
+	_music_player.play()
+
+func stop_music() -> void:
+	_current_music_id = ""
+	if _music_player != null:
+		_music_player.stop()
+
 func _get_save_manager() -> Node:
 	var main_loop: MainLoop = Engine.get_main_loop()
 	if main_loop == null:
@@ -111,6 +138,13 @@ func _ensure_sfx_players() -> void:
 		add_child(player)
 		_sfx_players.append(player)
 
+func _ensure_music_player() -> void:
+	if _music_player != null:
+		return
+	_music_player = AudioStreamPlayer.new()
+	_music_player.bus = MASTER_BUS_NAME
+	add_child(_music_player)
+
 func _should_throttle_sfx(sfx_id: String) -> bool:
 	if not SFX_THROTTLES.has(sfx_id):
 		return false
@@ -121,3 +155,10 @@ func _should_throttle_sfx(sfx_id: String) -> bool:
 		return true
 	_sfx_last_played_at[sfx_id] = now_seconds
 	return false
+
+func _make_looping_stream(stream: AudioStream) -> AudioStream:
+	if stream is AudioStreamWAV:
+		var wav_stream: AudioStreamWAV = (stream as AudioStreamWAV).duplicate(true)
+		wav_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		return wav_stream
+	return stream

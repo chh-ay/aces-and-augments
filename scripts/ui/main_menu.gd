@@ -18,6 +18,8 @@ extends Control
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	if AudioManager != null and AudioManager.has_method("play_music"):
+		AudioManager.play_music("menu", -16.0)
 	_difficulty_button.pressed.connect(_on_difficulty_pressed)
 	_start_button.pressed.connect(_on_start_pressed)
 	_test_button.pressed.connect(_on_test_ground_pressed)
