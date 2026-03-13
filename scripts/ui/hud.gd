@@ -71,15 +71,15 @@ func _format_time(remaining_seconds: float) -> String:
 func _apply_hand_state(state: Dictionary) -> void:
 	if _hand_summary_label != null:
 		var selection_pending: bool = bool(state.get("selection_pending", false))
-		var prompt_text: String = "Route pending" if selection_pending else String(state.get("active_blessing_title", "No Blessing"))
-		_hand_summary_label.text = "Cards %d / 5\nPending %s [%s]\nActive %s [%s]\n%s\n%s" % [
+		var blessing_name: String = "Route pending" if selection_pending else String(state.get("active_blessing_title", "No Blessing"))
+		_hand_summary_label.text = "Cards %d / 5\nPending %s [%s]\nActive %s [%s]\nBlessing %s\nCurse %s" % [
 			int(state.get("card_count", 0)),
 			String(state.get("pending_hand_name", "No Hand")),
 			String(state.get("pending_tier_name", "None")),
 			String(state.get("active_hand_name", "No Hand")),
 			String(state.get("active_tier_name", "None")),
-			prompt_text,
-			String(state.get("active_curse_text", "No enemy mutation"))
+			blessing_name,
+			String(state.get("active_curse_name", "No Curse"))
 		]
 	var cards: Array = state.get("cards", [])
 	for index in range(_card_labels.size()):

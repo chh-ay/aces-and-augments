@@ -34,30 +34,35 @@ const HAND_CHOICE_TEMPLATES: Array[Dictionary] = [
 	{
 		"id": "kill_chain",
 		"title": "Kill Chain",
+		"curse_name": "Thick Hide",
 		"player_stats": {"damage": 0.11, "attack_speed": 0.09},
 		"enemy_stats": {"health": 0.07}
 	},
 	{
 		"id": "vector_lens",
 		"title": "Vector Lens",
+		"curse_name": "Pursuit Grid",
 		"player_stats": {"range": 0.14, "move_speed": 0.07},
 		"enemy_stats": {"speed": 0.07}
 	},
 	{
 		"id": "fortress_stack",
 		"title": "Fortress Stack",
+		"curse_name": "War Engine",
 		"player_stats": {"max_health": 0.15},
 		"enemy_stats": {"health": 0.08, "damage": 0.05}
 	},
 	{
 		"id": "overdrive_loop",
 		"title": "Overdrive Loop",
+		"curse_name": "Hot Pursuit",
 		"player_stats": {"move_speed": 0.08, "attack_speed": 0.08},
 		"enemy_stats": {"speed": 0.08, "damage": 0.03}
 	},
 	{
 		"id": "breach_rounds",
 		"title": "Breach Rounds",
+		"curse_name": "Bulwark Swarm",
 		"player_stats": {"damage": 0.08, "range": 0.10},
 		"enemy_stats": {"health": 0.08, "speed": 0.04}
 	}
@@ -97,6 +102,7 @@ var active_hand_name: String = "No Hand"
 var active_hand_tier: String = "None"
 var active_blessing_title: String = "No Blessing"
 var active_blessing_text: String = "No active blessing"
+var active_curse_name: String = "No Curse"
 var active_curse_text: String = "No enemy mutation"
 var pending_hand_name: String = "No Hand"
 var _hand_cards: Array = []
@@ -253,6 +259,7 @@ func apply_hand_choice(choice_id: String) -> void:
 	active_hand_tier = String(choice.get("tier_name", "Common"))
 	active_blessing_title = String(choice.get("title", "Blessing"))
 	active_blessing_text = String(choice.get("player_text", ""))
+	active_curse_name = String(choice.get("curse_name", "Curse"))
 	active_curse_text = String(choice.get("enemy_text", ""))
 	var next_effective_max: int = get_effective_max_health()
 	if next_effective_max >= previous_effective_max:
@@ -264,8 +271,7 @@ func apply_hand_choice(choice_id: String) -> void:
 		"name": _pending_hand_result.name,
 		"tier": active_hand_tier,
 		"title": active_blessing_title,
-		"player_text": active_blessing_text,
-		"enemy_text": active_curse_text
+		"curse_name": active_curse_name
 	})
 	if _pending_hand_result.is_royal_flush:
 		_royal_flush_achieved = true
@@ -339,7 +345,7 @@ func get_level_up_summary() -> Dictionary:
 			hand_label,
 			active_hand_tier,
 			active_blessing_title,
-			active_curse_text
+			active_curse_name
 		]
 	}
 
@@ -433,11 +439,11 @@ func _emit_hand_updated() -> void:
 func _build_hand_state() -> Dictionary:
 	var history_lines: Array[String] = []
 	for entry in _applied_hand_history.slice(max(_applied_hand_history.size() - 3, 0), _applied_hand_history.size()):
-		history_lines.append("%s [%s]\n%s\n%s" % [
+		history_lines.append("%s [%s]\nBlessing %s\nCurse %s" % [
 			String(entry.get("name", "")),
 			String(entry.get("tier", "Common")),
-			String(entry.get("player_text", "")),
-			String(entry.get("enemy_text", ""))
+			String(entry.get("title", "Route")),
+			String(entry.get("curse_name", "Curse"))
 		])
 	var pending_tier_name: String = "None"
 	if _pending_hand_result != null:
@@ -451,6 +457,7 @@ func _build_hand_state() -> Dictionary:
 		"active_tier_name": active_hand_tier,
 		"active_blessing_title": active_blessing_title,
 		"active_blessing_text": active_blessing_text,
+		"active_curse_name": active_curse_name,
 		"active_curse_text": active_curse_text,
 		"can_lock": can_lock_hand(),
 		"selection_pending": not _pending_hand_choices.is_empty(),
@@ -599,6 +606,7 @@ func _materialize_hand_choice(template: Dictionary, result: PokerHandEvaluator.H
 	return {
 		"id": choice_id,
 		"title": String(template.get("title", "Route")),
+		"curse_name": String(template.get("curse_name", "Curse")),
 		"tier_name": String(tier.get("name", "Common")),
 		"rarity": String(tier.get("name", "Common")),
 		"rarity_color": tier.get("color", Color.WHITE),
