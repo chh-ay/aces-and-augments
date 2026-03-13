@@ -541,6 +541,7 @@ func _build_card_slot_data() -> Array[Dictionary]:
 func _card_to_display_data(card: PokerHandEvaluator.Card) -> Dictionary:
 	return {
 		"empty": false,
+		"rank_value": card.value,
 		"value_text": card.get_display_value(),
 		"suit": card.suit,
 		"suit_symbol": _get_card_suit_symbol(card.suit),
