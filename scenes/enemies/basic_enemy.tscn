@@ -2,12 +2,18 @@
 
 [ext_resource type="Script" uid="uid://c0wepg8hribie" path="res://scripts/enemies/basic_enemy.gd" id="1_8xi43"]
 [ext_resource type="Texture2D" uid="uid://bsgqyvqyqc0k4" path="res://assets/sprites/enemies/slime_placeholder.png" id="2_8xi43"]
+[ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="2_ibjif"]
+[ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="3_4mpuu"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8xi43"]
 radius = 8.0
 
 [node name="Enemy" type="CharacterBody2D" unique_id=1540579015]
 script = ExtResource("1_8xi43")
+max_health = 4
+xp_reward = 1
+xp_orb_scene = ExtResource("2_ibjif")
+card_pickup_scene = ExtResource("3_4mpuu")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=16698256]
 texture_filter = 1

@@ -5,6 +5,7 @@ var _player: PlayerController
 
 
 func _ready() -> void:
+	super._ready()
 	_player = get_tree().get_first_node_in_group("player") as PlayerController
 
 
