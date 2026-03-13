@@ -8,9 +8,11 @@ const MAIN_MENU_SCENE_PATH: String = "res://scenes/ui/main_menu.tscn"
 
 @onready var player: PlayerController = $Player
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
+@onready var floor_generator: FloorGenerator = $FloorGenerator
 @onready var game_over_ui: Control = $CanvasLayer/GameOver
 @onready var game_over_title: Label = $CanvasLayer/GameOver/Panel/VBox/Title
 @onready var game_over_hint: Label = $CanvasLayer/GameOver/Panel/VBox/Hint
+@onready var boot_overlay: Control = $CanvasLayer/BootOverlay
 @onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
 @onready var hud: Hud = $HUD
 @onready var level_up_panel: LevelUpPanel = $CanvasLayer/LevelUpPanel
@@ -29,8 +31,12 @@ var _boss_spawned: bool = false
 var _exit_spawned: bool = false
 var _last_boss_defeat_position: Vector2 = Vector2.ZERO
 var _run_rewards_committed: bool = false
+var _boot_completed: bool = false
 
 func _ready() -> void:
+	_set_boot_state(true)
+	if floor_generator != null and floor_generator.has_signal("initial_chunks_ready") and not floor_generator.initial_chunks_ready.is_connected(_on_initial_chunks_ready):
+		floor_generator.initial_chunks_ready.connect(_on_initial_chunks_ready, CONNECT_ONE_SHOT)
 	if GameManager != null and GameManager.has_method("begin_run"):
 		GameManager.call("begin_run")
 	if player != null and GameManager != null and GameManager.has_method("get_player_meta_profile"):
@@ -56,6 +62,8 @@ func _ready() -> void:
 		pause_menu.menu_requested.connect(_on_pause_menu_requested)
 	if run_director != null:
 		run_director.time_expired.connect(_on_run_time_expired)
+	if floor_generator != null and floor_generator.has_initial_chunks_ready():
+		call_deferred("_complete_boot_sequence")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _game_over:
@@ -285,3 +293,24 @@ func _finalize_run_rewards() -> void:
 	_run_rewards_committed = true
 	if GameManager != null and GameManager.has_method("commit_run_scrap"):
 		GameManager.call("commit_run_scrap")
+
+func _on_initial_chunks_ready() -> void:
+	call_deferred("_complete_boot_sequence")
+
+func _complete_boot_sequence() -> void:
+	if _boot_completed:
+		return
+	_boot_completed = true
+	_set_boot_state(false)
+
+func _set_boot_state(is_booting: bool) -> void:
+	if boot_overlay != null:
+		boot_overlay.visible = is_booting
+	if hud != null:
+		hud.visible = not is_booting
+	if player != null:
+		player.process_mode = Node.PROCESS_MODE_DISABLED if is_booting else Node.PROCESS_MODE_INHERIT
+	if enemy_spawner != null:
+		enemy_spawner.process_mode = Node.PROCESS_MODE_DISABLED if is_booting else Node.PROCESS_MODE_INHERIT
+	if run_director != null:
+		run_director.process_mode = Node.PROCESS_MODE_DISABLED if is_booting else Node.PROCESS_MODE_INHERIT

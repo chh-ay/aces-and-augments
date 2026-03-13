@@ -3,6 +3,7 @@ extends Node
 
 signal chunk_generated(chunk: Vector2i)
 signal chunk_cleared(chunk: Vector2i)
+signal initial_chunks_ready
 
 # Algorithm overview:
 # - Corner-based Wang tiling: each tile corner (NW/NE/SW/SE) is classified as "upper" or "lower"
@@ -62,6 +63,7 @@ var _active_chunk_job: Dictionary = {}
 var _queued_clear_chunks: Array[Vector2i] = []
 var _queued_clear_lookup: Dictionary = {}
 var _active_clear_job: Dictionary = {}
+var _initial_chunks_ready: bool = false
 
 func _ready() -> void:
 	_player = get_node_or_null(player_path) as Node2D
@@ -96,6 +98,9 @@ func get_noise() -> FastNoiseLite:
 
 func get_upper_threshold() -> float:
 	return upper_threshold
+
+func has_initial_chunks_ready() -> bool:
+	return _initial_chunks_ready
 
 func _refresh_cached_metrics() -> void:
 	_chunk_world_size = Vector2(
@@ -172,9 +177,11 @@ func _init_floor() -> void:
 	_queued_clear_chunks.clear()
 	_queued_clear_lookup.clear()
 	_active_clear_job.clear()
+	_initial_chunks_ready = false
 	_last_chunk = INVALID_CHUNK
 	if generate_initial_chunks_immediately:
 		_generate_initial_chunks()
+		_mark_initial_chunks_ready()
 	else:
 		_update_floor_chunks()
 
@@ -317,6 +324,8 @@ func _drain_chunk_queue() -> void:
 		if int(_active_chunk_job.get("row_index", 0)) >= chunk_size.y:
 			_finalize_chunk_job(_active_chunk_job)
 			_active_chunk_job.clear()
+	if not _initial_chunks_ready and _active_chunk_job.is_empty() and _queued_chunks.is_empty():
+		_mark_initial_chunks_ready()
 	_drain_chunk_clear_queue()
 
 func _clear_chunk(chunk: Vector2i) -> void:
@@ -533,3 +542,9 @@ func _setup_render_layers() -> void:
 		_floor_detail.z_index = FLOOR_DETAIL_Z_INDEX
 		_floor_detail.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		_floor_detail.visible = use_detail_layer
+
+func _mark_initial_chunks_ready() -> void:
+	if _initial_chunks_ready:
+		return
+	_initial_chunks_ready = true
+	initial_chunks_ready.emit()
