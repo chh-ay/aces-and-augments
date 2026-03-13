@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dis3mt2pfy82g"]
 
-[ext_resource type="Script" path="res://scripts/ui/credits_menu.gd" id="1_credits"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dnkrgsjx6mslm" path="res://scripts/ui/credits_menu.gd" id="1_credits"]
+[ext_resource type="Theme" uid="uid://ey7qttnhywbc" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.98)
@@ -53,7 +53,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="CreditsMenu" type="Control"]
+[node name="CreditsMenu" type="Control" unique_id=1564482826]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -63,48 +63,48 @@ grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_credits")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1654342077]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.56)
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=255312811]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="PanelContainer" parent="Center"]
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=855829997]
 custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=942008227]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=2000530518]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox" unique_id=502419742]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
 theme_override_font_sizes/font_size = 13
 text = "ATTRIBUTION"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1133180773]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Credits"
 horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1944477757]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
 theme_override_font_sizes/font_size = 15
@@ -112,76 +112,64 @@ text = "Verified third-party sources and authored assets currently used in the b
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="GeneratedCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+[node name="GeneratedCard" type="PanelContainer" parent="Center/Panel/Margin/VBox" unique_id=2034021204]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/GeneratedCard"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/GeneratedCard" unique_id=1667204206]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/GeneratedCard/Margin"]
+[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/GeneratedCard/Margin" unique_id=540324043]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
+text = "PixelLab MCP
+Generated player, enemy, environment, and pickup art for Aces & Augments.
+https://api.pixellab.ai"
 autowrap_mode = 2
-text = "PixelLab MCP\nGenerated player, enemy, environment, and pickup art for Aces & Augments.\nhttps://api.pixellab.ai/mcp"
 
-[node name="CardsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+[node name="CardsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox" unique_id=1812906435]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/CardsCard"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/CardsCard" unique_id=977942348]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/CardsCard/Margin"]
+[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/CardsCard/Margin" unique_id=1947439880]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
+text = "Playing Cards Pack by Kenney
+License: CC0 1.0
+https://kenney.nl/assets/playing-cards-pack"
 autowrap_mode = 2
-text = "Playing Cards Pack by Kenney\nLicense: CC0 1.0\nhttps://kenney.nl/assets/playing-cards-pack"
 
-[node name="FontCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+[node name="FontCard" type="PanelContainer" parent="Center/Panel/Margin/VBox" unique_id=362224508]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/FontCard"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/FontCard" unique_id=1171217762]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/FontCard/Margin"]
+[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/FontCard/Margin" unique_id=1140973485]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
+text = "VCR OSD Mono by Riciery Leal
+Source: DaFont
+https://www.dafont.com/vcr-osd-mono.font"
 autowrap_mode = 2
-text = "VCR OSD Mono by Riciery Leal\nSource: DaFont\nhttps://www.dafont.com/vcr-osd-mono.font"
 
-[node name="AudioCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
-
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/AudioCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
-
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/AudioCard/Margin"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-autowrap_mode = 2
-text = "Audio for the current build is original procedural audio authored for Aces & Augments. If sourced replacements are adopted later, this screen will be updated with their attribution."
-
-[node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox"]
+[node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=620326725]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 17

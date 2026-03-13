@@ -3,12 +3,12 @@
 [ext_resource type="Script" uid="uid://boqubjjwh4814" path="res://scripts/ui/main_menu.gd" id="1_lul8f"]
 [ext_resource type="PackedScene" uid="uid://cm4criwagreod" path="res://scenes/main/main.tscn" id="2_h8m2x"]
 [ext_resource type="PackedScene" uid="uid://byvklghdcujkk" path="res://scenes/main/test_ground.tscn" id="3_7v5wb"]
+[ext_resource type="PackedScene" uid="uid://d18nsevj6c67y" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/upgrade_shop.tscn" id="4_shop"]
-[ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
-[ext_resource type="PackedScene" path="res://scenes/ui/how_to_play_menu.tscn" id="5_howto"]
-[ext_resource type="PackedScene" path="res://scenes/ui/credits_menu.tscn" id="6_credits"]
-[ext_resource type="AudioStream" path="res://assets/audio/music/menu_loop.wav" id="7_menu_music"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="8_theme"]
+[ext_resource type="PackedScene" uid="uid://b41qx0uxhld0n" path="res://scenes/ui/how_to_play_menu.tscn" id="5_howto"]
+[ext_resource type="PackedScene" uid="uid://dis3mt2pfy82g" path="res://scenes/ui/credits_menu.tscn" id="6_credits"]
+[ext_resource type="AudioStream" uid="uid://cqoti2s38btsp" path="res://assets/audio/music/menu_loop.wav" id="7_menu_music"]
+[ext_resource type="Theme" uid="uid://ey7qttnhywbc" path="res://resources/themes/vcr_ui_theme.tres" id="8_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.96)
@@ -66,11 +66,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.03, 0.05, 0.08, 1)
 
-[node name="MenuMusicPlayer" type="AudioStreamPlayer" parent="."]
+[node name="MenuMusicPlayer" type="AudioStreamPlayer" parent="." unique_id=2140975172]
 process_mode = 3
-autoplay = true
 stream = ExtResource("7_menu_music")
-bus = &"Master"
+autoplay = true
 
 [node name="Center" type="CenterContainer" parent="." unique_id=486536126]
 layout_mode = 0
@@ -100,12 +99,6 @@ theme_override_font_sizes/font_size = 13
 text = "ACES & AUGMENTS"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1055175131]
-layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Industrial deckbuilding horde survival."
-horizontal_alignment = 1
-
 [node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox" unique_id=762368701]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
@@ -114,7 +107,7 @@ text = "Survive the run, lock poker hands, and escape with the right ending."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ScrapLabel" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="ScrapLabel" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1743514142]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.95)
 theme_override_font_sizes/font_size = 15
@@ -163,7 +156,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Open Test Ground"
 
-[node name="ShopButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+[node name="ShopButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=1230449534]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -183,7 +176,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Settings"
 
-[node name="HowToButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+[node name="HowToButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=1883290322]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -193,7 +186,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "How To Play"
 
-[node name="CreditsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+[node name="CreditsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=1091706844]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -203,7 +196,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Credits"
 
-[node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+[node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=197573377]
 custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
@@ -230,10 +223,14 @@ theme_override_font_sizes/font_size = 13
 text = "WASD move  |  Q toggles aim  |  Esc pauses"
 horizontal_alignment = 1
 
-[node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
+[node name="SettingsMenu" parent="." unique_id=1436741704 instance=ExtResource("4_settings")]
+layout_mode = 1
 
-[node name="HowToPlayMenu" parent="." instance=ExtResource("5_howto")]
+[node name="HowToPlayMenu" parent="." unique_id=59637301 instance=ExtResource("5_howto")]
+layout_mode = 1
 
-[node name="CreditsMenu" parent="." instance=ExtResource("6_credits")]
+[node name="CreditsMenu" parent="." unique_id=197941622 instance=ExtResource("6_credits")]
+layout_mode = 1
 
-[node name="UpgradeShop" parent="." instance=ExtResource("4_shop")]
+[node name="UpgradeShop" parent="." unique_id=983845542 instance=ExtResource("4_shop")]
+layout_mode = 1
