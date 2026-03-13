@@ -50,6 +50,18 @@ corner_radius_bottom_left = 14
 shadow_color = Color(0, 0, 0, 0.35)
 shadow_size = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gameover_hint"]
+bg_color = Color(0.08, 0.12, 0.16, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.77, 0.24, 0.5)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="Main" type="Node2D" unique_id=538251827]
 script = ExtResource("1")
 boss_scene = ExtResource("8_tbe87")
@@ -177,38 +189,57 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -256.0
-offset_top = -126.0
-offset_right = 256.0
-offset_bottom = 126.0
+offset_left = -290.0
+offset_top = -168.0
+offset_right = 290.0
+offset_bottom = 168.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_panel")
 
 [node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOver/Panel" unique_id=1051045196]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = -12.0
-offset_bottom = -12.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+theme_override_constants/separation = 14
 alignment = 1
+
+[node name="Eyebrow" type="Label" parent="CanvasLayer/GameOver/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "RUN RESULT"
+horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="CanvasLayer/GameOver/Panel/VBox" unique_id=14945957]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 34
 text = "GAME OVER"
 horizontal_alignment = 1
 
 [node name="EndingArt" type="TextureRect" parent="CanvasLayer/GameOver/Panel/VBox"]
-custom_minimum_size = Vector2(480, 220)
+custom_minimum_size = Vector2(540, 236)
 layout_mode = 2
 size_flags_horizontal = 4
 stretch_mode = 5
 
-[node name="Hint" type="Label" parent="CanvasLayer/GameOver/Panel/VBox" unique_id=516161393]
+[node name="HintCard" type="PanelContainer" parent="CanvasLayer/GameOver/Panel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_hint")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/GameOver/Panel/VBox/HintCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="Hint" type="Label" parent="CanvasLayer/GameOver/Panel/VBox/HintCard/Margin" unique_id=516161393]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 16
 text = "Press Enter to restart or Esc to quit"
 horizontal_alignment = 1
 
