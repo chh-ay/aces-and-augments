@@ -1,6 +1,8 @@
 class_name Main
 extends Node2D
 
+const MAIN_MENU_SCENE: PackedScene = preload("res://scenes/ui/main_menu.tscn")
+
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
 
@@ -27,7 +29,7 @@ var _exit_spawned: bool = false
 var _last_boss_defeat_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
-	_update_game_over_ui(false, "GAME OVER", "Press Enter to restart or Esc to quit")
+	_update_game_over_ui(false, "GAME OVER", "Press Enter or Esc to return to menu")
 	_position_lucky_terminal()
 	if player != null:
 		player.died.connect(_on_player_died)
@@ -52,11 +54,11 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _game_over:
 		if event.is_action_pressed("ui_accept"):
-			get_tree().reload_current_scene()
+			_return_to_main_menu()
 		elif event.is_action_pressed("restart"):
-			get_tree().reload_current_scene()
+			_return_to_main_menu()
 		elif event.is_action_pressed("ui_cancel"):
-			get_tree().quit()
+			_return_to_main_menu()
 		return
 	if event.is_action_pressed("ui_cancel"):
 		if level_up_panel != null and level_up_panel.visible:
@@ -78,7 +80,7 @@ func _on_player_died() -> void:
 		hand_augment_panel.call("dismiss")
 	if level_up_panel != null:
 		level_up_panel.dismiss()
-	_update_game_over_ui(true, "GAME OVER", "Press Enter to restart or Esc to quit")
+	_update_game_over_ui(true, "GAME OVER", "Press Enter or Esc to return to menu")
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
 		enemy_spawner.stop_enemies()
@@ -227,9 +229,16 @@ func _on_player_exited_run() -> void:
 	_clear_enemies()
 	var has_royal_flush: bool = player != null and player.has_royal_flush_run()
 	if has_royal_flush:
-		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter to restart.")
+		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.")
 	else:
-		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter to restart.")
+		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.")
+
+func _return_to_main_menu() -> void:
+	get_tree().paused = false
+	if MAIN_MENU_SCENE == null:
+		get_tree().quit()
+		return
+	get_tree().change_scene_to_packed(MAIN_MENU_SCENE)
 
 func _on_player_hand_locked(_hand_name: String, _player_profile: Dictionary, enemy_profile: Dictionary) -> void:
 	if enemy_spawner != null:
