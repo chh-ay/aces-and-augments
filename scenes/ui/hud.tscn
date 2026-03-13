@@ -132,6 +132,12 @@ value = 100.0
 theme_override_styles/background = SubResource("StyleBoxFlat_health_under")
 theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
 
+[node name="AimLabel" type="Label" parent="TopCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
+theme_override_font_sizes/font_size = 10
+text = "Aim Auto [Q]"
+
 [node name="BottomCard" type="PanelContainer" parent="." unique_id=722198421]
 anchor_left = 0.5
 anchor_top = 1.0

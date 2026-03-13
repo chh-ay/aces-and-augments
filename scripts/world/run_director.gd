@@ -30,6 +30,10 @@ func reset() -> void:
 	_last_emitted_second = -1
 	_emit_time_if_needed(true)
 
+func stop() -> void:
+	_expired = true
+	_emit_time_if_needed(true)
+
 func _emit_time_if_needed(force: bool) -> void:
 	var shown_second: int = int(ceil(remaining_seconds))
 	if not force and shown_second == _last_emitted_second:

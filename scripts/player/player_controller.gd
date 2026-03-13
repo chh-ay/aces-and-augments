@@ -11,6 +11,7 @@ signal level_up_requested(choices: Array)
 signal hand_updated(state: Dictionary)
 signal hand_selection_requested(choices: Array, summary: Dictionary)
 signal hand_locked(hand_name: String, player_profile: Dictionary, enemy_profile: Dictionary)
+signal aim_mode_changed(is_manual: bool)
 
 const UPGRADE_RARITIES: Array[Dictionary] = [
 	{"name": "Common", "weight": 60.0, "band_min": 0.00, "band_max": 0.24, "color": Color("c7d0d9")},
@@ -85,6 +86,11 @@ const ENEMY_STAT_LABELS: Dictionary = {
 	"speed": "enemy speed"
 }
 
+enum AimMode {
+	AUTO,
+	MANUAL
+}
+
 @export var move_speed: float = 200.0
 @export var max_health: int = 100
 @export var arena_path: NodePath
@@ -97,6 +103,8 @@ const ENEMY_STAT_LABELS: Dictionary = {
 @export_range(0.0, 0.5, 0.01) var lifesteal_ratio: float = 0.0
 @export var min_effective_move_speed: float = 80.0
 @export var max_effective_move_speed: float = 360.0
+@export var aim_mode: int = AimMode.AUTO
+@export var manual_aim_deadzone: float = 10.0
 
 var current_health: int = 0
 var current_experience: int = 0
@@ -143,6 +151,7 @@ var _meta_upgrade_bonus: Dictionary = {
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var _camera: Camera2D = $Camera2D
 @onready var _hit_flash_target: CanvasItem = $AnimatedSprite2D
+@onready var _aim_crosshair = $AimCrosshair
 
 var _shake_strength: float = 0.0
 var _shake_time_remaining: float = 0.0
@@ -163,6 +172,8 @@ func _ready() -> void:
 	_ensure_hit_flash_material()
 	_update_animation()
 	_clamp_to_arena()
+	_update_aim_mode_visuals()
+	aim_mode_changed.emit(is_manual_aim_enabled())
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -177,6 +188,7 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	_update_screen_shake(delta)
 	_update_hit_flash(delta)
+	_update_crosshair()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_dead or get_tree().paused:
@@ -184,6 +196,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("lock_hand"):
 		get_viewport().set_input_as_handled()
 		lock_current_hand()
+	elif event.is_action_pressed("toggle_aim_mode"):
+		get_viewport().set_input_as_handled()
+		toggle_aim_mode()
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
@@ -344,6 +359,20 @@ func get_effective_attack_interval() -> float:
 
 func get_effective_attack_range() -> float:
 	return attack_range * float(_player_augment_profile.get("range", 1.0))
+
+func is_manual_aim_enabled() -> bool:
+	return aim_mode == AimMode.MANUAL
+
+func toggle_aim_mode() -> void:
+	aim_mode = AimMode.MANUAL if aim_mode == AimMode.AUTO else AimMode.AUTO
+	_update_aim_mode_visuals()
+	aim_mode_changed.emit(is_manual_aim_enabled())
+
+func get_manual_aim_direction() -> Vector2:
+	var aim_vector: Vector2 = get_global_mouse_position() - global_position
+	if aim_vector.length_squared() <= manual_aim_deadzone * manual_aim_deadzone:
+		return Vector2.ZERO
+	return aim_vector.normalized()
 
 func get_effective_max_health() -> int:
 	var base_health: int = max_health + int(_meta_upgrade_bonus.get("max_health", 0))
@@ -618,7 +647,22 @@ func _update_screen_shake(delta: float) -> void:
 	)
 	if _shake_time_remaining <= 0.0:
 		_shake_strength = 0.0
-		_camera.offset = Vector2.ZERO
+
+func _update_aim_mode_visuals() -> void:
+	if _aim_crosshair != null and _aim_crosshair.has_method("set_active"):
+		_aim_crosshair.set_active(is_manual_aim_enabled())
+
+func _update_crosshair() -> void:
+	if _aim_crosshair == null:
+		return
+	if not is_manual_aim_enabled() or _is_dead:
+		if _aim_crosshair.has_method("set_active"):
+			_aim_crosshair.set_active(false)
+		return
+	if _aim_crosshair.has_method("set_active"):
+		_aim_crosshair.set_active(true)
+	if _aim_crosshair.has_method("set_world_position"):
+		_aim_crosshair.set_world_position(get_global_mouse_position())
 
 func _ensure_hit_flash_material() -> void:
 	if _hit_flash_target == null:

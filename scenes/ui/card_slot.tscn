@@ -15,7 +15,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [node name="CardSlot" type="PanelContainer"]
-custom_minimum_size = Vector2(38, 58)
+custom_minimum_size = Vector2(38, 46)
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 script = ExtResource("1_card_slot")
 
@@ -26,14 +26,14 @@ theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="Face" type="TextureRect" parent="Margin"]
+[node name="CardTexture" type="TextureRect" parent="Margin"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 stretch_mode = 5
 
 [node name="Placeholder" type="Label" parent="Margin"]
-visible = false
+visible = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4

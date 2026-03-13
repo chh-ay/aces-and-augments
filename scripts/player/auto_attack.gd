@@ -17,12 +17,20 @@ func _physics_process(delta: float) -> void:
 	_cooldown = max(_cooldown - delta, 0.0)
 	if _cooldown > 0.0:
 		return
-	var target: Node2D = _find_target(player)
-	if target == null or projectile_scene == null:
+	if projectile_scene == null:
 		return
-	var direction: Vector2 = (target.global_position - player.global_position).normalized()
-	if direction == Vector2.ZERO:
-		direction = Vector2.RIGHT
+	var direction: Vector2 = Vector2.ZERO
+	if player.is_manual_aim_enabled():
+		direction = player.get_manual_aim_direction()
+		if direction == Vector2.ZERO:
+			return
+	else:
+		var target: Node2D = _find_target(player)
+		if target == null:
+			return
+		direction = (target.global_position - player.global_position).normalized()
+		if direction == Vector2.ZERO:
+			direction = Vector2.RIGHT
 	if _pool_manager == null or not is_instance_valid(_pool_manager):
 		_pool_manager = get_tree().get_first_node_in_group("pool_manager")
 	var projectile_node: Node = _pool_manager.call("spawn", projectile_scene, get_tree().current_scene) as Node if _pool_manager != null else projectile_scene.instantiate()

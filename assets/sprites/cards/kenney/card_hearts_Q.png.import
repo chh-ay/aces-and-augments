@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dw05rrwtdphwo"
-path="res://.godot/imported/cards_sheet.png-b1351b62927642a55800b068c8aea639.ctex"
+uid="uid://bgrkerb2tk1x5"
+path="res://.godot/imported/card_hearts_Q.png-e18f2e57fbbf2208ac934a31a189bab7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/cards/cards_sheet.png"
-dest_files=["res://.godot/imported/cards_sheet.png-b1351b62927642a55800b068c8aea639.ctex"]
+source_file="res://assets/sprites/cards/kenney/card_hearts_Q.png"
+dest_files=["res://.godot/imported/card_hearts_Q.png-e18f2e57fbbf2208ac934a31a189bab7.ctex"]
 
 [params]
 

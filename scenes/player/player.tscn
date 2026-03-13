@@ -23,6 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://nuaqys57mem6" path="res://assets/sprites/player/animations/walking/north/frame_005.png" id="15_iqsei"]
 [ext_resource type="Script" uid="uid://btvwvqw4ksb87" path="res://scripts/player/auto_attack.gd" id="22_yj68g"]
 [ext_resource type="PackedScene" uid="uid://dw343j23olv2t" path="res://scenes/player/player_projectile.tscn" id="23_ioxgp"]
+[ext_resource type="Script" path="res://scripts/player/aim_crosshair.gd" id="24_cross"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_x7p2l"]
 radius = 12.0
@@ -156,6 +157,9 @@ shape = SubResource("CircleShape2D_x7p2l")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=242730986]
 sprite_frames = SubResource("SpriteFrames_gx1jg")
 animation = &"walk_south"
+
+[node name="AimCrosshair" type="Node2D" parent="."]
+script = ExtResource("24_cross")
 
 [node name="AutoAttack" type="Node" parent="." unique_id=355699993]
 script = ExtResource("22_yj68g")

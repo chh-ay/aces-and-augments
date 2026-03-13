@@ -53,6 +53,8 @@ func _ready() -> void:
 		player.level_up_requested.connect(_on_player_level_up_requested)
 		player.hand_selection_requested.connect(_on_player_hand_selection_requested)
 		player.hand_locked.connect(_on_player_hand_locked)
+		if player.has_signal("aim_mode_changed"):
+			player.aim_mode_changed.connect(_on_player_aim_mode_changed)
 	if hud != null and player != null:
 		hud.bind_player(player)
 	if hud != null and run_director != null:
@@ -69,6 +71,7 @@ func _ready() -> void:
 		run_director.time_expired.connect(_on_run_time_expired)
 	if floor_generator != null and floor_generator.has_initial_chunks_ready():
 		call_deferred("_complete_boot_sequence")
+	_update_mouse_mode()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _game_over:
@@ -94,6 +97,8 @@ func _on_player_died() -> void:
 	_game_over = true
 	_pause_open = false
 	get_tree().paused = false
+	if run_director != null:
+		run_director.stop()
 	if pause_menu != null:
 		pause_menu.dismiss()
 	if hand_augment_panel != null and hand_augment_panel.has_method("dismiss"):
@@ -104,6 +109,7 @@ func _on_player_died() -> void:
 	if enemy_spawner != null:
 		enemy_spawner.set_active(false)
 		enemy_spawner.stop_enemies()
+	_update_mouse_mode()
 
 func _update_game_over_ui(should_show: bool, title_text: String, hint_text: String, art_texture: Texture2D = null) -> void:
 	if game_over_ui != null:
@@ -126,6 +132,7 @@ func _on_player_level_up_requested(choices: Array) -> void:
 		hud.visible = false
 	level_up_panel.present(choices, summary)
 	get_tree().paused = true
+	_update_mouse_mode()
 
 func _on_level_up_option_selected(stat_id: String) -> void:
 	if player != null:
@@ -135,6 +142,7 @@ func _on_level_up_option_selected(stat_id: String) -> void:
 	if hud != null:
 		hud.visible = true
 	get_tree().paused = false
+	_update_mouse_mode()
 
 func _on_player_hand_selection_requested(choices: Array, summary: Dictionary) -> void:
 	if hand_augment_panel == null:
@@ -143,6 +151,7 @@ func _on_player_hand_selection_requested(choices: Array, summary: Dictionary) ->
 		hud.visible = false
 	hand_augment_panel.call("present", choices, summary)
 	get_tree().paused = true
+	_update_mouse_mode()
 
 func _on_hand_augment_option_selected(choice_id: String) -> void:
 	if player != null:
@@ -152,6 +161,7 @@ func _on_hand_augment_option_selected(choice_id: String) -> void:
 	if hud != null:
 		hud.visible = true
 	get_tree().paused = false
+	_update_mouse_mode()
 
 func _open_pause_menu() -> void:
 	if pause_menu == null or _game_over:
@@ -159,6 +169,7 @@ func _open_pause_menu() -> void:
 	_pause_open = true
 	get_tree().paused = true
 	pause_menu.present()
+	_update_mouse_mode()
 
 func _close_pause_menu() -> void:
 	if pause_menu == null:
@@ -166,6 +177,7 @@ func _close_pause_menu() -> void:
 	_pause_open = false
 	pause_menu.dismiss()
 	get_tree().paused = false
+	_update_mouse_mode()
 
 func _on_pause_resume_requested() -> void:
 	_close_pause_menu()
@@ -256,6 +268,8 @@ func _on_player_exited_run() -> void:
 	_game_over = true
 	_pause_open = false
 	get_tree().paused = false
+	if run_director != null:
+		run_director.stop()
 	if pause_menu != null:
 		pause_menu.dismiss()
 	if enemy_spawner != null:
@@ -275,6 +289,7 @@ func _on_player_exited_run() -> void:
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_bad", 1.0, -2.0)
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.", BAD_ENDING_TEXTURE)
+	_update_mouse_mode()
 
 func _return_to_main_menu() -> void:
 	get_tree().paused = false
@@ -332,3 +347,25 @@ func _set_boot_state(is_booting: bool) -> void:
 		enemy_spawner.process_mode = Node.PROCESS_MODE_DISABLED if is_booting else Node.PROCESS_MODE_INHERIT
 	if run_director != null:
 		run_director.process_mode = Node.PROCESS_MODE_DISABLED if is_booting else Node.PROCESS_MODE_INHERIT
+	_update_mouse_mode()
+
+func _on_player_aim_mode_changed(_is_manual: bool) -> void:
+	_update_mouse_mode()
+
+func _update_mouse_mode() -> void:
+	if boot_overlay != null and boot_overlay.visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
+	if _game_over or _pause_open:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
+	if level_up_panel != null and level_up_panel.visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
+	if hand_augment_panel != null and hand_augment_panel.visible:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
+	if player != null and player.has_method("is_manual_aim_enabled") and player.is_manual_aim_enabled():
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+		return
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

@@ -3,6 +3,7 @@ extends CanvasLayer
 
 @onready var _health_bar: ProgressBar = $TopCard/Margin/VBox/HealthBar
 @onready var _health_label: Label = $TopCard/Margin/VBox/HealthHeader/HealthLabel
+@onready var _aim_label: Label = $TopCard/Margin/VBox/AimLabel
 @onready var _xp_bar: ProgressBar = $BottomCard/Margin/VBox/XpBar
 @onready var _xp_label: Label = $BottomCard/Margin/VBox/XpLabel
 @onready var _hand_summary_label: Label = $HandCard/Margin/VBox/SummaryLabel
@@ -24,6 +25,7 @@ func bind_player(player: PlayerController) -> void:
 	player.health_changed.connect(_on_health_changed)
 	player.experience_changed.connect(_on_experience_changed)
 	player.hand_updated.connect(_on_hand_updated)
+	player.aim_mode_changed.connect(_on_aim_mode_changed)
 	if _lock_button != null and not _lock_button.pressed.is_connected(_on_lock_button_pressed):
 		_lock_button.pressed.connect(_on_lock_button_pressed)
 	_health_bar.max_value = player.get_effective_max_health()
@@ -32,6 +34,7 @@ func bind_player(player: PlayerController) -> void:
 	_xp_bar.max_value = player.required_experience
 	_xp_bar.value = player.current_experience
 	_xp_label.text = "LV %d" % player.current_level
+	_on_aim_mode_changed(player.is_manual_aim_enabled())
 	_apply_hand_state(player._build_hand_state())
 
 func bind_run_director(run_director: RunDirector) -> void:
@@ -52,6 +55,11 @@ func _on_experience_changed(current_xp: int, required_xp: int, level: int) -> vo
 	_xp_bar.max_value = required_xp
 	_xp_bar.value = current_xp
 	_xp_label.text = "LV %d" % level
+
+func _on_aim_mode_changed(is_manual: bool) -> void:
+	if _aim_label == null:
+		return
+	_aim_label.text = "Aim %s [Q]" % ("Manual" if is_manual else "Auto")
 
 func _on_hand_updated(state: Dictionary) -> void:
 	_apply_hand_state(state)
