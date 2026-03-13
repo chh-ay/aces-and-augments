@@ -38,6 +38,7 @@ const FLOOR_DETAIL_Z_INDEX: int = -20
 @export var noise_frequency: float = 0.04 # Noise scale; lower = larger blobs.
 @export var noise_smoothing_radius: int = 1 # Box blur radius for smoother terrain.
 @export var max_chunk_rows_generated_per_frame: int = 8
+@export var max_chunk_rows_cleared_per_frame: int = 12
 
 var _player: Node2D
 var _floor_base: TileMapLayer
@@ -57,6 +58,9 @@ var _last_chunk: Vector2i = INVALID_CHUNK
 var _queued_chunks: Array[Vector2i] = []
 var _queued_chunk_lookup: Dictionary = {}
 var _active_chunk_job: Dictionary = {}
+var _queued_clear_chunks: Array[Vector2i] = []
+var _queued_clear_lookup: Dictionary = {}
+var _active_clear_job: Dictionary = {}
 
 func _ready() -> void:
 	_player = get_node_or_null(player_path) as Node2D
@@ -164,6 +168,9 @@ func _init_floor() -> void:
 	_queued_chunks.clear()
 	_queued_chunk_lookup.clear()
 	_active_chunk_job.clear()
+	_queued_clear_chunks.clear()
+	_queued_clear_lookup.clear()
+	_active_clear_job.clear()
 	_last_chunk = INVALID_CHUNK
 	_update_floor_chunks()
 
@@ -179,6 +186,7 @@ func _update_floor_chunks() -> void:
 			var c: Vector2i = Vector2i(x, y)
 			if not _is_chunk_within_world_limit(c):
 				continue
+			_cancel_chunk_clear(c)
 			if not _generated_chunks.has(c):
 				_queue_chunk_generation(c)
 	_prune_chunks(chunk)
@@ -262,9 +270,7 @@ func _prune_chunks(center: Vector2i) -> void:
 		if max(dx, dy) > chunk_limit:
 			to_remove.append(chunk)
 	for chunk in to_remove:
-		_clear_chunk(chunk)
-		_generated_chunks.erase(chunk)
-		chunk_cleared.emit(chunk)
+		_queue_chunk_clear(chunk)
 
 func _queue_chunk_generation(chunk: Vector2i) -> void:
 	if _generated_chunks.has(chunk) or _queued_chunk_lookup.has(chunk):
@@ -279,7 +285,7 @@ func _drain_chunk_queue() -> void:
 	while budget > 0:
 		if _active_chunk_job.is_empty():
 			if _queued_chunks.is_empty():
-				return
+				break
 			var chunk: Vector2i = _queued_chunks.pop_front()
 			_queued_chunk_lookup.erase(chunk)
 			if _generated_chunks.has(chunk):
@@ -292,14 +298,82 @@ func _drain_chunk_queue() -> void:
 		if int(_active_chunk_job.get("row_index", 0)) >= chunk_size.y:
 			_finalize_chunk_job(_active_chunk_job)
 			_active_chunk_job.clear()
+	_drain_chunk_clear_queue()
 
 func _clear_chunk(chunk: Vector2i) -> void:
+	var job: Dictionary = _create_chunk_clear_job(chunk)
+	if job.is_empty():
+		return
+	while int(job.get("row_index", 0)) < chunk_size.y:
+		_clear_chunk_row(job)
+	_finalize_chunk_clear_job(job)
+
+func _create_chunk_clear_job(chunk: Vector2i) -> Dictionary:
 	var start_x: int = chunk.x * chunk_size.x
 	var start_y: int = chunk.y * chunk_size.y
-	for y in range(start_y, start_y + chunk_size.y):
-		for x in range(start_x, start_x + chunk_size.x):
-			_floor_base.erase_cell(Vector2i(x, y))
-			_floor_detail.erase_cell(Vector2i(x, y))
+	return {
+		"chunk": chunk,
+		"start_x": start_x,
+		"start_y": start_y,
+		"row_index": 0,
+		"regenerate": false
+	}
+
+func _clear_chunk_row(job: Dictionary) -> void:
+	var start_x: int = int(job.get("start_x", 0))
+	var start_y: int = int(job.get("start_y", 0))
+	var row_index: int = int(job.get("row_index", 0))
+	var y: int = start_y + row_index
+	for x in range(start_x, start_x + chunk_size.x):
+		_floor_base.erase_cell(Vector2i(x, y))
+		_floor_detail.erase_cell(Vector2i(x, y))
+	job["row_index"] = row_index + 1
+
+func _finalize_chunk_clear_job(job: Dictionary) -> void:
+	var chunk: Vector2i = job.get("chunk", INVALID_CHUNK)
+	if chunk == INVALID_CHUNK:
+		return
+	_generated_chunks.erase(chunk)
+	chunk_cleared.emit(chunk)
+	if bool(job.get("regenerate", false)):
+		_queue_chunk_generation(chunk)
+
+func _queue_chunk_clear(chunk: Vector2i) -> void:
+	if _queued_clear_lookup.has(chunk):
+		return
+	if _active_clear_job.get("chunk", INVALID_CHUNK) == chunk:
+		return
+	_queued_clear_chunks.append(chunk)
+	_queued_clear_lookup[chunk] = true
+
+func _drain_chunk_clear_queue() -> void:
+	var budget: int = max(max_chunk_rows_cleared_per_frame, 1)
+	if budget <= 0:
+		return
+	while budget > 0:
+		if _active_clear_job.is_empty():
+			if _queued_clear_chunks.is_empty():
+				return
+			var chunk: Vector2i = _queued_clear_chunks.pop_front()
+			_queued_clear_lookup.erase(chunk)
+			if not _generated_chunks.has(chunk):
+				continue
+			_active_clear_job = _create_chunk_clear_job(chunk)
+			if _active_clear_job.is_empty():
+				continue
+		_clear_chunk_row(_active_clear_job)
+		budget -= 1
+		if int(_active_clear_job.get("row_index", 0)) >= chunk_size.y:
+			_finalize_chunk_clear_job(_active_clear_job)
+			_active_clear_job.clear()
+
+func _cancel_chunk_clear(chunk: Vector2i) -> void:
+	if _queued_clear_lookup.has(chunk):
+		_queued_clear_lookup.erase(chunk)
+		_queued_clear_chunks.erase(chunk)
+		return
+	if _active_clear_job.get("chunk", INVALID_CHUNK) == chunk:
+		_active_clear_job["regenerate"] = true
 
 func _corner_type(noise: FastNoiseLite, x: int, y: int) -> String:
 	var value: float = _smoothed_noise(noise, x, y)
