@@ -1,7 +1,7 @@
 class_name Main
 extends Node2D
 
-const MAIN_MENU_SCENE: PackedScene = preload("res://scenes/ui/main_menu.tscn")
+const MAIN_MENU_SCENE_PATH: String = "res://scenes/ui/main_menu.tscn"
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
@@ -244,10 +244,11 @@ func _on_player_exited_run() -> void:
 
 func _return_to_main_menu() -> void:
 	get_tree().paused = false
-	if MAIN_MENU_SCENE == null:
+	var main_menu_scene: PackedScene = load(MAIN_MENU_SCENE_PATH) as PackedScene
+	if main_menu_scene == null:
 		get_tree().quit()
 		return
-	get_tree().change_scene_to_packed(MAIN_MENU_SCENE)
+	get_tree().change_scene_to_packed(main_menu_scene)
 
 func _on_player_hand_locked(_hand_name: String, _player_profile: Dictionary, enemy_profile: Dictionary) -> void:
 	if enemy_spawner != null:
