@@ -29,6 +29,24 @@ const SFX_THROTTLES: Dictionary = {
 	"card_pickup": 0.07,
 	"player_hit": 0.10
 }
+const MUSIC_GAIN_DB: Dictionary = {
+	"menu": 8.0,
+	"run": 6.0
+}
+const SFX_GAIN_DB: Dictionary = {
+	"shoot": 3.0,
+	"enemy_hit": 4.0,
+	"enemy_die": 3.0,
+	"xp_pickup": 5.0,
+	"card_pickup": 4.0,
+	"player_hit": 3.0,
+	"player_defeat": 2.0,
+	"level_up": 2.0,
+	"hand_lock": 2.0,
+	"boss_defeat": 1.5,
+	"ending_good": 1.5,
+	"ending_bad": 1.5
+}
 
 var _master_bus_index: int = -1
 var _sfx_players: Array[AudioStreamPlayer] = []
@@ -113,7 +131,7 @@ func play_sfx(sfx_id: String, pitch_scale: float = 1.0, volume_db: float = 0.0) 
 	player.stop()
 	player.stream = stream
 	player.pitch_scale = pitch_scale
-	player.volume_db = volume_db
+	player.volume_db = volume_db + float(SFX_GAIN_DB.get(sfx_id, 0.0))
 	player.play()
 
 func play_music(music_id: String, volume_db: float = -14.0) -> void:
@@ -128,7 +146,7 @@ func play_music(music_id: String, volume_db: float = -14.0) -> void:
 	_current_music_id = music_id
 	_music_player.stop()
 	_music_player.stream = _make_looping_stream(stream)
-	_music_player.volume_db = volume_db
+	_music_player.volume_db = volume_db + float(MUSIC_GAIN_DB.get(music_id, 0.0))
 	_music_player.play()
 
 func stop_music() -> void:
