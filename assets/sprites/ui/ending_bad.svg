@@ -1,28 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="540" height="236" viewBox="0 0 540 236">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#11090f"/>
-      <stop offset="100%" stop-color="#1a1017"/>
+      <stop offset="0%" stop-color="#0f0a10"/>
+      <stop offset="100%" stop-color="#1d1420"/>
     </linearGradient>
     <linearGradient id="panel" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#29141d"/>
-      <stop offset="100%" stop-color="#351824"/>
+      <stop offset="0%" stop-color="#23141c"/>
+      <stop offset="100%" stop-color="#36202a"/>
     </linearGradient>
   </defs>
 
   <rect width="540" height="236" rx="22" fill="url(#bg)"/>
   <rect x="12" y="12" width="516" height="212" rx="18" fill="none" stroke="#ff6c63" stroke-width="2"/>
-  <rect x="30" y="32" width="480" height="172" rx="18" fill="url(#panel)" stroke="#ff7d56" stroke-width="1.5"/>
+  <rect x="30" y="32" width="480" height="172" rx="18" fill="url(#panel)" stroke="#ff6c63" stroke-width="1.5"/>
 
-  <rect x="54" y="58" width="118" height="118" rx="14" fill="#120b11" stroke="#ff7d56" stroke-width="2"/>
-  <line x1="77" y1="148" x2="149" y2="76" stroke="#ffb347" stroke-width="8" stroke-linecap="round"/>
-  <line x1="77" y1="76" x2="149" y2="148" stroke="#ff6c63" stroke-width="8" stroke-linecap="round"/>
-  <rect x="196" y="58" width="290" height="118" rx="14" fill="#441824" stroke="#ff7d56" stroke-width="1.5"/>
-  <rect x="218" y="78" width="246" height="18" rx="9" fill="#5b2432"/>
-  <rect x="218" y="108" width="194" height="14" rx="7" fill="#7d3342"/>
-  <rect x="218" y="132" width="224" height="14" rx="7" fill="#6e2b39"/>
-  <rect x="218" y="156" width="168" height="8" rx="4" fill="#ffb347"/>
+  <rect x="54" y="58" width="118" height="118" rx="14" fill="#110912" stroke="#ffcb4a" stroke-width="2"/>
+  <line x1="78" y1="147" x2="148" y2="77" stroke="#ffb347" stroke-width="8" stroke-linecap="round"/>
+  <line x1="78" y1="77" x2="148" y2="147" stroke="#ff6c63" stroke-width="8" stroke-linecap="round"/>
 
-  <rect x="228" y="186" width="220" height="10" rx="5" fill="#3a1a24"/>
+  <rect x="196" y="58" width="290" height="118" rx="14" fill="#472736" stroke="#ff7d56" stroke-width="1.5"/>
+  <rect x="218" y="78" width="246" height="18" rx="9" fill="#5f3947"/>
+  <rect x="218" y="108" width="194" height="14" rx="7" fill="#955462"/>
+  <rect x="218" y="132" width="224" height="14" rx="7" fill="#7a4757"/>
+  <rect x="218" y="156" width="168" height="8" rx="4" fill="#ffcb4a"/>
+
+  <rect x="228" y="186" width="220" height="10" rx="5" fill="#44252f"/>
   <rect x="228" y="186" width="220" height="10" rx="5" fill="#ff7d56"/>
 </svg>

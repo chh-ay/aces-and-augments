@@ -215,6 +215,11 @@ offset_right = 380.0
 offset_bottom = 210.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_panel")
 
+[node name="EndingPanelHost" type="Control" parent="CanvasLayer/GameOver/Panel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
 [node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOver/Panel" unique_id=1051045196]
 layout_mode = 0
 anchor_right = 1.0

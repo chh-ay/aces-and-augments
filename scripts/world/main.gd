@@ -4,6 +4,8 @@ extends Node2D
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/ui/main_menu.tscn"
 const GOOD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_good.svg")
 const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_bad.svg")
+const GOOD_ENDING_PANEL_SCENE: PackedScene = preload("res://scenes/ui/good_ending_panel.tscn")
+const BAD_ENDING_PANEL_SCENE: PackedScene = preload("res://scenes/ui/bad_ending_panel.tscn")
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
@@ -14,6 +16,8 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
 @onready var floor_generator: FloorGenerator = $FloorGenerator
 @onready var game_over_ui: Control = $CanvasLayer/GameOver
+@onready var ending_panel_host: Control = $CanvasLayer/GameOver/Panel/EndingPanelHost
+@onready var game_over_default_vbox: VBoxContainer = $CanvasLayer/GameOver/Panel/VBox
 @onready var game_over_title: Label = $CanvasLayer/GameOver/Panel/VBox/Title
 @onready var game_over_art: TextureRect = $CanvasLayer/GameOver/Panel/VBox/ArtCenter/EndingArt
 @onready var game_over_hint: Label = $CanvasLayer/GameOver/Panel/VBox/HintCard/Margin/Hint
@@ -39,6 +43,7 @@ var _last_boss_defeat_position: Vector2 = Vector2.ZERO
 var _run_rewards_committed: bool = false
 var _boot_completed: bool = false
 var _lucky_terminals: Array[LuckyTerminal] = []
+var _active_ending_panel: Control
 
 func _ready() -> void:
 	_set_boot_state(true)
@@ -121,6 +126,9 @@ func _on_player_died() -> void:
 func _update_game_over_ui(should_show: bool, title_text: String, hint_text: String, art_texture: Texture2D = null) -> void:
 	if game_over_ui != null:
 		game_over_ui.visible = should_show
+	_clear_result_panel()
+	if game_over_default_vbox != null:
+		game_over_default_vbox.visible = should_show
 	if game_over_title != null:
 		game_over_title.text = title_text
 	if game_over_art != null:
@@ -128,6 +136,24 @@ func _update_game_over_ui(should_show: bool, title_text: String, hint_text: Stri
 		game_over_art.visible = art_texture != null
 	if game_over_hint != null:
 		game_over_hint.text = hint_text
+
+func _show_result_panel(panel_scene: PackedScene) -> void:
+	if not should_instance_result_panel(panel_scene):
+		return
+	_clear_result_panel()
+	if game_over_default_vbox != null:
+		game_over_default_vbox.visible = false
+	var panel_instance: Control = panel_scene.instantiate() as Control
+	_active_ending_panel = panel_instance
+	ending_panel_host.add_child(panel_instance)
+
+func _clear_result_panel() -> void:
+	if is_instance_valid(_active_ending_panel):
+		_active_ending_panel.queue_free()
+	_active_ending_panel = null
+
+func should_instance_result_panel(panel_scene: PackedScene) -> bool:
+	return ending_panel_host != null and panel_scene != null
 
 func _on_player_level_up_requested(choices: Array) -> void:
 	if level_up_panel == null:
@@ -305,12 +331,14 @@ func _on_player_exited_run() -> void:
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_good", 1.0, -2.0)
 		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.", GOOD_ENDING_TEXTURE)
+		_show_result_panel(GOOD_ENDING_PANEL_SCENE)
 	else:
 		if player != null:
 			player.add_screen_shake(6.0, 0.18)
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_bad", 1.0, -2.0)
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.", BAD_ENDING_TEXTURE)
+		_show_result_panel(BAD_ENDING_PANEL_SCENE)
 	_update_mouse_mode()
 
 func _return_to_main_menu() -> void:
