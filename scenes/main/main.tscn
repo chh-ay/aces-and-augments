@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://dw343j23olv2t" path="res://scenes/player/player_projectile.tscn" id="13_proj"]
 [ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="14_orb"]
 [ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="15_card"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/run_loop.wav" id="16_run_music"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boot_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.98)
@@ -66,6 +67,10 @@ corner_radius_bottom_left = 10
 script = ExtResource("1")
 boss_scene = ExtResource("8_tbe87")
 exit_door_scene = ExtResource("8_xdoor")
+
+[node name="RunMusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("16_run_music")
+bus = &"Master"
 
 [node name="Player" parent="." unique_id=10213486 instance=ExtResource("3")]
 arena_path = NodePath("../Arena")

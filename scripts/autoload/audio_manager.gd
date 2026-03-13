@@ -54,6 +54,8 @@ var _sfx_cursor: int = 0
 var _sfx_last_played_at: Dictionary = {}
 var _music_player: AudioStreamPlayer
 var _current_music_id: String = ""
+var _pending_music_id: String = ""
+var _pending_music_volume_db: float = -14.0
 
 func _ready() -> void:
 	_master_bus_index = AudioServer.get_bus_index(MASTER_BUS_NAME)
@@ -135,6 +137,33 @@ func play_sfx(sfx_id: String, pitch_scale: float = 1.0, volume_db: float = 0.0) 
 	player.play()
 
 func play_music(music_id: String, volume_db: float = -14.0) -> void:
+	if not MUSIC_STREAMS.has(music_id):
+		return
+	_pending_music_id = music_id
+	_pending_music_volume_db = volume_db
+	call_deferred("_play_music_deferred")
+
+func stop_music() -> void:
+	_current_music_id = ""
+	_pending_music_id = ""
+	if _music_player != null:
+		_music_player.stop()
+
+func get_music_stream(music_id: String, should_loop: bool = true) -> AudioStream:
+	var stream: AudioStream = MUSIC_STREAMS.get(music_id, null)
+	if stream == null:
+		return null
+	return _make_looping_stream(stream) if should_loop else stream
+
+func get_music_volume_db(music_id: String, base_volume_db: float = -14.0) -> float:
+	return base_volume_db + float(MUSIC_GAIN_DB.get(music_id, 0.0))
+
+func _play_music_deferred() -> void:
+	if _pending_music_id.is_empty():
+		return
+	var music_id: String = _pending_music_id
+	var volume_db: float = _pending_music_volume_db
+	_pending_music_id = ""
 	var stream: AudioStream = MUSIC_STREAMS.get(music_id, null)
 	if stream == null:
 		return
@@ -148,11 +177,8 @@ func play_music(music_id: String, volume_db: float = -14.0) -> void:
 	_music_player.stream = _make_looping_stream(stream)
 	_music_player.volume_db = volume_db + float(MUSIC_GAIN_DB.get(music_id, 0.0))
 	_music_player.play()
-
-func stop_music() -> void:
-	_current_music_id = ""
-	if _music_player != null:
-		_music_player.stop()
+	if CustomLogger != null and CustomLogger.has_method("info"):
+		CustomLogger.info("Music started: %s" % music_id, "Audio")
 
 func _get_save_manager() -> Node:
 	var main_loop: MainLoop = Engine.get_main_loop()
@@ -186,6 +212,7 @@ func _ensure_music_player() -> void:
 		return
 	_music_player = AudioStreamPlayer.new()
 	_music_player.bus = MASTER_BUS_NAME
+	_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_music_player)
 
 func _should_throttle_sfx(sfx_id: String) -> bool:

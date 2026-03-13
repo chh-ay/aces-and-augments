@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/how_to_play_menu.tscn" id="5_howto"]
 [ext_resource type="PackedScene" path="res://scenes/ui/credits_menu.tscn" id="6_credits"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/menu_loop.wav" id="7_menu_music"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.05, 0.08, 0.11, 0.96)
@@ -62,6 +63,10 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.03, 0.05, 0.08, 1)
+
+[node name="MenuMusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_menu_music")
+bus = &"Master"
 
 [node name="Center" type="CenterContainer" parent="." unique_id=486536126]
 layout_mode = 0

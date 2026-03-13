@@ -8,6 +8,7 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
 
+@onready var music_player: AudioStreamPlayer = $RunMusicPlayer
 @onready var player: PlayerController = $Player
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
 @onready var floor_generator: FloorGenerator = $FloorGenerator
@@ -38,8 +39,7 @@ var _boot_completed: bool = false
 
 func _ready() -> void:
 	_set_boot_state(true)
-	if AudioManager != null and AudioManager.has_method("play_music"):
-		AudioManager.play_music("run", -14.0)
+	_start_run_music()
 	if floor_generator != null and floor_generator.has_signal("initial_chunks_ready") and not floor_generator.initial_chunks_ready.is_connected(_on_initial_chunks_ready):
 		floor_generator.initial_chunks_ready.connect(_on_initial_chunks_ready, CONNECT_ONE_SHOT)
 	if GameManager != null and GameManager.has_method("begin_run"):
@@ -369,3 +369,16 @@ func _update_mouse_mode() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 		return
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func _start_run_music() -> void:
+	if music_player == null:
+		return
+	if AudioManager != null:
+		if AudioManager.has_method("stop_music"):
+			AudioManager.stop_music()
+		if AudioManager.has_method("get_music_stream"):
+			music_player.stream = AudioManager.get_music_stream("run", true)
+		if AudioManager.has_method("get_music_volume_db"):
+			music_player.volume_db = AudioManager.get_music_volume_db("run", -14.0)
+	if music_player.stream != null:
+		music_player.play()

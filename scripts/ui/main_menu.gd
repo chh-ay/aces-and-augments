@@ -4,6 +4,7 @@ extends Control
 @export var run_scene: PackedScene
 @export var test_scene: PackedScene
 
+@onready var _music_player: AudioStreamPlayer = $MenuMusicPlayer
 @onready var _difficulty_button: Button = $Center/Panel/Margin/VBox/DifficultyButton
 @onready var _difficulty_hint: Label = $Center/Panel/Margin/VBox/DifficultyHint
 @onready var _start_button: Button = $Center/Panel/Margin/VBox/Buttons/StartButton
@@ -23,8 +24,7 @@ extends Control
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	if AudioManager != null and AudioManager.has_method("play_music"):
-		AudioManager.play_music("menu", -16.0)
+	_start_menu_music()
 	_difficulty_button.pressed.connect(_on_difficulty_pressed)
 	_start_button.pressed.connect(_on_start_pressed)
 	_test_button.pressed.connect(_on_test_ground_pressed)
@@ -130,3 +130,16 @@ func _refresh_difficulty_ui() -> void:
 func _refresh_meta_ui(_arg1 = null, _arg2 = null) -> void:
 	if _scrap_label != null and GameManager != null:
 		_scrap_label.text = "Scrap %d" % GameManager.get_total_scrap()
+
+func _start_menu_music() -> void:
+	if _music_player == null:
+		return
+	if AudioManager != null:
+		if AudioManager.has_method("stop_music"):
+			AudioManager.stop_music()
+		if AudioManager.has_method("get_music_stream"):
+			_music_player.stream = AudioManager.get_music_stream("menu", true)
+		if AudioManager.has_method("get_music_volume_db"):
+			_music_player.volume_db = AudioManager.get_music_volume_db("menu", -16.0)
+	if _music_player.stream != null:
+		_music_player.play()
