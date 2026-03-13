@@ -21,5 +21,8 @@ spawn_interval = 1.9
 max_enemies = 5
 peak_enemy_count = 10
 
+[node name="PropSpawner" parent="." index="5" unique_id=1140745295]
+enabled = false
+
 [node name="RunDirector" parent="." index="8" unique_id=530692279]
 run_duration_seconds = 18.0
