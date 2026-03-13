@@ -15,6 +15,7 @@ damage_range = 36.0
 max_health = 90
 xp_reward = 10
 hit_flash_strength = 0.3
+hit_flash_color = Color(1, 0.36, 0.36, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=239603289]
 shape = SubResource("CircleShape2D_fufmt")

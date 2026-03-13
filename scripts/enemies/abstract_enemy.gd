@@ -3,7 +3,8 @@ class_name AbstractEnemy
 extends CharacterBody2D
 
 const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
-const HIT_FLASH_DURATION: float = 0.08
+const HIT_FLASH_DURATION: float = 0.10
+const HIT_FLASH_PULSES: float = 2.5
 
 @export var move_speed: float = 120.0
 @export var contact_damage: int = 10
@@ -14,6 +15,7 @@ const HIT_FLASH_DURATION: float = 0.08
 @export var xp_reward: int = 1
 @export var scrap_reward: int = 1
 @export_range(0.0, 1.0, 0.05) var hit_flash_strength: float = 0.6
+@export var hit_flash_color: Color = Color(1.0, 0.48, 0.48, 1.0)
 @export var xp_orb_scene: PackedScene
 @export var card_pickup_scene: PackedScene
 @export_range(0.0, 1.0, 0.01) var card_drop_chance: float = 0.18
@@ -216,6 +218,7 @@ func _ensure_hit_flash_material() -> void:
 	elif shader_material.shader == null:
 		shader_material.shader = HIT_FLASH_SHADER
 	shader_material.set_shader_parameter("flash_amount", 0.0)
+	shader_material.set_shader_parameter("flash_color", hit_flash_color)
 
 func _trigger_hit_flash() -> void:
 	_hit_flash_time_remaining = HIT_FLASH_DURATION
@@ -225,7 +228,11 @@ func _update_hit_flash(delta: float) -> void:
 	if _hit_flash_time_remaining <= 0.0:
 		return
 	_hit_flash_time_remaining = max(_hit_flash_time_remaining - delta, 0.0)
-	_set_hit_flash_amount((_hit_flash_time_remaining / HIT_FLASH_DURATION) * hit_flash_strength)
+	var normalized_remaining: float = _hit_flash_time_remaining / HIT_FLASH_DURATION
+	var progress: float = 1.0 - normalized_remaining
+	var pulse_wave: float = absf(sin(progress * PI * HIT_FLASH_PULSES))
+	var pulse_amount: float = 0.28 + pulse_wave * 0.72
+	_set_hit_flash_amount(normalized_remaining * pulse_amount * hit_flash_strength)
 
 func _set_hit_flash_amount(amount: float) -> void:
 	if _sprite_target == null:
