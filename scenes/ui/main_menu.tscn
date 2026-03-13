@@ -1,0 +1,143 @@
+[gd_scene format=3 uid="uid://cnaj4kbd8n4uq"]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_lul8f"]
+[ext_resource type="PackedScene" path="res://scenes/main/main.tscn" id="2_h8m2x"]
+[ext_resource type="PackedScene" path="res://scenes/main/test_ground.tscn" id="3_7v5wb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.05, 0.08, 0.11, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.74, 0.92, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.08, 0.12, 0.16, 0.98)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.64, 0.84, 0.55)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.11, 0.18, 0.23, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.96, 0.77, 0.24, 0.85)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="MainMenu" type="Control" unique_id=1269027111]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lul8f")
+run_scene = ExtResource("2_h8m2x")
+test_scene = ExtResource("3_7v5wb")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1744722899]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.05, 0.08, 1)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=486536126]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=1797747086]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=1810768783]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=1216257395]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1148701976]
+layout_mode = 2
+text = "ACES & AUGMENTS"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
+
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1055175131]
+layout_mode = 2
+text = "Industrial deckbuilding horde survival."
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 26
+
+[node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox" unique_id=762368701]
+layout_mode = 2
+text = "Survive the run, lock poker hands, and escape with the right ending."
+horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
+
+[node name="Buttons" type="VBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=1617894437]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StartButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=456806025]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Start Run"
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_font_sizes/font_size = 18
+
+[node name="TestGroundButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=55171100]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Open Test Ground"
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_font_sizes/font_size = 16
+
+[node name="QuitButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=1657698219]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Quit"
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_font_sizes/font_size = 16
+
+[node name="Footer" type="Label" parent="Center/Panel/Margin/VBox" unique_id=2052204143]
+layout_mode = 2
+text = "WASD move  |  mouse aims  |  Esc pauses"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
