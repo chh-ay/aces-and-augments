@@ -83,8 +83,10 @@ func set_upgrade_level(upgrade_id: String, level: int) -> void:
 
 func clear_progression() -> void:
 	_ensure_loaded()
-	_settings.erase_section(SECTION_PROGRESS)
-	_settings.erase_section(SECTION_UPGRADES)
+	if _settings.has_section(SECTION_PROGRESS):
+		_settings.erase_section(SECTION_PROGRESS)
+	if _settings.has_section(SECTION_UPGRADES):
+		_settings.erase_section(SECTION_UPGRADES)
 	save_settings()
 
 func save_settings() -> void:
