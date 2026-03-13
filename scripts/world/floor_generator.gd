@@ -37,6 +37,7 @@ const FLOOR_DETAIL_Z_INDEX: int = -20
 @export var upper_threshold: float = 0.12 # Noise cutoff; higher = fewer "upper" tiles.
 @export var noise_frequency: float = 0.04 # Noise scale; lower = larger blobs.
 @export var noise_smoothing_radius: int = 1 # Box blur radius for smoother terrain.
+@export var generate_initial_chunks_immediately: bool = true
 @export var max_chunk_rows_generated_per_frame: int = 8
 @export var max_chunk_rows_cleared_per_frame: int = 12
 
@@ -172,7 +173,10 @@ func _init_floor() -> void:
 	_queued_clear_lookup.clear()
 	_active_clear_job.clear()
 	_last_chunk = INVALID_CHUNK
-	_update_floor_chunks()
+	if generate_initial_chunks_immediately:
+		_generate_initial_chunks()
+	else:
+		_update_floor_chunks()
 
 func _update_floor_chunks() -> void:
 	if _player == null:
@@ -190,6 +194,21 @@ func _update_floor_chunks() -> void:
 			if not _generated_chunks.has(c):
 				_queue_chunk_generation(c)
 	_prune_chunks(chunk)
+
+func _generate_initial_chunks() -> void:
+	if _player == null:
+		return
+	var center_chunk: Vector2i = _world_to_chunk(_player.global_position)
+	_last_chunk = center_chunk
+	for y in range(center_chunk.y - chunk_radius, center_chunk.y + chunk_radius + 1):
+		for x in range(center_chunk.x - chunk_radius, center_chunk.x + chunk_radius + 1):
+			var chunk: Vector2i = Vector2i(x, y)
+			if not _is_chunk_within_world_limit(chunk):
+				continue
+			if _generated_chunks.has(chunk):
+				continue
+			_generate_chunk(chunk)
+	_prune_chunks(center_chunk)
 
 func _generate_chunk(chunk: Vector2i) -> void:
 	if _base_source_id == -1:
