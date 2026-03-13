@@ -18,6 +18,7 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 @onready var game_over_hint: Label = $CanvasLayer/GameOver/Panel/VBox/HintCard/Margin/Hint
 @onready var boot_overlay: Control = $CanvasLayer/BootOverlay
 @onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
+@onready var settings_menu: SettingsMenu = $CanvasLayer/SettingsMenu
 @onready var hud: Hud = $HUD
 @onready var level_up_panel: LevelUpPanel = $CanvasLayer/LevelUpPanel
 @onready var hand_augment_panel: Control = $CanvasLayer/HandAugmentPanel
@@ -66,7 +67,10 @@ func _ready() -> void:
 	if pause_menu != null:
 		pause_menu.resume_requested.connect(_on_pause_resume_requested)
 		pause_menu.restart_requested.connect(_on_pause_restart_requested)
+		pause_menu.settings_requested.connect(_on_pause_settings_requested)
 		pause_menu.menu_requested.connect(_on_pause_menu_requested)
+	if settings_menu != null:
+		settings_menu.closed.connect(_on_pause_settings_closed)
 	if run_director != null:
 		run_director.time_expired.connect(_on_run_time_expired)
 	if floor_generator != null and floor_generator.has_initial_chunks_ready():
@@ -187,7 +191,20 @@ func _on_pause_restart_requested() -> void:
 	get_tree().paused = false
 	if pause_menu != null:
 		pause_menu.dismiss()
+	if settings_menu != null:
+		settings_menu.dismiss()
 	get_tree().reload_current_scene()
+
+func _on_pause_settings_requested() -> void:
+	if settings_menu == null:
+		return
+	settings_menu.present()
+	_update_mouse_mode()
+
+func _on_pause_settings_closed() -> void:
+	if pause_menu != null and pause_menu.visible:
+		pause_menu.grab_focus()
+	_update_mouse_mode()
 
 func _on_pause_menu_requested() -> void:
 	_finalize_run_rewards()
@@ -195,6 +212,8 @@ func _on_pause_menu_requested() -> void:
 	get_tree().paused = false
 	if pause_menu != null:
 		pause_menu.dismiss()
+	if settings_menu != null:
+		settings_menu.dismiss()
 	_return_to_main_menu()
 
 func _on_run_time_expired() -> void:
@@ -357,6 +376,9 @@ func _update_mouse_mode() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 	if _game_over or _pause_open:
+		if settings_menu != null and settings_menu.visible:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			return
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 	if level_up_panel != null and level_up_panel.visible:

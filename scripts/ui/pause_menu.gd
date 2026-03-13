@@ -3,10 +3,12 @@ extends Control
 
 signal resume_requested
 signal restart_requested
+signal settings_requested
 signal menu_requested
 
 @onready var _resume_button: Button = $Center/Panel/Margin/VBox/ResumeButton
 @onready var _restart_button: Button = $Center/Panel/Margin/VBox/RestartButton
+@onready var _settings_button: Button = $Center/Panel/Margin/VBox/SettingsButton
 @onready var _menu_button: Button = $Center/Panel/Margin/VBox/MenuButton
 
 func _ready() -> void:
@@ -15,6 +17,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_resume_button.pressed.connect(_on_resume_pressed)
 	_restart_button.pressed.connect(_on_restart_pressed)
+	_settings_button.pressed.connect(_on_settings_pressed)
 	_menu_button.pressed.connect(_on_menu_pressed)
 
 func present() -> void:
@@ -36,6 +39,9 @@ func _on_resume_pressed() -> void:
 
 func _on_restart_pressed() -> void:
 	restart_requested.emit()
+
+func _on_settings_pressed() -> void:
+	settings_requested.emit()
 
 func _on_menu_pressed() -> void:
 	menu_requested.emit()
