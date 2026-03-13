@@ -33,6 +33,10 @@ window/size/viewport_height=360
 
 enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")
 
+[gui]
+
+theme/custom="res://resources/themes/vcr_ui_theme.tres"
+
 [input]
 
 restart={
