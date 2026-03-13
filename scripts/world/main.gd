@@ -202,6 +202,8 @@ func _spawn_boss() -> void:
 func _on_boss_defeated(defeat_position: Vector2 = Vector2.ZERO) -> void:
 	CustomLogger.info("Boss defeated", "Boss")
 	_last_boss_defeat_position = defeat_position
+	if player != null:
+		player.add_screen_shake(9.0, 0.22)
 	call_deferred("_spawn_exit_door")
 
 func _clear_enemies() -> void:
@@ -254,10 +256,14 @@ func _on_player_exited_run() -> void:
 	_clear_enemies()
 	var has_royal_flush: bool = player != null and player.has_royal_flush_run()
 	if has_royal_flush:
+		if player != null:
+			player.add_screen_shake(6.0, 0.18)
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_good", 1.0, -2.0)
 		_update_game_over_ui(true, "GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.")
 	else:
+		if player != null:
+			player.add_screen_shake(6.0, 0.18)
 		if AudioManager != null and AudioManager.has_method("play_sfx"):
 			AudioManager.play_sfx("ending_bad", 1.0, -2.0)
 		_update_game_over_ui(true, "BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.")

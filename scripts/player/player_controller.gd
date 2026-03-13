@@ -136,6 +136,11 @@ var _meta_upgrade_bonus: Dictionary = {
 
 @onready var _anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var _camera: Camera2D = $Camera2D
+
+var _shake_strength: float = 0.0
+var _shake_time_remaining: float = 0.0
+var _shake_duration: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -161,6 +166,9 @@ func _physics_process(delta: float) -> void:
 	_update_animation()
 	_tick_regen(delta)
 
+func _process(delta: float) -> void:
+	_update_screen_shake(delta)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_dead or get_tree().paused:
 		return
@@ -176,6 +184,7 @@ func take_damage(amount: int) -> void:
 	health_changed.emit(current_health)
 	if AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
+	add_screen_shake(5.0, 0.14)
 	if current_health <= 0:
 		_die()
 
@@ -193,6 +202,8 @@ func add_experience(amount: int) -> void:
 	experience_changed.emit(current_experience, required_experience, current_level)
 	if leveled_up and AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("level_up", 1.0, -2.0)
+	if leveled_up:
+		add_screen_shake(2.6, 0.12)
 	_emit_level_up_if_ready()
 
 func apply_level_up_choice(stat_id: String) -> void:
@@ -300,6 +311,7 @@ func apply_hand_choice(choice_id: String) -> void:
 	hand_locked.emit(active_hand_name, _enemy_safe_duplicate(_player_augment_profile), _enemy_safe_duplicate(_enemy_mutation_profile))
 	if AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("hand_lock", 1.0, -2.0)
+	add_screen_shake(3.0, 0.12)
 
 func can_lock_hand() -> bool:
 	return _pending_hand_result != null and _hand_cards.size() == 5 and _pending_hand_choices.is_empty()
@@ -393,9 +405,17 @@ func _die() -> void:
 	_is_dead = true
 	if AudioManager != null and AudioManager.has_method("play_sfx"):
 		AudioManager.play_sfx("player_defeat", 1.0, -1.0)
+	add_screen_shake(8.0, 0.26)
 	died.emit()
 	velocity = Vector2.ZERO
 	_update_animation()
+
+func add_screen_shake(strength: float, duration: float) -> void:
+	if _camera == null:
+		return
+	_shake_strength = max(_shake_strength, strength)
+	_shake_duration = max(duration, 0.01)
+	_shake_time_remaining = max(_shake_time_remaining, duration)
 
 func _update_animation() -> void:
 	if _anim == null:
@@ -552,6 +572,24 @@ func _tick_regen(delta: float) -> void:
 	if current_health < get_effective_max_health():
 		var heal_amount: int = max(int(round(health_regen_rate * health_regen_interval)), 1)
 		heal(heal_amount)
+
+func _update_screen_shake(delta: float) -> void:
+	if _camera == null:
+		return
+	if _shake_time_remaining <= 0.0 or _shake_strength <= 0.0:
+		if _camera.offset != Vector2.ZERO:
+			_camera.offset = Vector2.ZERO
+		return
+	_shake_time_remaining = max(_shake_time_remaining - delta, 0.0)
+	var falloff: float = _shake_time_remaining / _shake_duration
+	var current_strength: float = _shake_strength * falloff
+	_camera.offset = Vector2(
+		randf_range(-current_strength, current_strength),
+		randf_range(-current_strength, current_strength)
+	)
+	if _shake_time_remaining <= 0.0:
+		_shake_strength = 0.0
+		_camera.offset = Vector2.ZERO
 
 func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	var rarity: Dictionary = _roll_rarity()
