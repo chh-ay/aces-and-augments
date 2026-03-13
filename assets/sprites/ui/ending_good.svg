@@ -1,45 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="220" viewBox="0 0 480 220">
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="236" viewBox="0 0 540 236">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#07111c"/>
-      <stop offset="100%" stop-color="#0f1f2c"/>
+      <stop offset="0%" stop-color="#07111b"/>
+      <stop offset="100%" stop-color="#102338"/>
     </linearGradient>
     <linearGradient id="panel" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#10283a"/>
-      <stop offset="100%" stop-color="#163449"/>
+      <stop offset="0%" stop-color="#0d2435"/>
+      <stop offset="100%" stop-color="#15344c"/>
     </linearGradient>
-    <filter id="glow">
-      <feGaussianBlur stdDeviation="2.8" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <rect width="480" height="220" rx="20" fill="url(#bg)"/>
-  <rect x="10" y="10" width="460" height="200" rx="16" fill="none" stroke="#24d6ff" stroke-width="2"/>
-  <rect x="28" y="28" width="424" height="164" rx="14" fill="url(#panel)" stroke="#22b8ea" stroke-width="1.5"/>
+  <rect width="540" height="236" rx="22" fill="url(#bg)"/>
+  <rect x="12" y="12" width="516" height="212" rx="18" fill="none" stroke="#28d7ff" stroke-width="2"/>
+  <rect x="30" y="32" width="480" height="172" rx="18" fill="url(#panel)" stroke="#27c9f2" stroke-width="1.5"/>
 
-  <g transform="translate(42 42)">
-    <rect x="0" y="0" width="116" height="136" rx="10" fill="#09131f" stroke="#ffbd45" stroke-width="2"/>
-    <text x="58" y="30" fill="#ffbd45" font-size="16" font-family="monospace" text-anchor="middle" font-weight="700">ROYAL</text>
-    <text x="58" y="52" fill="#ffbd45" font-size="16" font-family="monospace" text-anchor="middle" font-weight="700">FLUSH</text>
-    <g fill="#7de7ff" filter="url(#glow)">
-      <rect x="20" y="76" width="16" height="22" rx="3"/>
-      <rect x="34" y="68" width="16" height="22" rx="3"/>
-      <rect x="48" y="60" width="16" height="22" rx="3"/>
-      <rect x="62" y="68" width="16" height="22" rx="3"/>
-      <rect x="76" y="76" width="16" height="22" rx="3"/>
-    </g>
-    <text x="58" y="122" fill="#9cefff" font-size="18" font-family="monospace" text-anchor="middle" font-weight="700">CLEAN EXIT</text>
+  <rect x="54" y="58" width="118" height="118" rx="14" fill="#06111c" stroke="#ffcb4a" stroke-width="2"/>
+  <g fill="#8beaff">
+    <rect x="74" y="116" width="18" height="24" rx="3"/>
+    <rect x="90" y="104" width="18" height="24" rx="3"/>
+    <rect x="106" y="96" width="18" height="24" rx="3"/>
+    <rect x="122" y="104" width="18" height="24" rx="3"/>
+    <rect x="138" y="116" width="18" height="24" rx="3"/>
   </g>
+  <text x="113" y="84" fill="#ffcb4a" font-size="14" font-family="monospace" text-anchor="middle" font-weight="700">ROYAL</text>
 
-  <text x="186" y="70" fill="#ffbd45" font-size="18" font-family="monospace" font-weight="700">GOOD ENDING</text>
-  <text x="186" y="102" fill="#f5fbff" font-size="28" font-family="monospace" font-weight="700">The house breaks clean.</text>
-  <text x="186" y="132" fill="#9dc0d6" font-size="18" font-family="monospace">Royal Flush secured during the run.</text>
-  <text x="186" y="158" fill="#9dc0d6" font-size="18" font-family="monospace">You leave with the right ending.</text>
+  <text x="204" y="92" fill="#f6fbff" font-size="28" font-family="monospace" font-weight="700">The house breaks clean.</text>
+  <text x="204" y="126" fill="#9ed5e9" font-size="18" font-family="monospace">Royal Flush secured during the run.</text>
+  <text x="204" y="152" fill="#9ed5e9" font-size="18" font-family="monospace">The exit opens and stays open behind you.</text>
+  <text x="204" y="178" fill="#9ed5e9" font-size="18" font-family="monospace">You leave with the right ending.</text>
 
-  <rect x="186" y="174" width="238" height="10" rx="5" fill="#123449"/>
-  <rect x="186" y="174" width="202" height="10" rx="5" fill="#25d8ff"/>
+  <rect x="204" y="190" width="260" height="10" rx="5" fill="#0d3144"/>
+  <rect x="204" y="190" width="218" height="10" rx="5" fill="#2fddff"/>
 </svg>

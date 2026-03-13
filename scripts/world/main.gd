@@ -422,18 +422,26 @@ func _start_run_music() -> void:
 	if music_player == null:
 		return
 	if AudioManager != null:
-		if AudioManager.has_method("stop_music"):
-			AudioManager.stop_music()
 		if AudioManager.has_method("get_music_volume_db"):
 			music_player.volume_db = AudioManager.get_music_volume_db("run", -14.0)
 		if AudioManager.has_method("apply_saved_settings"):
 			AudioManager.apply_saved_settings()
-	if music_player.stream != null:
-		music_player.process_mode = Node.PROCESS_MODE_ALWAYS
-		music_player.stream_paused = false
-		music_player.stop()
+	music_player.process_mode = Node.PROCESS_MODE_ALWAYS
+	music_player.stream_paused = false
+	if music_player.stream != null and not music_player.playing:
 		music_player.play()
-	call_deferred("_report_run_music_state")
+	call_deferred("_verify_run_music_playback")
+
+func _verify_run_music_playback() -> void:
+	await get_tree().create_timer(0.35, false, false, true).timeout
+	if not is_instance_valid(music_player):
+		return
+	if music_player.stream != null and (music_player.stream_paused or not music_player.playing or music_player.get_playback_position() < 0.05):
+		music_player.stop()
+		music_player.stream_paused = false
+		music_player.play()
+	await get_tree().create_timer(0.35, false, false, true).timeout
+	_report_run_music_state()
 
 func _report_run_music_state() -> void:
 	if music_player == null:

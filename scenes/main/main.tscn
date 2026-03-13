@@ -124,6 +124,7 @@ floor_base_path = NodePath("../Floor/FloorBase")
 floor_detail_path = NodePath("../Floor/FloorDetail")
 world_radius_chunks = 4
 border_thickness_chunks = 2
+upper_threshold = 0.22
 
 [node name="RunDirector" type="Node" parent="." unique_id=530692279]
 script = ExtResource("6_tt1x2")

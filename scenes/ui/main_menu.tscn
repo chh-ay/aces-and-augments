@@ -65,6 +65,8 @@ anchor_bottom = 1.0
 color = Color(0.03, 0.05, 0.08, 1)
 
 [node name="MenuMusicPlayer" type="AudioStreamPlayer" parent="."]
+process_mode = 3
+autoplay = true
 stream = ExtResource("7_menu_music")
 bus = &"Master"
 
