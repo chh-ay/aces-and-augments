@@ -144,9 +144,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -150.0
-offset_top = -60.0
+offset_top = -78.0
 offset_right = 150.0
-offset_bottom = -16.0
+offset_bottom = -34.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
 
 [node name="Margin" type="MarginContainer" parent="BottomCard" unique_id=419221990]
@@ -178,10 +178,10 @@ anchor_top = 1.0
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -500.0
-offset_top = -236.0
-offset_right = -48.0
-offset_bottom = -74.0
+offset_left = -456.0
+offset_top = -278.0
+offset_right = -40.0
+offset_bottom = -116.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom_card")
 
 [node name="Margin" type="MarginContainer" parent="HandCard" unique_id=1835278010]
