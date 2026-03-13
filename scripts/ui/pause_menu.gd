@@ -5,9 +5,9 @@ signal resume_requested
 signal restart_requested
 signal menu_requested
 
-@onready var _resume_button: Button = $Panel/Margin/VBox/ResumeButton
-@onready var _restart_button: Button = $Panel/Margin/VBox/RestartButton
-@onready var _menu_button: Button = $Panel/Margin/VBox/MenuButton
+@onready var _resume_button: Button = $Center/Panel/Margin/VBox/ResumeButton
+@onready var _restart_button: Button = $Center/Panel/Margin/VBox/RestartButton
+@onready var _menu_button: Button = $Center/Panel/Margin/VBox/MenuButton
 
 func _ready() -> void:
 	visible = false
