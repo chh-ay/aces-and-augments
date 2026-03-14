@@ -29,7 +29,7 @@ A 2D top-down action roguelite where horde survival, poker hands, and enemy muta
 - Current local release build: `builds/aces-augments-custom-built.exe`
 - Current build size: `25.2 MB` (about `24.0 MiB`)
 - Engine: `Godot 4.6`
-- Final gameplay/demo video: [Youtube Video Link (https://youtu.be/34rMEqVCGws)]
+- Final gameplay/demo video: https://youtu.be/34rMEqVCGws
 
 ## How To Run
 
