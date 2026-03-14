@@ -7,7 +7,7 @@ signal initial_chunks_ready
 
 # Algorithm overview:
 # - Corner-based Wang tiling: each tile corner (NW/NE/SW/SE) is classified as "upper" or "lower"
-#   using smoothed FastNoiseLite values and `upper_threshold`.
+#   using smoothed procedural noise values and `upper_threshold`.
 # - The 4-corner signature maps to a tile coordinate loaded from `data/arena_tileset.json`.
 # - Base layer always uses the base tile; detail layer uses the mapped tile when any corner is "upper".
 # - Optional border ring forces "upper" at the world edge to create a clear boundary.
@@ -23,6 +23,37 @@ const INVALID_CHUNK: Vector2i = Vector2i(1_000_000, 1_000_000)
 const CHUNK_LIMIT_PADDING: int = 1
 const FLOOR_BASE_Z_INDEX: int = -30
 const FLOOR_DETAIL_Z_INDEX: int = -20
+
+class SimpleNoise2D:
+	extends RefCounted
+
+	var seed: int = 0
+	var frequency: float = 0.04
+
+	func get_noise_2d(x: float, y: float) -> float:
+		var scaled_x: float = x * frequency
+		var scaled_y: float = y * frequency
+		var x0: int = int(floor(scaled_x))
+		var y0: int = int(floor(scaled_y))
+		var x1: int = x0 + 1
+		var y1: int = y0 + 1
+		var tx: float = scaled_x - float(x0)
+		var ty: float = scaled_y - float(y0)
+		var sx: float = tx * tx * (3.0 - 2.0 * tx)
+		var sy: float = ty * ty * (3.0 - 2.0 * ty)
+		var n00: float = _sample(x0, y0)
+		var n10: float = _sample(x1, y0)
+		var n01: float = _sample(x0, y1)
+		var n11: float = _sample(x1, y1)
+		var ix0: float = lerpf(n00, n10, sx)
+		var ix1: float = lerpf(n01, n11, sx)
+		return lerpf(ix0, ix1, sy)
+
+	func _sample(ix: int, iy: int) -> float:
+		var value: int = ix * 374761393 + iy * 668265263 + seed * 700001
+		value = int((value ^ (value >> 13)) * 1274126177)
+		value = value ^ (value >> 16)
+		return (float(value & 0x7fffffff) / 1073741823.5) - 1.0
 
 @export var player_path: NodePath
 @export var floor_base_path: NodePath
@@ -45,7 +76,7 @@ const FLOOR_DETAIL_Z_INDEX: int = -20
 var _player: Node2D
 var _floor_base: TileMapLayer
 var _floor_detail: TileMapLayer
-var _noise: FastNoiseLite
+var _noise: SimpleNoise2D
 var _mapping: Dictionary = {}
 var _base_coords: Vector2i = Vector2i.ZERO
 var _border_coords: Vector2i = Vector2i.ZERO
@@ -93,7 +124,7 @@ func get_playable_radius_world() -> Vector2:
 func get_playable_radius_chunks() -> int:
 	return _get_playable_radius_chunks()
 
-func get_noise() -> FastNoiseLite:
+func get_noise() -> SimpleNoise2D:
 	return _noise
 
 func get_upper_threshold() -> float:
@@ -183,7 +214,7 @@ func _init_floor() -> void:
 	_validate_chunk_settings()
 	_refresh_cached_metrics()
 
-	_noise = FastNoiseLite.new()
+	_noise = SimpleNoise2D.new()
 	_noise.seed = randi()
 	_noise.frequency = noise_frequency
 
@@ -422,11 +453,11 @@ func _cancel_chunk_clear(chunk: Vector2i) -> void:
 	if _active_clear_job.get("chunk", INVALID_CHUNK) == chunk:
 		_active_clear_job["regenerate"] = true
 
-func _corner_type(noise: FastNoiseLite, x: int, y: int) -> String:
+func _corner_type(noise: SimpleNoise2D, x: int, y: int) -> String:
 	var value: float = _smoothed_noise(noise, x, y)
 	return "upper" if value > upper_threshold else "lower"
 
-func _smoothed_noise(noise: FastNoiseLite, x: int, y: int) -> float:
+func _smoothed_noise(noise: SimpleNoise2D, x: int, y: int) -> float:
 	if noise_smoothing_radius <= 0:
 		return noise.get_noise_2d(float(x), float(y))
 	var sum: float = 0.0
