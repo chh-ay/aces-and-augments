@@ -48,6 +48,7 @@ var _active_ending_panel: Control
 func _ready() -> void:
 	_set_boot_state(true)
 	call_deferred("_start_run_music")
+	call_deferred("_boot_watchdog")
 	if floor_generator != null and floor_generator.has_signal("initial_chunks_ready") and not floor_generator.initial_chunks_ready.is_connected(_on_initial_chunks_ready):
 		floor_generator.initial_chunks_ready.connect(_on_initial_chunks_ready, CONNECT_ONE_SHOT)
 	if GameManager != null and GameManager.has_method("begin_run"):
@@ -408,6 +409,14 @@ func _complete_boot_sequence() -> void:
 		return
 	_boot_completed = true
 	_set_boot_state(false)
+
+func _boot_watchdog() -> void:
+	await get_tree().create_timer(2.0).timeout
+	if _boot_completed:
+		return
+	if CustomLogger != null and CustomLogger.has_method("warn"):
+		CustomLogger.warn("Boot watchdog forced overlay release", "System")
+	_complete_boot_sequence()
 
 func _set_boot_state(is_booting: bool) -> void:
 	if boot_overlay != null:

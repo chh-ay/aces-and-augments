@@ -146,9 +146,11 @@ func is_world_position_in_upper_terrain(world_pos: Vector2) -> bool:
 
 func _init_floor() -> void:
 	if _floor_base == null or _floor_detail == null:
+		_finish_boot_fallback("Missing floor layers")
 		return
 	var tileset: TileSet = _create_floor_tileset()
 	if tileset == null:
+		_finish_boot_fallback("Failed to create floor tileset")
 		return
 	_floor_base.tile_set = tileset
 	_floor_detail.tile_set = tileset
@@ -160,6 +162,7 @@ func _init_floor() -> void:
 	if use_detail_layer and tileset.get_source_count() > 1:
 		_detail_source_id = tileset.get_source_id(1)
 	if _base_source_id == -1:
+		_finish_boot_fallback("Missing floor base source")
 		return
 
 	if use_detail_layer:
@@ -167,6 +170,7 @@ func _init_floor() -> void:
 	else:
 		_atlas = tileset.get_source(_base_source_id) as TileSetAtlasSource
 	if _atlas == null:
+		_finish_boot_fallback("Missing floor atlas source")
 		return
 
 	_mapping = _load_tileset_mapping()
@@ -563,3 +567,8 @@ func _mark_initial_chunks_ready() -> void:
 		return
 	_initial_chunks_ready = true
 	initial_chunks_ready.emit()
+
+func _finish_boot_fallback(reason: String) -> void:
+	if CustomLogger != null and CustomLogger.has_method("warn"):
+		CustomLogger.warn("FloorGenerator boot fallback: %s" % reason, "Floor")
+	_mark_initial_chunks_ready()
