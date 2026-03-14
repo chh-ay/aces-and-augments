@@ -1,0 +1,19 @@
+{
+  "disabled_build_options": {
+    "accesskit": false,
+    "d3d12": false,
+    "deprecated": false,
+    "disable_3d": true,
+    "disable_advanced_gui": true,
+    "disable_navigation_2d": true,
+    "disable_navigation_3d": true,
+    "disable_xr": true,
+    "graphite": false,
+    "minizip": false,
+    "openxr": false,
+    "use_volk": false,
+    "vulkan": false
+  },
+  "disabled_classes": [],
+  "type": "build_profile"
+}

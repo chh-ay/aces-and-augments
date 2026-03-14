@@ -12,12 +12,11 @@ config_version=5
 
 config/name="aces-augments"
 run/main_scene="res://scenes/ui/main_menu.tscn"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"
 
 [autoload]
 
-GDAIMCPRuntime="*uid://dcne7ryelpxmn"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 GameManager="*res://scripts/autoload/game_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
@@ -28,10 +27,6 @@ CustomLogger="*res://scripts/autoload/custom_logger.gd"
 
 window/size/viewport_width=640
 window/size/viewport_height=360
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/gdai-mcp-plugin-godot/plugin.cfg")
 
 [gui]
 
@@ -82,6 +77,7 @@ toggle_aim_mode={
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-rendering_device/driver.windows="d3d12"
+rendering_device/driver.windows="opengl3"
+renderer/rendering_method="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.09, 0.1, 0.12, 1)
 2d/snapping/use_pixel_snap=true
