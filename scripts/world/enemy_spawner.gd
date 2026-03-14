@@ -10,18 +10,20 @@ extends Node
 @export var run_director_path: NodePath
 
 @export var spawn_interval: float = 2.1
-@export var max_enemies: int = 8
+@export var minimum_spawn_interval: float = 1.0
+@export var max_enemies: int = 10
 @export var spawn_rect_size: Vector2 = Vector2(520.0, 300.0)
 @export var min_spawn_distance: float = 120.0
 @export var enemy_despawn_distance: float = 900.0
 @export var run_duration_seconds: float = 600.0
-@export var peak_enemy_count: int = 22
-@export var burst_count_base: int = 2
-@export var burst_count_peak: int = 4
+@export var peak_enemy_count: int = 32
+@export var burst_count_base: int = 5
+@export var burst_count_peak: int = 9
 @export var burst_spread_radius: float = 52.0
 @export var peak_speed_multiplier: float = 1.35
-@export var peak_health_multiplier: float = 1.7
+@export var peak_health_multiplier: float = 1.9
 @export var peak_damage_multiplier: float = 1.25
+@export_range(0.2, 1.0, 0.05) var peak_spawn_interval_scale: float = 0.48
 @export var despawn_check_interval: float = 0.4
 
 var _spawn_timer: float = 0.0
@@ -34,6 +36,7 @@ var _run_director: RunDirector
 var _elapsed_run_time: float = 0.0
 var _despawn_timer: float = 0.0
 var _base_spawn_interval: float = 0.0
+var _difficulty_spawn_interval: float = 0.0
 var _enemy_mutation_profile: Dictionary = {
 	"health": 1.0,
 	"damage": 1.0,
@@ -58,9 +61,9 @@ func _ready() -> void:
 		_run_director = get_tree().get_first_node_in_group("run_director") as RunDirector
 	if _run_director != null:
 		run_duration_seconds = max(_run_director.run_duration_seconds, 0.0)
-	_base_spawn_interval = spawn_interval
+	_base_spawn_interval = max(spawn_interval, minimum_spawn_interval)
 	_apply_selected_difficulty()
-	_spawn_timer = spawn_interval
+	_spawn_timer = _get_current_spawn_interval()
 
 func _physics_process(delta: float) -> void:
 	if not _active:
@@ -71,7 +74,7 @@ func _physics_process(delta: float) -> void:
 	_spawn_timer = max(_spawn_timer - delta, 0.0)
 	_despawn_timer = max(_despawn_timer - delta, 0.0)
 	if _spawn_timer <= 0.0:
-		_spawn_timer = spawn_interval
+		_spawn_timer = _get_current_spawn_interval()
 		_spawn_enemy_burst()
 	if _despawn_timer <= 0.0:
 		_despawn_timer = despawn_check_interval
@@ -199,16 +202,25 @@ func _get_run_progress() -> float:
 	return clamp(_elapsed_run_time / run_duration_seconds, 0.0, 1.0)
 
 func _get_burst_count() -> int:
-	var progress: float = _get_scaled_run_progress()
+	var progress: float = _get_group_pressure_progress()
 	return max(int(round(lerpf(float(burst_count_base), float(burst_count_peak), progress))), 1)
 
 func _get_current_max_enemies() -> int:
-	var progress: float = _get_scaled_run_progress()
+	var progress: float = _get_group_pressure_progress()
 	return max(int(round(lerpf(float(max_enemies), float(peak_enemy_count), progress))), 1)
 
 func _get_scaled_run_progress() -> float:
 	var progress: float = _get_run_progress()
 	return progress * progress * (3.0 - 2.0 * progress)
+
+func _get_group_pressure_progress() -> float:
+	return clampf(pow(_get_run_progress(), 0.62), 0.0, 1.0)
+
+func _get_current_spawn_interval() -> float:
+	var interval_start: float = max(_difficulty_spawn_interval, minimum_spawn_interval)
+	var interval_end: float = minimum_spawn_interval
+	var progress: float = _get_group_pressure_progress()
+	return max(lerpf(interval_start, interval_end, progress), minimum_spawn_interval)
 
 
 func _apply_enemy_scaling(enemy_node: Node2D, progress: float) -> void:
@@ -231,4 +243,4 @@ func _apply_selected_difficulty() -> void:
 	_difficulty_damage_multiplier = float(config.get("enemy_damage", 1.0))
 	_difficulty_card_drop_multiplier = float(config.get("card_drop", 1.0))
 	var spawn_rate_multiplier: float = max(float(config.get("spawn_rate", 1.0)), 0.1)
-	spawn_interval = _base_spawn_interval / spawn_rate_multiplier
+	_difficulty_spawn_interval = max(_base_spawn_interval / spawn_rate_multiplier, minimum_spawn_interval)

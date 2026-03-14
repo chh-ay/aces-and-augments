@@ -13,7 +13,7 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 0.80,
 		"enemy_damage": 0.85,
 		"spawn_rate": 0.80,
-		"card_drop": 0.80
+		"card_drop": 1.00
 	},
 	"hard": {
 		"name": "Hard",
@@ -21,7 +21,7 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 1.00,
 		"enemy_damage": 1.00,
 		"spawn_rate": 1.00,
-		"card_drop": 0.50
+		"card_drop": 0.80
 	},
 	"hell": {
 		"name": "Hell",
@@ -29,7 +29,7 @@ const DIFFICULTY_CONFIGS: Dictionary = {
 		"enemy_health": 1.20,
 		"enemy_damage": 1.15,
 		"spawn_rate": 1.30,
-		"card_drop": 0.25
+		"card_drop": 0.50
 	}
 }
 const META_UPGRADES: Dictionary = {

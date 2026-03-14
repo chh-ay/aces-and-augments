@@ -10,10 +10,11 @@ radius = 8.0
 
 [node name="Enemy" type="CharacterBody2D" unique_id=1540579015]
 script = ExtResource("1_8xi43")
-max_health = 4
+max_health = 5
 xp_reward = 1
 xp_orb_scene = ExtResource("2_ibjif")
 card_pickup_scene = ExtResource("3_4mpuu")
+card_drop_chance = 0.16
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=16698256]
 texture_filter = 1

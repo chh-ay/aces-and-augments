@@ -14,11 +14,11 @@ move_speed = 148.0
 contact_damage = 8
 damage_interval = 0.6
 damage_range = 20.0
-max_health = 3
+max_health = 4
 xp_reward = 2
 xp_orb_scene = ExtResource("3_b1h8m")
 card_pickup_scene = ExtResource("4_g5ax1")
-card_drop_chance = 0.14
+card_drop_chance = 0.10
 
 [node name="Sprite" type="Sprite2D" parent="."]
 texture_filter = 1
