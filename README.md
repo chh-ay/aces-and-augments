@@ -1,115 +1,107 @@
 # Aces & Augments
 
-A 2D top-down action roguelite where poker hands fuel your power.
+A 2D top-down action roguelite where horde survival, poker hands, and enemy mutations shape each run.
 
-![Gameplay](screenshots/screenshot1.svg)
+## Screenshots
 
-YouTube: YOUR_YOUTUBE_LINK_HERE
+### Main Menu
 
-## Controls
+![Main menu](screenshots/GameMenu.png)
 
-- Move: WASD
-- Aim: Mouse
-- Pause: Esc
-- Confirm/Select: Left Click / Enter
-- Cancel/Back: Right Click / Esc
+### Upgrade Flow
 
-## 🎮 Gameplay
+![Upgrade screen](screenshots/UpgradeScreen.png)
 
-**[▶️ Watch Gameplay on YouTube](YOUR_YOUTUBE_LINK_HERE)**
+### Card Locking
 
-You are trapped in a ring-shaped arena controlled by a rogue AI. Survive 10 minutes of horde combat, collect playing cards from fallen enemies, and build poker hands to gain powerful augments. But beware—every buff you gain, the enemy horde evolves too.
+![Card locking](screenshots/CardLocking.png)
 
-> _"To the AI, your survival is just a game of probability."_
+### Good Ending
 
-### The Symmetry Tax
+![Good ending](screenshots/GoodEnding.png)
 
-- **Lock a Poker Hand** → Gain a powerful **Augment**
-- **But...** enemies receive a **Mutation** (weaker version of your buff)
-- The better your hand, the stronger both buffs become
-- Can you stay ahead of the curve?
+### Bad Ending
 
----
+![Bad ending](screenshots/BadEnding.png)
 
-## ✨ Features
+## Build
 
-- 🗡️ **Horde Combat** - Battle waves of enemies in intense 10-minute runs
-- 🃏 **Poker-Based Power-Ups** - Collect cards, form hands, gain augments
-- ⚖️ **Symmetry Tax** - Your gains empower enemies too
-- 📈 **Dual Progression** - XP leveling (run) + Currency upgrades (permanent)
-- 🎰 **Multiple Endings** - Royal Flush = True Ending
-- 🎨 **Neo-Retro Style** - Low-poly industrial aesthetic
+- Current local release build: `builds/aces-augments-custom-built.exe`
+- Current build size: `25.2 MB` (about `24.0 MiB`)
+- Engine: `Godot 4.6`
+- Final gameplay/demo video: `TODO: replace with YouTube link`
 
----
+## How To Run
 
-## 🎯 How to Play
-
-### Objective
-
-1. Survive for **10 minutes**
-2. Kill the **Final Boss**
-3. Reach the **Exit Door**
-4. (Secret) Achieve a **Royal Flush** for the true ending
-
-### Progression
-
-| System          | How It Works                                                                    |
-| --------------- | ------------------------------------------------------------------------------- |
-| **XP Leveling** | Kill enemies → Collect XP → Level up → Choose 1 of 3 stat buffs                 |
-| **Card Hands**  | Kill enemies → Chance for card drop → Collect 5 → Lock poker hand → Get Augment |
-| **Currency**    | Enemies drop coins → Spend between runs on permanent upgrades                   |
-
----
-
-## 🎮 Controls
-
-| Action         | Input                        |
-| -------------- | ---------------------------- |
-| Move           | WASD                         |
-| Aim            | Mouse                        |
-| Attack         | Auto (aims at nearest enemy) |
-| Pause          | ESC                          |
-| Confirm/Select | Left Click / Enter           |
-| Back/Cancel    | Right Click / ESC            |
-
----
-
-## 📸 Screenshots
-
-<p align="center">
-  <img src="screenshots/screenshot1.svg" alt="Main Menu" width="400">
-  <img src="screenshots/screenshot1.svg" alt="Gameplay" width="400">
-</p>
-
-<p align="center">
-  <img src="screenshots/screenshot1.svg" alt="Level Up" width="400">
-  <img src="screenshots/screenshot1.svg" alt="Boss Fight" width="400">
-</p>
-
----
-
-## 📥 Download
-
-### Latest Release: `v0.1-alpha`
-
-| Platform | Download                                     |
-| -------- | -------------------------------------------- |
-| Windows  | [AcesAndAugments_Windows.zip](RELEASE_LINK)  |
-| Linux    | [AcesAndAugments_Linux.tar.gz](RELEASE_LINK) |
-| Web      | [Play in Browser](ITCH_IO_LINK)              |
-
----
-
-## 🛠️ Development
-
-### Built With
-
-- **Engine:** Godot 4.6
-- **Language:** GDScript
-- **Art Style:** Neo-Retro Industrial
-
-### Building from Source
+### Run From Project
 
 ```bash
 godot --path .
 ```
+
+### Run Exported Build
+
+Open:
+
+```text
+builds/aces-augments-custom-built.exe
+```
+
+## Controls
+
+| Action           | Input                  |
+| ---------------- | ---------------------- |
+| Move             | `WASD`                 |
+| Aim              | `Mouse`                |
+| Toggle Aim Mode  | `Q`                    |
+| Lock Hand        | `Space`                |
+| Confirm / Select | `Left Click` / `Enter` |
+| Pause / Back     | `Esc`                  |
+| Cancel / Back    | `Right Click` / `Esc`  |
+
+## Main Mechanics
+
+1. Survive enemy waves inside the arena.
+2. Collect XP to level up and choose one of three upgrades.
+3. Pick up dropped cards from enemies.
+4. Lock a 5-card poker hand for a blessing.
+5. Enemies receive a paired weaker curse.
+6. Survive until the boss spawns.
+7. Defeat the boss, reach the exit, and trigger either the good or bad ending.
+
+## Endings
+
+- `Good Ending`: escape after securing `Royal Flush`
+- `Bad Ending`: escape without `Royal Flush`
+
+## Release Notes
+
+- Local release tag/build target is based on the current `builds/aces-augments-custom-built.exe`
+- Current exported build is already under the `50 MB` target without additional zip estimation work
+
+## Credits
+
+- `Playing Cards Pack`
+  - Author: `Kenney`
+  - Source: `https://kenney.nl/assets/playing-cards-pack`
+  - License: `CC0 1.0`
+
+- `VCR OSD Mono`
+  - Author: `Riciery Leal`
+  - Source: `https://www.dafont.com/vcr-osd-mono.font`
+  - License: `Personal & Commercial use`
+
+- Pixel art used for enemies, player set, environment props, pickups, and some UI art was generated for this project using PixelLab MCP.
+  Since I'm calling the AI through CLI/Terminal, I don't have the exact prompts history to share, but the general approach was to iterate on prompts based on the desired art style and feedback on the generated results until I got assets that fit the project. Assets also get deleted if
+  I don't download it within 8 hours, I can only access it during the 8 hours durations, because I need to download it onto my local machine.
+
+- Gameplay audio in the current build is project-authored procedural audio.
+
+## AI Usage
+
+AI-assisted development was used during production, with implementation, review, and integration still handled manually inside the project.
+
+- `ChatGPT`
+  - used for programming assistance, debugging support, UI iteration, and documentation drafting
+- `PixelLab MCP`
+  - used to generate selected pixel art assets and concepts
