@@ -1,5 +1,9 @@
 class_name SettingsMenu
 extends Control
+##
+## Volume and fullscreen toggle. Audio settings go through AudioManager.
+## Display settings go through DisplayManager. Neither autoload needs a guard.
+##
 
 signal closed
 
@@ -13,6 +17,7 @@ const VOLUME_STEP: int = 10
 @onready var _volume_up_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeUpButton
 @onready var _fullscreen_button: Button = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/FullscreenButton
 
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -23,16 +28,19 @@ func _ready() -> void:
 	_close_button.pressed.connect(dismiss)
 	_refresh_values()
 
+
 func present() -> void:
 	visible = true
 	_refresh_values()
 	_volume_down_button.grab_focus()
+
 
 func dismiss() -> void:
 	if not visible:
 		return
 	visible = false
 	closed.emit()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -41,32 +49,29 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		dismiss()
 
+
 func _on_volume_down_pressed() -> void:
-	var next_value: int = max(AudioManager.get_master_volume_percent() - VOLUME_STEP, 0)
-	AudioManager.set_master_volume_percent(next_value)
+	AudioManager.set_master_volume_percent(max(AudioManager.get_master_volume_percent() - VOLUME_STEP, 0))
 	_refresh_values()
+
 
 func _on_volume_up_pressed() -> void:
-	var next_value: int = min(AudioManager.get_master_volume_percent() + VOLUME_STEP, 100)
-	AudioManager.set_master_volume_percent(next_value)
+	AudioManager.set_master_volume_percent(min(AudioManager.get_master_volume_percent() + VOLUME_STEP, 100))
 	_refresh_values()
+
 
 func _on_fullscreen_pressed() -> void:
-	if not AudioManager.can_change_display_mode():
-		_refresh_values()
-		return
-	AudioManager.set_fullscreen_enabled(not AudioManager.get_fullscreen_enabled())
+	DisplayManager.set_fullscreen_enabled(not DisplayManager.get_fullscreen_enabled())
 	_refresh_values()
 
+
 func _refresh_values() -> void:
-	if _volume_value != null:
-		_volume_value.text = "%d%%" % AudioManager.get_master_volume_percent()
-	if _fullscreen_value != null:
-		_fullscreen_value.text = "On" if AudioManager.get_fullscreen_enabled() else "Off"
-		if not AudioManager.can_change_display_mode():
-			_fullscreen_value.text = "Embed"
-	if _fullscreen_hint != null:
-		_fullscreen_hint.text = AudioManager.get_display_mode_hint()
-	if _fullscreen_button != null:
-		_fullscreen_button.disabled = not AudioManager.can_change_display_mode()
-		_fullscreen_button.text = "Toggle" if AudioManager.can_change_display_mode() else "Editor Only"
+	_volume_value.text = "%d%%" % AudioManager.get_master_volume_percent()
+	_fullscreen_hint.text = DisplayManager.get_display_mode_hint()
+	var can_change: bool = DisplayManager.can_change_display_mode()
+	_fullscreen_button.disabled = not can_change
+	_fullscreen_button.text = "Toggle" if can_change else "Editor Only"
+	if not can_change:
+		_fullscreen_value.text = "Embed"
+	else:
+		_fullscreen_value.text = "On" if DisplayManager.get_fullscreen_enabled() else "Off"

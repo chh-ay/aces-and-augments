@@ -1,345 +1,159 @@
-[gd_scene format=3 uid="uid://b5eplpcgf1tiy"]
+[gd_scene load_steps=3 format=3 uid="uid://b5eplpcgf1tiy"]
 
-[ext_resource type="Script" path="res://scripts/ui/hand_augment_panel.gd" id="1_panel"]
-[ext_resource type="PackedScene" path="res://scenes/ui/card_slot.tscn" id="2_card_slot"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="3_theme"]
+[ext_resource type="Script" path="res://scripts/ui/hand_augment_panel.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dhg0pypji1w4q" path="res://scenes/ui/card_slot.tscn" id="2_slot"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.05, 0.06, 0.08, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.74, 0.92, 0.75)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
-bg_color = Color(0.09, 0.10, 0.13, 0.94)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.94, 0.76, 0.22, 0.35)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0.10, 0.12, 0.16, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.18, 0.74, 0.92, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
-bg_color = Color(0.15, 0.17, 0.23, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.94, 0.76, 0.22, 0.85)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[node name="HandAugmentPanel" type="Control" unique_id=1843105880]
+[node name="HandAugmentPanel" type="Control"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = ExtResource("3_theme")
-script = ExtResource("1_panel")
+mouse_filter = 2
+script = ExtResource("1_script")
 
-[node name="Backdrop" type="ColorRect" parent="." unique_id=1714740041]
-layout_mode = 0
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.01, 0.02, 0.03, 0.48)
+color = Color(0, 0, 0, 0.55)
 
-[node name="Center" type="CenterContainer" parent="." unique_id=1185820319]
+[node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="Panel" parent="Center" unique_id=2068518735]
-custom_minimum_size = Vector2(1040, 760)
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(940, 560)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=12593575]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 22.0
-offset_right = -24.0
-offset_bottom = -22.0
-
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=157001001]
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
 
 [node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
 theme_override_font_sizes/font_size = 13
 text = "POKER ROUTE"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1262120253]
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 26
 text = "Lock In The Hand"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1284691732]
+[node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-modulate = Color(0.7, 0.78, 0.84, 0.8)
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.7, 0.78, 0.84, 0.8)
+theme_override_font_sizes/font_size = 16
 text = "Pick one blessing for yourself. The paired curse lands on enemies."
 horizontal_alignment = 1
 
-[node name="SummaryRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=160568587]
-custom_minimum_size = Vector2(0, 198)
+[node name="SummaryRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 168)
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="StatsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow" unique_id=1915034679]
-custom_minimum_size = Vector2(0, 198)
+[node name="StatsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow"]
+custom_minimum_size = Vector2(0, 168)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/SummaryRow/StatsCard" unique_id=1832689935]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/SummaryRow/StatsCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
+theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="StatsLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin" unique_id=108672936]
+[node name="StatsLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "HP 100 / 100\nMove 200\nDamage 1\nAtk 0.65s\nRange 234"
+theme_override_font_sizes/font_size = 14
+text = "HP 100 / 100"
 
-[node name="HandCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow" unique_id=1691126008]
-custom_minimum_size = Vector2(0, 198)
+[node name="HandCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/SummaryRow"]
+custom_minimum_size = Vector2(0, 168)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard" unique_id=672886701]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
+theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
 [node name="HandVBox" type="VBoxContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="HandLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox" unique_id=276603980]
+[node name="HandLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Cards 5 / 5\nLocked Straight [Rare]\nPick one route\nNext curse applies immediately"
+theme_override_font_sizes/font_size = 14
+text = "Cards 5 / 5"
 
 [node name="CardsRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox"]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 6
 
-[node name="CardSlot1" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+[node name="CardSlot1" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_slot")]
 layout_mode = 2
 
-[node name="CardSlot2" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+[node name="CardSlot2" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_slot")]
 layout_mode = 2
 
-[node name="CardSlot3" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+[node name="CardSlot3" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_slot")]
 layout_mode = 2
 
-[node name="CardSlot4" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+[node name="CardSlot4" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_slot")]
 layout_mode = 2
 
-[node name="CardSlot5" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_card_slot")]
+[node name="CardSlot5" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow" instance=ExtResource("2_slot")]
 layout_mode = 2
 
-[node name="ChoicesRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox" unique_id=1337242914]
-custom_minimum_size = Vector2(0, 266)
+[node name="ChoicesRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+size_flags_vertical = 3
+theme_override_constants/separation = 14
 
-[node name="ChoiceA" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=845582140]
-custom_minimum_size = Vector2(0, 266)
+[node name="ChoiceA" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA" unique_id=1209150846]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 12.0
-offset_right = -14.0
-offset_bottom = -12.0
-mouse_filter = 2
-
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin" unique_id=103802923]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 10
-
-[node name="RarityLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox" unique_id=542323973]
-layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 14
-text = "COMMON"
-horizontal_alignment = 1
-
-[node name="TitleLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox" unique_id=417091176]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Kill Chain"
-horizontal_alignment = 1
-
-[node name="BlessingLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox" unique_id=1201099961]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 16
+clip_text = true
 autowrap_mode = 2
-text = "Blessing +8% damage, +6% atk speed"
-horizontal_alignment = 1
-vertical_alignment = 0
 
-[node name="CurseLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox" unique_id=538640593]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 15
-modulate = Color(0.93, 0.75, 0.46, 0.95)
-autowrap_mode = 2
-text = "Curse +6% enemy HP"
-horizontal_alignment = 1
-vertical_alignment = 0
-
-[node name="ChoiceB" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=1709800168]
-custom_minimum_size = Vector2(0, 266)
+[node name="ChoiceB" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB" unique_id=852526005]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 12.0
-offset_right = -14.0
-offset_bottom = -12.0
-mouse_filter = 2
-
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin" unique_id=1001687125]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 10
-
-[node name="RarityLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox" unique_id=2045806919]
-layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 14
-text = "COMMON"
-horizontal_alignment = 1
-
-[node name="TitleLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox" unique_id=1712431620]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Vector Lens"
-horizontal_alignment = 1
-
-[node name="BlessingLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox" unique_id=340104608]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 16
+clip_text = true
 autowrap_mode = 2
-text = "Blessing +12% range, +6% move speed"
-horizontal_alignment = 1
-vertical_alignment = 0
 
-[node name="CurseLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox" unique_id=1719006307]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 15
-modulate = Color(0.93, 0.75, 0.46, 0.95)
-autowrap_mode = 2
-text = "Curse +6% enemy speed"
-horizontal_alignment = 1
-vertical_alignment = 0
-
-[node name="ChoiceC" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow" unique_id=444903494]
-custom_minimum_size = Vector2(0, 266)
+[node name="ChoiceC" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC" unique_id=812091992]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 12.0
-offset_right = -14.0
-offset_bottom = -12.0
-mouse_filter = 2
-
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin" unique_id=1265790683]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 10
-
-[node name="RarityLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox" unique_id=2097735714]
-layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 14
-text = "COMMON"
-horizontal_alignment = 1
-
-[node name="TitleLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox" unique_id=787046200]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Fortress Stack"
-horizontal_alignment = 1
-
-[node name="BlessingLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox" unique_id=1270284869]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 16
+clip_text = true
 autowrap_mode = 2
-text = "Blessing +15% max HP"
-horizontal_alignment = 1
-vertical_alignment = 0
-
-[node name="CurseLabel" type="Label" parent="Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox" unique_id=1395245630]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 15
-modulate = Color(0.93, 0.75, 0.46, 0.95)
-autowrap_mode = 2
-text = "Curse +8% enemy HP, +4% enemy damage"
-horizontal_alignment = 1
-vertical_alignment = 0

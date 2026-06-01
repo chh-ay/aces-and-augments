@@ -1,79 +1,41 @@
-[gd_scene format=3 uid="uid://boaaxr4hq1kc4"]
+[gd_scene load_steps=2 format=3 uid="uid://boaaxr4hq1kc4"]
 
-[ext_resource type="Script" uid="uid://dcly5uwysux5p" path="res://scripts/ui/pause_menu.gd" id="1_6tw0m"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dcly5uwysux5p" path="res://scripts/ui/pause_menu.gd" id="1_script"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.05, 0.08, 0.11, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.74, 0.92, 0.62)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0.08, 0.12, 0.16, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.15, 0.64, 0.84, 0.55)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
-bg_color = Color(0.11, 0.18, 0.23, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.96, 0.77, 0.24, 0.85)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[node name="PauseMenu" type="Control" unique_id=653098927]
+[node name="PauseMenu" type="Control"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = ExtResource("2_theme")
-script = ExtResource("1_6tw0m")
+mouse_filter = 2
+script = ExtResource("1_script")
 
-[node name="Backdrop" type="ColorRect" parent="." unique_id=750832566]
-layout_mode = 0
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 2
 color = Color(0, 0, 0, 0.56)
 
 [node name="Center" type="CenterContainer" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="PanelContainer" parent="Center" unique_id=195979452]
-custom_minimum_size = Vector2(340, 0)
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=252978356]
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=649176657]
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 12
@@ -85,56 +47,36 @@ theme_override_font_sizes/font_size = 13
 text = "RUN PAUSED"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1102527245]
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox" unique_id=314268608]
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "Take a breath, then continue the run."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ResumeButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=1365639674]
-custom_minimum_size = Vector2(0, 38)
+[node name="ResumeButton" type="Button" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Resume"
 
-[node name="RestartButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=1505237061]
-custom_minimum_size = Vector2(0, 38)
+[node name="RestartButton" type="Button" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Restart Run"
 
 [node name="SettingsButton" type="Button" parent="Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Settings"
 
-[node name="MenuButton" type="Button" parent="Center/Panel/Margin/VBox" unique_id=619083766]
-custom_minimum_size = Vector2(0, 38)
+[node name="MenuButton" type="Button" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Return To Menu"

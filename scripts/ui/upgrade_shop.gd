@@ -10,8 +10,8 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_scrap_label = get_node_or_null("Panel/Margin/VBox/ScrapLabel") as Label
-	var close_button: Button = get_node_or_null("Panel/Margin/VBox/Buttons/CloseButton") as Button
+	_scrap_label = get_node_or_null("Center/Panel/Margin/VBox/ScrapLabel") as Label
+	var close_button: Button = get_node_or_null("Center/Panel/Margin/VBox/Buttons/CloseButton") as Button
 	if close_button != null:
 		close_button.pressed.connect(dismiss)
 	_build_rows()
@@ -45,10 +45,10 @@ func _build_rows() -> void:
 	_rows.clear()
 	for index in range(3):
 		_rows.append({
-			"name": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/NameLabel" % (index + 1)) as Label,
-			"desc": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/DescriptionLabel" % (index + 1)) as Label,
-			"cost": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/CostLabel" % (index + 1)) as Label,
-			"button": get_node_or_null("Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/BuyButton" % (index + 1)) as Button,
+			"name": get_node_or_null("Center/Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/NameLabel" % (index + 1)) as Label,
+			"desc": get_node_or_null("Center/Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Copy/DescriptionLabel" % (index + 1)) as Label,
+			"cost": get_node_or_null("Center/Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/CostLabel" % (index + 1)) as Label,
+			"button": get_node_or_null("Center/Panel/Margin/VBox/Rows/Upgrade%d/Margin/Row/Meta/BuyButton" % (index + 1)) as Button,
 			"id": ""
 		})
 	var definitions: Array[Dictionary] = GameManager.get_upgrade_definitions() if GameManager != null else []

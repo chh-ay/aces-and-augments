@@ -1,96 +1,60 @@
 class_name LevelUpPanel
 extends Control
+##
+## Three-choice level-up modal. All styling comes from the Theme. The script
+## only routes data into pre-existing labels and emits the chosen id.
+##
 
 signal option_selected(stat_id: String)
 
-var _buttons: Array[Button] = []
-var _rarity_labels: Array[Label] = []
-var _title_labels: Array[Label] = []
-var _description_labels: Array[Label] = []
-var _stats_label: Label
-var _hand_label: Label
+@onready var _stats_label: Label = $Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin/StatsLabel
+@onready var _hand_label: Label = $Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandLabel
+@onready var _choice_a: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceA
+@onready var _choice_b: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceB
+@onready var _choice_c: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceC
 
+var _buttons: Array[Button] = []
 var _choice_ids: Array[String] = []
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
-	hide()
-	_buttons = [
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceA") as Button,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceB") as Button,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceC") as Button
-	]
-	_rarity_labels = [
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox/RarityLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox/RarityLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox/RarityLabel") as Label
-	]
-	_title_labels = [
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox/TitleLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox/TitleLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox/TitleLabel") as Label
-	]
-	_description_labels = [
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceA/Margin/VBox/DescriptionLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceB/Margin/VBox/DescriptionLabel") as Label,
-		get_node_or_null("Center/Panel/Margin/VBox/ChoicesRow/ChoiceC/Margin/VBox/DescriptionLabel") as Label
-	]
-	_stats_label = get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin/StatsLabel") as Label
-	_hand_label = get_node_or_null("Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandLabel") as Label
+	_buttons = [_choice_a, _choice_b, _choice_c]
 	for index in range(_buttons.size()):
-		var button: Button = _buttons[index]
-		if button == null:
-			continue
-		button.pressed.connect(_on_choice_pressed.bind(index))
+		_buttons[index].pressed.connect(_on_choice_pressed.bind(index))
+	hide()
+
 
 func present(choices: Array, summary: Dictionary = {}) -> void:
 	_choice_ids.clear()
-	if _stats_label != null:
-		_stats_label.text = summary.get("stats_text", "")
-	if _hand_label != null:
-		_hand_label.text = summary.get("hand_text", "")
+	_stats_label.text = String(summary.get("stats_text", ""))
+	_hand_label.text = String(summary.get("hand_text", ""))
 	for index in range(_buttons.size()):
 		var button: Button = _buttons[index]
-		if button == null:
-			continue
 		var choice: Dictionary = choices[index] if index < choices.size() else {}
-		_choice_ids.append(choice.get("id", ""))
-		var rarity_name: String = choice.get("rarity", "Common")
-		var rarity_color: Color = choice.get("rarity_color", Color.WHITE)
-		button.text = ""
-		_apply_button_style(button, rarity_color)
-		var rarity_label: Label = _rarity_labels[index]
-		if rarity_label != null:
-			rarity_label.text = rarity_name.to_upper()
-			rarity_label.add_theme_color_override("font_color", rarity_color)
-		var title_label: Label = _title_labels[index]
-		if title_label != null:
-			title_label.text = choice.get("title", "Upgrade")
-			title_label.add_theme_color_override("font_color", rarity_color)
-		var description_label: Label = _description_labels[index]
-		if description_label != null:
-			description_label.text = choice.get("description", "")
+		_choice_ids.append(String(choice.get("id", "")))
+		_bind_choice(button, choice)
 	show()
+	_buttons[0].grab_focus()
+
 
 func dismiss() -> void:
 	hide()
+
+
+# -- Internals -------------------------------------------------------------
 
 func _on_choice_pressed(index: int) -> void:
 	if index < 0 or index >= _choice_ids.size():
 		return
 	option_selected.emit(_choice_ids[index])
 
-func _apply_button_style(button: Button, rarity_color: Color) -> void:
-	var normal_style: StyleBoxFlat = button.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
-	var hover_style: StyleBoxFlat = button.get_theme_stylebox("hover").duplicate() as StyleBoxFlat
-	var focus_style: StyleBoxFlat = button.get_theme_stylebox("focus").duplicate() as StyleBoxFlat
-	var pressed_style: StyleBoxFlat = button.get_theme_stylebox("pressed").duplicate() as StyleBoxFlat
-	var border_color: Color = rarity_color.lerp(Color.WHITE, 0.18)
-	normal_style.border_color = border_color.darkened(0.18)
-	hover_style.border_color = border_color
-	focus_style.border_color = border_color
-	pressed_style.border_color = border_color
-	button.add_theme_stylebox_override("normal", normal_style)
-	button.add_theme_stylebox_override("hover", hover_style)
-	button.add_theme_stylebox_override("focus", focus_style)
-	button.add_theme_stylebox_override("pressed", pressed_style)
+
+func _bind_choice(button: Button, choice: Dictionary) -> void:
+	button.disabled = choice.is_empty()
+	var rarity: String = String(choice.get("rarity", "Common")).to_upper()
+	var title: String = String(choice.get("title", "Upgrade"))
+	var description: String = String(choice.get("description", ""))
+	button.text = "%s\n%s\n%s" % [rarity, title, description]
+	var rarity_color: Color = choice.get("rarity_color", Color.WHITE)
+	button.add_theme_color_override("font_color", rarity_color)

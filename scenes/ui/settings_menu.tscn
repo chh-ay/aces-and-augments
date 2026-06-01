@@ -1,57 +1,6 @@
-[gd_scene format=3 uid="uid://d18nsevj6c67y"]
+[gd_scene load_steps=3 format=3 uid="uid://d18nsevj6c67y"]
 
-[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="1_settings"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="2_theme"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0.05, 0.08, 0.11, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.74, 0.92, 0.62)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
-bg_color = Color(0.08, 0.12, 0.16, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.15, 0.64, 0.84, 0.42)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
-bg_color = Color(0.08, 0.12, 0.16, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.15, 0.64, 0.84, 0.55)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
-bg_color = Color(0.11, 0.18, 0.23, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.96, 0.77, 0.24, 0.85)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[ext_resource type="Script" path="res://scripts/ui/settings_menu.gd" id="1_script"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_value"]
 bg_color = Color(0.04, 0.06, 0.08, 0.95)
@@ -59,47 +8,46 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.95, 0.77, 0.24, 0.42)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+border_color = Color(0.95, 0.77, 0.24, 0.4)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
-[node name="SettingsMenu" type="Control" unique_id=1429798592]
+[node name="SettingsMenu" type="Control"]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("2_theme")
-script = ExtResource("1_settings")
+mouse_filter = 2
+script = ExtResource("1_script")
 
-[node name="Backdrop" type="ColorRect" parent="." unique_id=1213099782]
-layout_mode = 0
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 2
 color = Color(0, 0, 0, 0.56)
 
 [node name="Center" type="CenterContainer" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="Panel" type="PanelContainer" parent="Center" unique_id=312745066]
-custom_minimum_size = Vector2(396, 0)
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=252978356]
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=649176657]
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
@@ -110,16 +58,16 @@ theme_override_font_sizes/font_size = 13
 text = "RUN SETTINGS"
 horizontal_alignment = 1
 
-[node name="Title" type="Label" parent="Center/Panel/Margin/VBox" unique_id=1102527245]
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Settings"
 horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox" unique_id=314268608]
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "Tune the run before you dive back in."
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -130,7 +78,6 @@ theme_override_constants/separation = 10
 
 [node name="VolumeCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/Rows"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Rows/VolumeCard"]
 layout_mode = 2
@@ -151,23 +98,18 @@ theme_override_constants/separation = 2
 
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/LabelBlock"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 15
 text = "Master Volume"
 
 [node name="Hint" type="Label" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/LabelBlock"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.71, 0.79, 0.88)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "Menu and run mix"
 
-[node name="VolumeDownButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row" unique_id=181203551]
+[node name="VolumeDownButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row"]
 custom_minimum_size = Vector2(44, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "-"
 
 [node name="ValuePill" type="PanelContainer" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row"]
@@ -177,29 +119,23 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_value")
 [node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 7
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 7
+theme_override_constants/margin_bottom = 6
 
-[node name="Value" type="Label" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill/Margin" unique_id=180285132]
+[node name="Value" type="Label" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill/Margin"]
 custom_minimum_size = Vector2(58, 0)
 layout_mode = 2
 horizontal_alignment = 1
 text = "100%"
 
-[node name="VolumeUpButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row" unique_id=109413470]
+[node name="VolumeUpButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row"]
 custom_minimum_size = Vector2(44, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "+"
 
 [node name="FullscreenCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/Rows"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard"]
 layout_mode = 2
@@ -220,13 +156,13 @@ theme_override_constants/separation = 2
 
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/LabelBlock"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 15
 text = "Display Mode"
 
 [node name="Hint" type="Label" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/LabelBlock"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.64, 0.71, 0.79, 0.88)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "Windowed or fullscreen"
 
 [node name="ValuePill" type="PanelContainer" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row"]
@@ -236,35 +172,25 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_value")
 [node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 7
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 7
+theme_override_constants/margin_bottom = 6
 
-[node name="Value" type="Label" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill/Margin" unique_id=151266919]
+[node name="Value" type="Label" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill/Margin"]
 custom_minimum_size = Vector2(58, 0)
 layout_mode = 2
 horizontal_alignment = 1
 text = "Off"
 
-[node name="FullscreenButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row" unique_id=67328952]
+[node name="FullscreenButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row"]
 custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Toggle"
 
 [node name="Buttons" type="VBoxContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 
-[node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons" unique_id=742203167]
+[node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_styles/normal = SubResource("StyleBoxFlat_button")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/focus = SubResource("StyleBoxFlat_button_hover")
 text = "Back"
