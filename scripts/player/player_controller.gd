@@ -107,7 +107,7 @@ enum AimMode {
 @export_range(0.1, 1.0, 0.05) var upper_terrain_move_multiplier: float = 0.72
 @export var aim_mode: int = AimMode.AUTO
 @export var manual_aim_deadzone: float = 10.0
-@export_range(0.5, 3.0, 0.05) var camera_zoom_scale: float = 3.00
+@export_range(0.5, 4.0, 0.05) var camera_zoom_scale: float = 1.75
 
 var current_health: int = 0
 var current_experience: int = 0
@@ -155,7 +155,7 @@ var _meta_upgrade_bonus: Dictionary = {
 @onready var _collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var _camera: Camera2D = $Camera2D
 @onready var _hit_flash_target: CanvasItem = $AnimatedSprite2D
-@onready var _aim_crosshair = $AimCrosshair
+@onready var _aim_crosshair: AimCrosshair = $AimCrosshair
 
 var _shake_strength: float = 0.0
 var _shake_time_remaining: float = 0.0
@@ -164,12 +164,9 @@ var _hit_flash_time_remaining: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
-	_arena = get_node_or_null(arena_path) as Arena
-	if _arena == null:
-		_arena = get_tree().get_first_node_in_group("arena") as Arena
-	_floor_generator = get_node_or_null(floor_generator_path) as FloorGenerator
-	if _floor_generator == null:
-		_floor_generator = get_tree().get_first_node_in_group("floor_generator") as FloorGenerator
+	RunContext.register_player(self)
+	_arena = (get_node_or_null(arena_path) as Arena) if arena_path else RunContext.arena
+	_floor_generator = (get_node_or_null(floor_generator_path) as FloorGenerator) if floor_generator_path else RunContext.floor_generator
 	required_experience = _get_required_experience_for_level(current_level)
 	current_health = get_effective_max_health()
 	health_changed.emit(current_health)
@@ -182,6 +179,10 @@ func _ready() -> void:
 	_clamp_to_arena()
 	_update_aim_mode_visuals()
 	aim_mode_changed.emit(is_manual_aim_enabled())
+
+
+func _exit_tree() -> void:
+	RunContext.unregister_player(self)
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -201,7 +202,7 @@ func _process(delta: float) -> void:
 func _apply_camera_zoom() -> void:
 	if _camera == null:
 		return
-	var clamped_zoom: float = clampf(camera_zoom_scale, 0.5, 3.0)
+	var clamped_zoom: float = clampf(camera_zoom_scale, 0.5, 4.0)
 	_camera.zoom = Vector2.ONE * clamped_zoom
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -220,8 +221,7 @@ func take_damage(amount: int) -> void:
 	var next_health: int = max(current_health - amount, 0)
 	current_health = next_health
 	health_changed.emit(current_health)
-	if AudioManager != null and AudioManager.has_method("play_sfx"):
-		AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
+	AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
 	_trigger_hit_flash()
 	add_screen_shake(5.0, 0.14)
 	if current_health <= 0:
@@ -239,7 +239,7 @@ func add_experience(amount: int) -> void:
 		_pending_level_ups += 1
 		leveled_up = true
 	experience_changed.emit(current_experience, required_experience, current_level)
-	if leveled_up and AudioManager != null and AudioManager.has_method("play_sfx"):
+	if leveled_up:
 		AudioManager.play_sfx("level_up", 1.0, -2.0)
 	if leveled_up:
 		add_screen_shake(2.6, 0.12)
@@ -253,31 +253,38 @@ func apply_level_up_choice(stat_id: String) -> void:
 			break
 	if choice.is_empty():
 		return
+	var value: float = float(choice.get("value", 0.0))
 	match stat_id:
 		"max_health":
 			var previous_effective_max: int = get_effective_max_health()
-			var gain: int = int(round(float(choice.get("value", 0.0))))
-			max_health += gain
+			_multiply_augment("max_health", 1.0 + value)
 			var next_effective_max: int = get_effective_max_health()
-			current_health = min(current_health + (next_effective_max - previous_effective_max), next_effective_max)
+			if next_effective_max >= previous_effective_max:
+				current_health = min(current_health + (next_effective_max - previous_effective_max), next_effective_max)
+			else:
+				current_health = min(current_health, next_effective_max)
 			health_changed.emit(current_health)
 		"move_speed":
-			move_speed += float(choice.get("value", 0.0))
+			_multiply_augment("move_speed", 1.0 + value)
 		"projectile_damage":
-			projectile_damage += int(round(float(choice.get("value", 0.0))))
+			_multiply_augment("damage", 1.0 + value)
 		"attack_speed":
-			attack_interval = max(attack_interval * (1.0 - float(choice.get("value", 0.0))), 0.18)
+			_multiply_augment("attack_speed", 1.0 + value)
 		"range":
-			attack_range += float(choice.get("value", 0.0))
+			_multiply_augment("range", 1.0 + value)
 		"regen":
-			health_regen_rate += float(choice.get("value", 0.0))
+			health_regen_rate += value
 		"lifesteal":
-			lifesteal_ratio = min(lifesteal_ratio + float(choice.get("value", 0.0)), 0.5)
+			lifesteal_ratio = min(lifesteal_ratio + value, 0.5)
 		_:
 			return
 	_active_level_up_choices.clear()
 	_emit_level_up_if_ready()
 	_emit_hand_updated()
+
+
+func _multiply_augment(key: String, multiplier: float) -> void:
+	_player_augment_profile[key] = float(_player_augment_profile.get(key, 1.0)) * multiplier
 
 func is_dead() -> bool:
 	return _is_dead
@@ -365,11 +372,6 @@ func apply_hand_choice(choice_id: String) -> void:
 	})
 	if _pending_hand_result.is_royal_flush:
 		_royal_flush_achieved = true
-	CustomLogger.card("Locked %s -> %s | %s" % [
-		_pending_hand_result.name,
-		active_blessing_text,
-		active_curse_text
-	])
 	_hand_cards.clear()
 	collected_cards = 0
 	pending_hand_name = "No Hand"
@@ -377,8 +379,7 @@ func apply_hand_choice(choice_id: String) -> void:
 	_pending_hand_choices.clear()
 	_emit_hand_updated()
 	hand_locked.emit(active_hand_name, _enemy_safe_duplicate(_player_augment_profile), _enemy_safe_duplicate(_enemy_mutation_profile))
-	if AudioManager != null and AudioManager.has_method("play_sfx"):
-		AudioManager.play_sfx("hand_lock", 1.0, -2.0)
+	AudioManager.play_sfx("hand_lock", 1.0, -2.0)
 	add_screen_shake(3.0, 0.12)
 
 func can_lock_hand() -> bool:
@@ -492,8 +493,7 @@ func _die() -> void:
 	if _is_dead:
 		return
 	_is_dead = true
-	if AudioManager != null and AudioManager.has_method("play_sfx"):
-		AudioManager.play_sfx("player_defeat", 1.0, -1.0)
+	AudioManager.play_sfx("player_defeat", 1.0, -1.0)
 	_trigger_hit_flash()
 	add_screen_shake(8.0, 0.26)
 	died.emit()
@@ -545,7 +545,7 @@ func _play_animation(animation_name: String) -> void:
 
 func _clamp_to_arena() -> void:
 	if _arena == null or not is_instance_valid(_arena):
-		_arena = get_tree().get_first_node_in_group("arena") as Arena
+		_arena = RunContext.arena
 		if _arena == null:
 			return
 	var margin: float = get_collision_radius() + arena_padding
@@ -559,11 +559,9 @@ func _clamp_to_arena() -> void:
 
 func _is_in_upper_terrain() -> bool:
 	if _floor_generator == null or not is_instance_valid(_floor_generator):
-		_floor_generator = get_tree().get_first_node_in_group("floor_generator") as FloorGenerator
+		_floor_generator = RunContext.floor_generator
 		if _floor_generator == null:
 			return false
-	if not _floor_generator.has_method("is_world_position_in_upper_terrain"):
-		return false
 	return _floor_generator.is_world_position_in_upper_terrain(global_position)
 
 func get_collision_radius() -> float:
@@ -582,9 +580,9 @@ func _emit_level_up_if_ready() -> void:
 	level_up_requested.emit(_active_level_up_choices)
 
 func _emit_hand_updated() -> void:
-	hand_updated.emit(_build_hand_state())
+	hand_updated.emit(get_hand_state())
 
-func _build_hand_state() -> Dictionary:
+func get_hand_state() -> Dictionary:
 	var history_lines: Array[String] = []
 	for entry in _applied_hand_history.slice(max(_applied_hand_history.size() - 3, 0), _applied_hand_history.size()):
 		history_lines.append("%s [%s]\nBlessing %s\nCurse %s" % [
@@ -704,20 +702,17 @@ func _update_screen_shake(delta: float) -> void:
 		_shake_strength = 0.0
 
 func _update_aim_mode_visuals() -> void:
-	if _aim_crosshair != null and _aim_crosshair.has_method("set_active"):
+	if _aim_crosshair != null:
 		_aim_crosshair.set_active(is_manual_aim_enabled())
 
 func _update_crosshair() -> void:
 	if _aim_crosshair == null:
 		return
 	if not is_manual_aim_enabled() or _is_dead:
-		if _aim_crosshair.has_method("set_active"):
-			_aim_crosshair.set_active(false)
+		_aim_crosshair.set_active(false)
 		return
-	if _aim_crosshair.has_method("set_active"):
-		_aim_crosshair.set_active(true)
-	if _aim_crosshair.has_method("set_world_position"):
-		_aim_crosshair.set_world_position(get_global_mouse_position())
+	_aim_crosshair.set_active(true)
+	_aim_crosshair.set_world_position(get_global_mouse_position())
 
 func _ensure_hit_flash_material() -> void:
 	if _hit_flash_target == null:
@@ -757,31 +752,31 @@ func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
 	entry["rarity_color"] = rarity["color"]
 	match String(entry.get("id", "")):
 		"max_health":
-			var max_health_value: int = int(round(_roll_value(rarity, 12.0, 80.0)))
-			entry["value"] = max_health_value
-			entry["description"] = "+%d max health and heal %d" % [max_health_value, max_health_value]
+			var max_health_pct: float = _roll_value(rarity, 0.08, 0.30)
+			entry["value"] = max_health_pct
+			entry["description"] = "+%d%% max HP" % int(round(max_health_pct * 100.0))
 		"move_speed":
-			var move_speed_value: float = _roll_value(rarity, 10.0, 52.0)
-			entry["value"] = move_speed_value
-			entry["description"] = "+%.0f move speed" % move_speed_value
+			var move_speed_pct: float = _roll_value(rarity, 0.06, 0.22)
+			entry["value"] = move_speed_pct
+			entry["description"] = "+%d%% move speed" % int(round(move_speed_pct * 100.0))
 		"projectile_damage":
-			var projectile_damage_value: int = max(int(round(_roll_value(rarity, 1.0, 3.4))), 1)
-			entry["value"] = projectile_damage_value
-			entry["description"] = "+%d projectile damage" % projectile_damage_value
+			var projectile_damage_pct: float = _roll_value(rarity, 0.10, 0.32)
+			entry["value"] = projectile_damage_pct
+			entry["description"] = "+%d%% damage" % int(round(projectile_damage_pct * 100.0))
 		"attack_speed":
-			var attack_speed_value: float = _roll_value(rarity, 0.04, 0.22)
-			entry["value"] = attack_speed_value
-			entry["description"] = "+%.0f%% attack speed" % (attack_speed_value * 100.0)
+			var attack_speed_pct: float = _roll_value(rarity, 0.06, 0.22)
+			entry["value"] = attack_speed_pct
+			entry["description"] = "+%d%% attack speed" % int(round(attack_speed_pct * 100.0))
 		"range":
-			var range_value: float = _roll_value(rarity, 12.0, 72.0)
-			entry["value"] = range_value
-			entry["description"] = "+%.0f attack range" % range_value
+			var range_pct: float = _roll_value(rarity, 0.08, 0.25)
+			entry["value"] = range_pct
+			entry["description"] = "+%d%% attack range" % int(round(range_pct * 100.0))
 		"regen":
-			var regen_value: float = _roll_value(rarity, 0.1, 1.0)
+			var regen_value: float = _roll_value(rarity, 0.1, 0.8)
 			entry["value"] = snappedf(regen_value, 0.1)
 			entry["description"] = "+%.1f HP/s regen" % entry["value"]
 		"lifesteal":
-			var lifesteal_value: float = _roll_value(rarity, 0.01, 0.08)
+			var lifesteal_value: float = _roll_value(rarity, 0.01, 0.06)
 			entry["value"] = snappedf(lifesteal_value, 0.01)
 			entry["description"] = "+%.0f%% lifesteal" % (entry["value"] * 100.0)
 	return entry

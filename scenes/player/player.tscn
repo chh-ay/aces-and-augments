@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ctds0o8yq43a5"]
 
-[ext_resource type="Script" uid="uid://da5qnrf5e7xsb" path="res://scripts/player/player_controller.gd" id="1_8afob"]
+[ext_resource type="Script" uid="uid://cfx7ms1ecd8xp" path="res://scripts/player/player_controller.gd" id="1_8afob"]
 [ext_resource type="Texture2D" uid="uid://02wbeay60ck2" path="res://assets/sprites/player/animations/walking/south/frame_000.png" id="2_0owmy"]
 [ext_resource type="Texture2D" uid="uid://7xb753ndim14" path="res://assets/sprites/player/animations/breathing-idle/north/frame_000.png" id="2_3j4b4"]
 [ext_resource type="Texture2D" uid="uid://bvvg31t2ba2kp" path="res://assets/sprites/player/animations/breathing-idle/south/frame_000.png" id="2_je7p5"]
@@ -23,7 +23,7 @@
 [ext_resource type="Texture2D" uid="uid://nuaqys57mem6" path="res://assets/sprites/player/animations/walking/north/frame_005.png" id="15_iqsei"]
 [ext_resource type="Script" uid="uid://btvwvqw4ksb87" path="res://scripts/player/auto_attack.gd" id="22_yj68g"]
 [ext_resource type="PackedScene" uid="uid://dw343j23olv2t" path="res://scenes/player/player_projectile.tscn" id="23_ioxgp"]
-[ext_resource type="Script" path="res://scripts/player/aim_crosshair.gd" id="24_cross"]
+[ext_resource type="Script" uid="uid://qdju53j5lr3i" path="res://scripts/player/aim_crosshair.gd" id="24_cross"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_x7p2l"]
 radius = 12.0
@@ -152,13 +152,21 @@ script = ExtResource("1_8afob")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=670989994]
 shape = SubResource("CircleShape2D_x7p2l")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1009939076]
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+drag_horizontal_enabled = true
+drag_vertical_enabled = true
+drag_left_margin = 0.18
+drag_right_margin = 0.18
+drag_top_margin = 0.18
+drag_bottom_margin = 0.18
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=242730986]
 sprite_frames = SubResource("SpriteFrames_gx1jg")
 animation = &"walk_south"
 
-[node name="AimCrosshair" type="Node2D" parent="."]
+[node name="AimCrosshair" type="Node2D" parent="." unique_id=1515592813]
 script = ExtResource("24_cross")
 
 [node name="AutoAttack" type="Node" parent="." unique_id=355699993]
