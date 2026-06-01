@@ -1,20 +1,25 @@
 [gd_scene format=3 uid="uid://csxh78scywda2"]
 
-[ext_resource type="Script" uid="uid://b3aisl6074vru" path="res://scripts/world/arena.gd" id="1_pbd5s"]
+[ext_resource type="Script" uid="uid://b3aisl6074vru" path="res://scripts/world/arena.gd" id="1_arena"]
 
-[node name="Arena" type="Node2D" unique_id=1190346900]
-script = ExtResource("1_pbd5s")
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_arena")
+segments = 96
+wobble_primary = 0.0
+wobble_secondary = 0.0
 
-[node name="BoundaryLine" type="Line2D" parent="." unique_id=1138457120]
+[node name="BoundaryLine" type="Line2D" parent="."]
 z_index = 10
 closed = true
 width = 6.0
-default_color = Color(1, 0.36778843, 0.3002166, 0.9490196)
+default_color = Color(1, 0.367, 0.3, 0.949)
 
-[node name="FloorFill" type="Polygon2D" parent="." unique_id=658080869]
+[node name="FloorFill" type="Polygon2D" parent="."]
+visible = false
 z_index = -40
 
-[node name="FogMask" type="Polygon2D" parent="." unique_id=2097488976]
+[node name="FogMask" type="Polygon2D" parent="."]
+visible = false
 z_index = 5
 invert_enabled = true
 invert_border = 18432.0
