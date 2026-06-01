@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://dro5kx7bwap2j"]
+
+[ext_resource type="Script" path="res://scripts/ui/run_overlay.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://djk5b6racbvr7" path="res://scenes/ui/boot_overlay.tscn" id="2_boot"]
+[ext_resource type="PackedScene" uid="uid://df4r0kxnobv7c" path="res://scenes/ui/game_over_overlay.tscn" id="3_game_over"]
+[ext_resource type="PackedScene" uid="uid://dkbl1p2achx7v" path="res://scenes/ui/level_up_panel.tscn" id="4_level_up"]
+[ext_resource type="PackedScene" uid="uid://b5eplpcgf1tiy" path="res://scenes/ui/hand_augment_panel.tscn" id="5_hand_augment"]
+[ext_resource type="PackedScene" uid="uid://boaaxr4hq1kc4" path="res://scenes/ui/pause_menu.tscn" id="6_pause"]
+[ext_resource type="PackedScene" uid="uid://d18nsevj6c67y" path="res://scenes/ui/settings_menu.tscn" id="7_settings"]
+
+[node name="RunOverlay" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="BootOverlay" parent="." instance=ExtResource("2_boot")]
+
+[node name="GameOverOverlay" parent="." instance=ExtResource("3_game_over")]
+
+[node name="LevelUpPanel" parent="." instance=ExtResource("4_level_up")]
+
+[node name="HandAugmentPanel" parent="." instance=ExtResource("5_hand_augment")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("6_pause")]
+
+[node name="SettingsMenu" parent="." instance=ExtResource("7_settings")]

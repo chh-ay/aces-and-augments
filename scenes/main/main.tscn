@@ -1,125 +1,37 @@
-[gd_scene format=3 uid="uid://cm4criwagreod"]
+[gd_scene load_steps=16 format=3 uid="uid://cm4criwagreod"]
 
-[ext_resource type="Script" uid="uid://b2rm2pu7ajm5v" path="res://scripts/world/main.gd" id="1"]
-[ext_resource type="Script" uid="uid://ccdfa33mp1g4o" path="res://scripts/world/floor_generator.gd" id="2"]
-[ext_resource type="PackedScene" uid="uid://ctds0o8yq43a5" path="res://scenes/player/player.tscn" id="3"]
-[ext_resource type="Script" uid="uid://8fkw3vvt5odr" path="res://scripts/world/prop_spawner.gd" id="4"]
-[ext_resource type="Script" uid="uid://b2kbhubsiaqyr" path="res://scripts/world/enemy_spawner.gd" id="5"]
-[ext_resource type="PackedScene" uid="uid://cw10jr8r05fy1" path="res://scenes/enemies/basic_enemy.tscn" id="6"]
-[ext_resource type="PackedScene" uid="uid://dg0vs4hmbpk4t" path="res://scenes/enemies/drone_enemy.tscn" id="6_drone"]
-[ext_resource type="PackedScene" uid="uid://dax8b8kh2fc8o" path="res://scenes/enemies/mutant_enemy.tscn" id="6_mutant"]
-[ext_resource type="Script" path="res://scripts/world/run_director.gd" id="6_tt1x2"]
-[ext_resource type="PackedScene" uid="uid://csxh78scywda2" path="res://scenes/world/arena.tscn" id="7_a8run"]
-[ext_resource type="PackedScene" uid="uid://dkbl1p2achx7v" path="res://scenes/ui/level_up_panel.tscn" id="7_blune"]
-[ext_resource type="PackedScene" path="res://scenes/ui/hand_augment_panel.tscn" id="7_hand"]
-[ext_resource type="PackedScene" uid="uid://dx00oojl67cbw" path="res://scenes/enemies/boss_core.tscn" id="8_tbe87"]
-[ext_resource type="PackedScene" uid="uid://bnbee0i2sah2g" path="res://scenes/world/exit_door.tscn" id="8_xdoor"]
-[ext_resource type="PackedScene" uid="uid://dtwwuhxxxadey" path="res://scenes/world/lucky_terminal.tscn" id="9_blune"]
-[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="10_pause"]
-[ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="10_settings"]
-[ext_resource type="PackedScene" uid="uid://cwj5yn5i3bihf" path="res://scenes/ui/hud.tscn" id="11_7smn1"]
-[ext_resource type="Script" path="res://scripts/systems/pool_manager.gd" id="12_pool"]
-[ext_resource type="PackedScene" uid="uid://dw343j23olv2t" path="res://scenes/player/player_projectile.tscn" id="13_proj"]
-[ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="14_orb"]
-[ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="15_card"]
-[ext_resource type="AudioStream" path="res://assets/audio/music/run_loop.wav" id="16_run_music"]
-[ext_resource type="Theme" path="res://resources/themes/vcr_ui_theme.tres" id="17_theme"]
+[ext_resource type="Script" uid="uid://b2rm2pu7ajm5v" path="res://scripts/world/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://ccdfa33mp1g4o" path="res://scripts/world/floor_generator.gd" id="2_floor_gen"]
+[ext_resource type="Script" uid="uid://8fkw3vvt5odr" path="res://scripts/world/prop_spawner.gd" id="3_prop"]
+[ext_resource type="Script" uid="uid://b2kbhubsiaqyr" path="res://scripts/world/enemy_spawner.gd" id="4_enemy_spawn"]
+[ext_resource type="Script" path="res://scripts/world/run_director.gd" id="5_director"]
+[ext_resource type="PackedScene" uid="uid://cf2lyrt8m3wqe" path="res://scenes/world/floor_layers.tscn" id="6_floor_layers"]
+[ext_resource type="PackedScene" uid="uid://csxh78scywda2" path="res://scenes/world/arena.tscn" id="7_arena"]
+[ext_resource type="PackedScene" uid="uid://brc70lanq4xpa" path="res://scenes/world/run_containers.tscn" id="8_containers"]
+[ext_resource type="PackedScene" uid="uid://ctds0o8yq43a5" path="res://scenes/player/player.tscn" id="9_player"]
+[ext_resource type="PackedScene" uid="uid://cw10jr8r05fy1" path="res://scenes/enemies/basic_enemy.tscn" id="10_enemy_basic"]
+[ext_resource type="PackedScene" uid="uid://dg0vs4hmbpk4t" path="res://scenes/enemies/drone_enemy.tscn" id="11_enemy_drone"]
+[ext_resource type="PackedScene" uid="uid://dax8b8kh2fc8o" path="res://scenes/enemies/mutant_enemy.tscn" id="12_enemy_mutant"]
+[ext_resource type="PackedScene" uid="uid://dx00oojl67cbw" path="res://scenes/enemies/boss_core.tscn" id="13_boss"]
+[ext_resource type="PackedScene" uid="uid://bnbee0i2sah2g" path="res://scenes/world/exit_door.tscn" id="14_exit"]
+[ext_resource type="PackedScene" uid="uid://dtwwuhxxxadey" path="res://scenes/world/lucky_terminal.tscn" id="15_terminal"]
+[ext_resource type="PackedScene" uid="uid://cwj5yn5i3bihf" path="res://scenes/ui/hud.tscn" id="16_hud"]
+[ext_resource type="PackedScene" uid="uid://dro5kx7bwap2j" path="res://scenes/ui/run_overlay.tscn" id="17_overlay"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boot_panel"]
-bg_color = Color(0.05, 0.08, 0.11, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.74, 0.92, 0.62)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gameover_panel"]
-bg_color = Color(0.05, 0.08, 0.11, 0.98)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.74, 0.92, 0.62)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gameover_hint"]
-bg_color = Color(0.08, 0.12, 0.16, 0.96)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.95, 0.77, 0.24, 0.5)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[node name="Main" type="Node2D" unique_id=538251827]
-script = ExtResource("1")
-boss_scene = ExtResource("8_tbe87")
-exit_door_scene = ExtResource("8_xdoor")
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+boss_scene = ExtResource("13_boss")
+exit_door_scene = ExtResource("14_exit")
+lucky_terminal_scene = ExtResource("15_terminal")
 lucky_terminal_count = 2
 
-[node name="RunMusicPlayer" type="AudioStreamPlayer" parent="."]
-process_mode = 3
-autoplay = true
-stream = ExtResource("16_run_music")
-bus = &"Master"
+[node name="RunDirector" type="Node" parent="."]
+script = ExtResource("5_director")
 
-[node name="Player" parent="." unique_id=10213486 instance=ExtResource("3")]
-arena_path = NodePath("../Arena")
-floor_generator_path = NodePath("../FloorGenerator")
+[node name="Floor" parent="." instance=ExtResource("6_floor_layers")]
 
-[node name="EnemySpawner" type="Node" parent="." unique_id=493424533]
-script = ExtResource("5")
-enemy_scene = ExtResource("6")
-enemy_scenes = Array[PackedScene]([ExtResource("6"), ExtResource("6_drone"), ExtResource("6_mutant")])
-enemy_container_path = NodePath("../Enemies")
-player_path = NodePath("../Player")
-floor_generator_path = NodePath("../FloorGenerator")
-arena_path = NodePath("../Arena")
-
-[node name="PoolManager" type="Node" parent="." unique_id=1658454890]
-script = ExtResource("12_pool")
-enemy_scenes = Array[PackedScene]([ExtResource("6"), ExtResource("6_drone"), ExtResource("6_mutant")])
-projectile_scenes = Array[PackedScene]([ExtResource("13_proj")])
-pickup_scenes = Array[PackedScene]([ExtResource("14_orb"), ExtResource("15_card")])
-enemy_prewarm_count = 20
-projectile_prewarm_count = 24
-pickup_prewarm_count = 20
-
-[node name="Enemies" type="Node2D" parent="." unique_id=844003864]
-
-[node name="Bosses" type="Node2D" parent="." unique_id=340945275]
-
-[node name="Exits" type="Node2D" parent="." unique_id=1702250884]
-
-[node name="PropSpawner" type="Node2D" parent="." unique_id=1140745295]
-script = ExtResource("4")
-generator_path = NodePath("../FloorGenerator")
-enabled = true
-prop_count_per_chunk = 4
-max_prop_chunks_per_frame = 1
-
-[node name="Floor" type="Node2D" parent="." unique_id=884146632]
-
-[node name="FloorBase" type="TileMapLayer" parent="Floor" unique_id=547247567]
-
-[node name="FloorDetail" type="TileMapLayer" parent="Floor" unique_id=1732729120]
-
-[node name="FloorGenerator" type="Node" parent="." unique_id=34658807]
-script = ExtResource("2")
+[node name="FloorGenerator" type="Node" parent="."]
+script = ExtResource("2_floor_gen")
 player_path = NodePath("../Player")
 floor_base_path = NodePath("../Floor/FloorBase")
 floor_detail_path = NodePath("../Floor/FloorDetail")
@@ -127,194 +39,32 @@ world_radius_chunks = 4
 border_thickness_chunks = 2
 upper_threshold = 0.22
 
-[node name="RunDirector" type="Node" parent="." unique_id=530692279]
-script = ExtResource("6_tt1x2")
-
-[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1535270300]
-
-[node name="BootOverlay" type="Control" parent="CanvasLayer"]
-theme = ExtResource("17_theme")
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Backdrop" type="ColorRect" parent="CanvasLayer/BootOverlay"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.03, 0.05, 0.08, 1)
-
-[node name="Panel" type="Panel" parent="CanvasLayer/BootOverlay"]
-layout_mode = 0
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -132.0
-offset_top = -34.0
-offset_right = 132.0
-offset_bottom = 34.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_boot_panel")
-
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/BootOverlay/Panel"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 10.0
-offset_right = -12.0
-offset_bottom = -10.0
-alignment = 1
-
-[node name="Title" type="Label" parent="CanvasLayer/BootOverlay/Panel/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
-theme_override_font_sizes/font_size = 14
-text = "GENERATING SECTOR"
-horizontal_alignment = 1
-
-[node name="Hint" type="Label" parent="CanvasLayer/BootOverlay/Panel/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 15
-text = "Linking the first arena ring..."
-horizontal_alignment = 1
-
-[node name="GameOver" type="Control" parent="CanvasLayer" unique_id=205351826]
-visible = false
-theme = ExtResource("17_theme")
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="Backdrop" type="ColorRect" parent="CanvasLayer/GameOver" unique_id=1806649484]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.7)
-
-[node name="Panel" type="Panel" parent="CanvasLayer/GameOver" unique_id=872354907]
-layout_mode = 0
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = -210.0
-offset_right = 380.0
-offset_bottom = 210.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_panel")
-
-[node name="EndingPanelHost" type="Control" parent="CanvasLayer/GameOver/Panel"]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOver/Panel" unique_id=1051045196]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 22.0
-offset_right = -24.0
-offset_bottom = -22.0
-theme_override_constants/separation = 14
-alignment = 1
-
-[node name="Eyebrow" type="Label" parent="CanvasLayer/GameOver/Panel/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
-theme_override_font_sizes/font_size = 13
-text = "RUN RESULT"
-horizontal_alignment = 1
-
-[node name="Title" type="Label" parent="CanvasLayer/GameOver/Panel/VBox" unique_id=14945957]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 40
-text = "GAME OVER"
-horizontal_alignment = 1
-
-[node name="ArtCenter" type="CenterContainer" parent="CanvasLayer/GameOver/Panel/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-
-[node name="EndingArt" type="TextureRect" parent="CanvasLayer/GameOver/Panel/VBox/ArtCenter"]
-custom_minimum_size = Vector2(700, 306)
-layout_mode = 2
-stretch_mode = 5
-
-[node name="HintCard" type="PanelContainer" parent="CanvasLayer/GameOver/Panel/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_gameover_hint")
-
-[node name="Margin" type="MarginContainer" parent="CanvasLayer/GameOver/Panel/VBox/HintCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 10
-
-[node name="Hint" type="Label" parent="CanvasLayer/GameOver/Panel/VBox/HintCard/Margin" unique_id=516161393]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 18
-text = "Press Enter to restart or Esc to quit"
-horizontal_alignment = 1
-
-[node name="LevelUpPanel" type="Control" parent="CanvasLayer" unique_id=1916820633 instance=ExtResource("7_blune")]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HandAugmentPanel" type="Control" parent="CanvasLayer" instance=ExtResource("7_hand")]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="PauseMenu" parent="CanvasLayer" instance=ExtResource("10_pause")]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="SettingsMenu" parent="CanvasLayer" instance=ExtResource("10_settings")]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Arena" parent="." unique_id=1190346900 instance=ExtResource("7_a8run")]
+[node name="Arena" parent="." instance=ExtResource("7_arena")]
 floor_generator_path = NodePath("../FloorGenerator")
-enable_fog_mask = false
-segments = 96
-wobble_primary = 0.0
-wobble_secondary = 0.0
 
-[node name="LuckyTerminal" parent="." unique_id=789977006 instance=ExtResource("9_blune")]
-message = "CHEAT CODE FOUND\\nTHE HOUSE ALWAYS DRAWS ACES"
+[node name="PropSpawner" type="Node2D" parent="."]
+script = ExtResource("3_prop")
+generator_path = NodePath("../FloorGenerator")
+enabled = true
+prop_count_per_chunk = 4
+max_prop_chunks_per_frame = 1
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=1171546830 instance=ExtResource("11_7smn1")]
+[node name="RunContainers" parent="." instance=ExtResource("8_containers")]
+
+[node name="Player" parent="." instance=ExtResource("9_player")]
+arena_path = NodePath("../Arena")
+floor_generator_path = NodePath("../FloorGenerator")
+
+[node name="EnemySpawner" type="Node" parent="."]
+script = ExtResource("4_enemy_spawn")
+enemy_scene = ExtResource("10_enemy_basic")
+enemy_scenes = Array[PackedScene]([ExtResource("10_enemy_basic"), ExtResource("11_enemy_drone"), ExtResource("12_enemy_mutant")])
+enemy_container_path = NodePath("../RunContainers/Enemies")
+player_path = NodePath("../Player")
+floor_generator_path = NodePath("../FloorGenerator")
+arena_path = NodePath("../Arena")
+run_director_path = NodePath("../RunDirector")
+
+[node name="HUD" parent="." instance=ExtResource("16_hud")]
+
+[node name="RunOverlay" parent="." instance=ExtResource("17_overlay")]

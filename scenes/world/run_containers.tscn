@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://brc70lanq4xpa"]
+
+[node name="RunContainers" type="Node2D"]
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Bosses" type="Node2D" parent="."]
+
+[node name="Exits" type="Node2D" parent="."]
+
+[node name="LuckyTerminals" type="Node2D" parent="."]
