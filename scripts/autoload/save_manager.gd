@@ -24,9 +24,7 @@ func load_settings() -> void:
 	_settings = ConfigFile.new()
 	var error: Error = _settings.load(SETTINGS_PATH)
 	if error != OK and error != ERR_FILE_NOT_FOUND:
-		var logger: Node = _get_logger()
-		if logger != null and logger.has_method("error"):
-			logger.call("error", "Failed to load settings: %s" % error_string(error), "SaveManager")
+		push_error("[SaveManager] Failed to load settings: %s" % error_string(error))
 	if not _settings.has_section_key(SECTION_META, KEY_VERSION):
 		_settings.set_value(SECTION_META, KEY_VERSION, CURRENT_VERSION)
 	_loaded = true
@@ -94,20 +92,9 @@ func save_settings() -> void:
 	_settings.set_value(SECTION_META, KEY_VERSION, CURRENT_VERSION)
 	var error: Error = _settings.save(SETTINGS_PATH)
 	if error != OK:
-		var logger: Node = _get_logger()
-		if logger != null and logger.has_method("error"):
-			logger.call("error", "Failed to save settings: %s" % error_string(error), "SaveManager")
+		push_error("[SaveManager] Failed to save settings: %s" % error_string(error))
 
 func _ensure_loaded() -> void:
 	if _loaded:
 		return
 	load_settings()
-
-func _get_logger() -> Node:
-	var main_loop: MainLoop = Engine.get_main_loop()
-	if main_loop == null:
-		return null
-	var scene_tree: SceneTree = main_loop as SceneTree
-	if scene_tree == null:
-		return null
-	return scene_tree.root.get_node_or_null("CustomLogger")

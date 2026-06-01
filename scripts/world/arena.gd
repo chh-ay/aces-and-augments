@@ -20,9 +20,12 @@ extends Node2D
 @onready var _floor_generator: FloorGenerator = get_node_or_null(floor_generator_path) as FloorGenerator
 
 func _ready() -> void:
-	add_to_group("arena")
+	RunContext.register_arena(self)
 	_sync_radius_from_floor_generator()
 	_update_boundary()
+
+func _exit_tree() -> void:
+	RunContext.unregister_arena(self)
 
 func get_inner_radius(margin: float = 0.0) -> float:
 	return max(radius - margin, 0.0)

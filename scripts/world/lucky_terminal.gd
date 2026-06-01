@@ -20,18 +20,16 @@ func _ready() -> void:
 	_timer.timeout.connect(_on_hide_timer_timeout)
 
 func _on_trigger_body_entered(body: Node) -> void:
-	if _activated or not body.is_in_group("player"):
+	if _activated:
 		return
 	var player: PlayerController = body as PlayerController
-	if player == null or not player.has_method("convert_random_hand_card_to_ace"):
+	if player == null:
 		return
 	var result: Dictionary = player.convert_random_hand_card_to_ace()
 	if bool(result.get("applied", false)):
 		_activated = true
 		_show_message(_build_success_message(result))
-		if AudioManager != null and AudioManager.has_method("play_sfx"):
-			AudioManager.play_sfx("card_pickup", 0.92, -1.0)
-		CustomLogger.info("Lucky terminal forged an ace", "EasterEgg")
+		AudioManager.play_sfx("card_pickup", 0.92, -1.0)
 		return
 	var reason: String = String(result.get("reason", "no_cards"))
 	if reason == "all_aces":
@@ -39,7 +37,6 @@ func _on_trigger_body_entered(body: Node) -> void:
 		_show_message(spent_message)
 	else:
 		_show_message(empty_hand_message)
-	CustomLogger.info("Lucky terminal failed to forge an ace: %s" % reason, "EasterEgg")
 
 func _on_hide_timer_timeout() -> void:
 	_message_panel.visible = false
