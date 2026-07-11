@@ -39,6 +39,10 @@ enum AimMode {
 @export var arena_path: NodePath
 @export var floor_generator_path: NodePath
 @export var arena_padding: float = 8.0
+## How far past the playable rect the camera may scroll: shows a strip of
+## shoreline water at the edge. MUST stay well under the border ring
+## thickness (2 chunks = 4096 px) so unloaded void is never visible.
+@export var camera_shore_peek: float = 192.0
 @export var projectile_damage: int = 1
 @export var attack_interval: float = 0.65
 @export var attack_range: float = 234.0
@@ -128,6 +132,7 @@ func _ready() -> void:
 	_regen_timer = health_regen_interval
 	_ensure_hit_flash_material()
 	_apply_camera_zoom()
+	_apply_camera_limits()
 	_update_animation()
 	_clamp_to_arena()
 	_update_aim_mode_visuals()
@@ -163,6 +168,20 @@ func _apply_camera_zoom() -> void:
 		return
 	var clamped_zoom: float = clampf(camera_zoom_scale, 0.5, 4.0)
 	_camera.zoom = Vector2.ONE * clamped_zoom
+
+## Hard camera bounds at the playable rect plus a shoreline peek strip.
+## Camera2D limits account for viewport size and zoom on the engine side,
+## so this is exact at any resolution or aspect ratio.
+func _apply_camera_limits() -> void:
+	if _camera == null or _arena == null or not is_instance_valid(_arena):
+		return
+	var center: Vector2 = _arena.global_position
+	var extent: Vector2 = _arena.get_half_extents() + Vector2(camera_shore_peek, camera_shore_peek)
+	_camera.limit_left = int(center.x - extent.x)
+	_camera.limit_right = int(center.x + extent.x)
+	_camera.limit_top = int(center.y - extent.y)
+	_camera.limit_bottom = int(center.y + extent.y)
+	_camera.limit_smoothed = true
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _is_dead or get_tree().paused:
@@ -534,10 +553,12 @@ func _clamp_to_arena() -> void:
 	var clamped_position: Vector2 = _arena.clamp_world_position(global_position, margin)
 	if clamped_position.distance_squared_to(global_position) <= 0.01:
 		return
-	var normal: Vector2 = (clamped_position - _arena.global_position).normalized()
+	# Outward wall normal from the correction vector (axis-aligned on
+	# edges, diagonal in corners), so sliding along the boundary works.
+	var outward_normal: Vector2 = (global_position - clamped_position).normalized()
 	global_position = clamped_position
-	if normal != Vector2.ZERO and velocity.dot(normal) > 0.0:
-		velocity = velocity.slide(normal)
+	if outward_normal != Vector2.ZERO and velocity.dot(outward_normal) > 0.0:
+		velocity = velocity.slide(outward_normal)
 
 func _is_in_upper_terrain() -> bool:
 	if _floor_generator == null or not is_instance_valid(_floor_generator):

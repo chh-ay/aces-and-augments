@@ -601,12 +601,20 @@ func _is_chunk_within_world_limit(chunk: Vector2i) -> bool:
 	return max(absi(chunk.x), absi(chunk.y)) <= world_radius_chunks
 
 
+## A chunk is land iff both axes fall in the half-open range
+## [-inner, inner): land then spans exactly [-inner*chunk, +inner*chunk)
+## in world space, matching `_playable_radius_world` on all four sides.
+## (A symmetric closed range would leave a chunk of unreachable land past
+## the east/south clamp edge because chunk indices come from floor().)
 func _is_chunk_in_border_ring(chunk: Vector2i) -> bool:
 	if not use_border_ring or world_radius_chunks <= WORLD_LIMIT_DISABLED or border_thickness_chunks <= 0:
 		return false
-	var distance: int = max(absi(chunk.x), absi(chunk.y))
+	if not _is_chunk_within_world_limit(chunk):
+		return false
 	var inner: int = max(world_radius_chunks - border_thickness_chunks, 0)
-	return distance > inner and distance <= world_radius_chunks
+	var land: bool = (chunk.x >= -inner and chunk.x < inner
+		and chunk.y >= -inner and chunk.y < inner)
+	return not land
 
 
 func _world_to_chunk(world_pos: Vector2) -> Vector2i:

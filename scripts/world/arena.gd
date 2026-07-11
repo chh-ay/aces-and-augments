@@ -1,94 +1,88 @@
 class_name Arena
 extends Node2D
+##
+## Rectangular playable bounds, synced from the floor generator's playable
+## area so the forced-water border ring is the visible boundary (the
+## shoreline IS the wall). Every movement and spawn clamp flows through
+## here; the camera limits in PlayerController use the same rect.
+##
 
 @export var floor_generator_path: NodePath
-@export var radius: float = 14_336.0
-@export var segments: int = 64
+## Half extents of the playable rectangle. Overridden at runtime by the
+## floor generator's playable area when one is wired up.
+@export var half_extents: Vector2 = Vector2(4_096.0, 4_096.0)
+## Debug outline of the exact clamp rect (the shoreline communicates the
+## boundary in normal play).
+@export var show_boundary_line: bool = false
 @export var line_width: float = 24.0
 @export var line_color: Color = Color(1.0, 0.78, 0.2, 0.95)
-@export var fill_color: Color = Color(0.09, 0.10, 0.12, 0.92)
-@export var enable_fog_mask: bool = false
-@export var edge_softness: float = 384.0
-@export var fog_padding: float = 4_096.0
-@export var fog_color: Color = Color(0.02, 0.03, 0.05, 0.32)
-@export var wobble_primary: float = 160.0
-@export var wobble_secondary: float = 96.0
+## Dim tint over everything beyond the clamp rect, so out-of-bounds ocean
+## reads distinctly from in-bounds lakes. Purely visual.
+@export var out_of_bounds_tint: Color = Color(0.01, 0.02, 0.05, 0.45)
+## How far past the rect the dim extends; MUST cover the camera shore
+## peek plus the widest view overhang (border ring is 4096 px, so 4096
+## keeps the whole visible strip tinted).
+@export var out_of_bounds_dim_extent: float = 4_096.0
 
 @onready var boundary_line: Line2D = $BoundaryLine
-@onready var floor_fill: Polygon2D = $FloorFill
-@onready var fog_mask: Polygon2D = $FogMask
-@onready var _floor_generator: FloorGenerator = get_node_or_null(floor_generator_path) as FloorGenerator
+@onready var out_of_bounds_dim: Polygon2D = $OutOfBoundsDim
+
 
 func _ready() -> void:
 	RunContext.register_arena(self)
-	_sync_radius_from_floor_generator()
+	_sync_bounds_from_floor_generator()
 	_update_boundary()
+
 
 func _exit_tree() -> void:
 	RunContext.unregister_arena(self)
 
-func get_inner_radius(margin: float = 0.0) -> float:
-	return max(radius - margin, 0.0)
+
+func get_half_extents(margin: float = 0.0) -> Vector2:
+	return Vector2(maxf(half_extents.x - margin, 0.0), maxf(half_extents.y - margin, 0.0))
+
 
 func is_world_position_inside(world_position: Vector2, margin: float = 0.0) -> bool:
-	return world_position.distance_to(global_position) <= get_inner_radius(margin)
+	var offset: Vector2 = world_position - global_position
+	var inner: Vector2 = get_half_extents(margin)
+	return absf(offset.x) <= inner.x and absf(offset.y) <= inner.y
+
 
 func clamp_world_position(world_position: Vector2, margin: float = 0.0) -> Vector2:
 	var offset: Vector2 = world_position - global_position
-	var max_distance: float = get_inner_radius(margin)
-	if offset.length() <= max_distance:
-		return world_position
-	if offset == Vector2.ZERO:
-		return global_position
-	return global_position + offset.normalized() * max_distance
+	var inner: Vector2 = get_half_extents(margin)
+	return global_position + Vector2(
+		clampf(offset.x, -inner.x, inner.x),
+		clampf(offset.y, -inner.y, inner.y)
+	)
+
 
 func _update_boundary() -> void:
-	var boundary_points: PackedVector2Array = _build_visual_boundary()
-
-	if floor_fill != null:
-		floor_fill.visible = false
-		floor_fill.polygon = _build_fill_polygon(boundary_points)
-		floor_fill.color = fill_color
-	if fog_mask != null:
-		fog_mask.visible = enable_fog_mask
-		if enable_fog_mask:
-			fog_mask.polygon = boundary_points
-			fog_mask.color = fog_color
-			fog_mask.invert_enabled = true
-			fog_mask.invert_border = radius + fog_padding
+	if out_of_bounds_dim != null:
+		var rect_points: PackedVector2Array = PackedVector2Array()
+		for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+			rect_points.append(corner * half_extents)
+		out_of_bounds_dim.polygon = rect_points
+		out_of_bounds_dim.color = out_of_bounds_tint
+		out_of_bounds_dim.invert_enabled = true
+		out_of_bounds_dim.invert_border = out_of_bounds_dim_extent
 	if boundary_line == null:
 		return
-
-	boundary_line.visible = true
+	boundary_line.visible = show_boundary_line
+	if not show_boundary_line:
+		return
 	boundary_line.width = line_width
 	boundary_line.default_color = line_color
+	boundary_line.closed = true
 	boundary_line.clear_points()
-	for point in boundary_points:
-		boundary_line.add_point(point)
+	for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+		boundary_line.add_point(corner * half_extents)
 
-func _build_visual_boundary() -> PackedVector2Array:
-	var points: PackedVector2Array = PackedVector2Array()
-	for i: int in range(segments):
-		var angle: float = TAU * float(i) / float(segments)
-		var direction: Vector2 = Vector2(cos(angle), sin(angle))
-		points.append(direction * _get_visual_radius(direction))
-	return points
 
-func _build_fill_polygon(boundary_points: PackedVector2Array) -> PackedVector2Array:
-	var fill_points: PackedVector2Array = PackedVector2Array([Vector2.ZERO])
-	for point in boundary_points:
-		fill_points.append(point)
-	return fill_points
-
-func _get_visual_radius(direction: Vector2) -> float:
-	var wobble: float = (direction.x * direction.y * 2.0) * wobble_primary
-	wobble += (direction.x * direction.x - direction.y * direction.y) * wobble_secondary
-	return radius + wobble
-
-func _sync_radius_from_floor_generator() -> void:
-	if _floor_generator == null:
+func _sync_bounds_from_floor_generator() -> void:
+	var floor_generator: FloorGenerator = get_node_or_null(floor_generator_path) as FloorGenerator
+	if floor_generator == null:
 		return
-	var playable_radius_world: Vector2 = _floor_generator.get_playable_radius_world()
-	if playable_radius_world == Vector2.ZERO:
-		return
-	radius = min(playable_radius_world.x, playable_radius_world.y)
+	var playable: Vector2 = floor_generator.get_playable_radius_world()
+	if playable != Vector2.ZERO:
+		half_extents = playable

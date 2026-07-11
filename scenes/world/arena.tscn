@@ -4,22 +4,13 @@
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_arena")
-segments = 96
-wobble_primary = 0.0
-wobble_secondary = 0.0
+
+[node name="OutOfBoundsDim" type="Polygon2D" parent="."]
+z_index = -10
 
 [node name="BoundaryLine" type="Line2D" parent="."]
+visible = false
 z_index = 10
 closed = true
 width = 6.0
 default_color = Color(1, 0.367, 0.3, 0.949)
-
-[node name="FloorFill" type="Polygon2D" parent="."]
-visible = false
-z_index = -40
-
-[node name="FogMask" type="Polygon2D" parent="."]
-visible = false
-z_index = 5
-invert_enabled = true
-invert_border = 18432.0
