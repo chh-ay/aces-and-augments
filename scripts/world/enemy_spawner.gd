@@ -24,8 +24,15 @@ extends Node
 @export_group("Cadence")
 @export var spawn_interval: float = 2.1
 @export var minimum_spawn_interval: float = 1.0
+## Soft population target at run start; pressure tapers near it instead of
+## cutting off. Grows toward `peak_enemy_count` over the run.
 @export var max_enemies: int = 10
 @export var peak_enemy_count: int = 64
+## Absolute population ceiling — a pure perf guard, not a pacing knob.
+@export var hard_enemy_limit: int = 160
+## Fraction of the burst that still spawns while over the soft cap, so
+## kiting a full screen never stalls the pressure entirely.
+@export_range(0.0, 1.0, 0.05) var overflow_spawn_fraction: float = 0.25
 @export var burst_count_base: int = 5
 @export var burst_count_peak: int = 9
 @export_range(0.2, 1.0, 0.05) var peak_spawn_interval_scale: float = 0.48
@@ -112,11 +119,12 @@ func spawn_surge(count: int) -> void:
 	var player: PlayerController = _resolve_player()
 	if player == null or _enemy_container == null:
 		return
-	for index in range(count):
+	var budget: int = mini(count, hard_enemy_limit - _enemy_container.get_child_count())
+	for index in range(budget):
 		var scene: PackedScene = _pick_enemy_scene()
 		if scene == null:
 			continue
-		var angle: float = TAU * float(index) / float(count)
+		var angle: float = TAU * float(index) / float(budget)
 		var position: Vector2 = _resolve_ring_position(player, angle, randf_range(spawn_radius_min, spawn_radius_max))
 		if position == Vector2.INF:
 			continue
@@ -182,10 +190,7 @@ func set_enemy_mutation_profile(profile: Dictionary) -> void:
 # -- Spawning --------------------------------------------------------------
 
 func _spawn_ring(player: PlayerController) -> void:
-	var slots_available: int = _get_current_max_enemies() - _enemy_container.get_child_count()
-	if slots_available <= 0:
-		return
-	var burst_count: int = mini(_get_burst_count(), slots_available)
+	var burst_count: int = _get_pressured_burst_count()
 	if burst_count <= 0:
 		return
 	var base_angle: float = randf() * TAU
@@ -303,8 +308,29 @@ func _get_burst_count() -> int:
 	return max(int(round(lerpf(float(burst_count_base), float(burst_count_peak), _get_group_pressure_progress()))), 1)
 
 
-func _get_current_max_enemies() -> int:
+## Current soft population target (start -> peak over the run).
+func _get_current_soft_cap() -> int:
 	return max(int(round(lerpf(float(max_enemies), float(peak_enemy_count), _get_group_pressure_progress()))), 1)
+
+
+## Soft cap instead of a hard cutoff: full bursts while there is headroom,
+## a smooth taper approaching the soft cap, and a trickle above it so
+## pressure never fully stalls. `hard_enemy_limit` only bounds worst-case
+## node count.
+func _get_pressured_burst_count() -> int:
+	var population: int = _enemy_container.get_child_count()
+	if population >= hard_enemy_limit:
+		return 0
+	var soft_cap: int = _get_current_soft_cap()
+	var burst: float = float(_get_burst_count())
+	if population >= soft_cap:
+		burst *= overflow_spawn_fraction
+	else:
+		# Full strength below 65% of the cap, then linear taper down to the
+		# overflow trickle right at the cap.
+		var headroom: float = 1.0 - float(population) / float(soft_cap)
+		burst *= clampf(headroom / 0.35, overflow_spawn_fraction, 1.0)
+	return mini(maxi(int(ceil(burst)), 1), hard_enemy_limit - population)
 
 
 func _get_current_spawn_interval() -> float:
