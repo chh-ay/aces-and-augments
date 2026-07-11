@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqpy67c31iwn8"
-path="res://.godot/imported/mutant_enemy.png-b091908b803c171e1ecba615dbb821d7.ctex"
+uid="uid://cqier7b1dn5my"
+path="res://.godot/imported/beetle.png-cd1dd9d933cc3730b3fb4114dd8c666e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/mutant_enemy.png"
-dest_files=["res://.godot/imported/mutant_enemy.png-b091908b803c171e1ecba615dbb821d7.ctex"]
+source_file="res://assets/sprites/enemies/beetle.png"
+dest_files=["res://.godot/imported/beetle.png-cd1dd9d933cc3730b3fb4114dd8c666e.ctex"]
 
 [params]
 

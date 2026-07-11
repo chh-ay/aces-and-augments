@@ -1,12 +1,62 @@
-[gd_scene format=3 uid="uid://cw10jr8r05fy1"]
+[gd_scene load_steps=12 format=3 uid="uid://cw10jr8r05fy1"]
 
 [ext_resource type="Script" uid="uid://c0wepg8hribie" path="res://scripts/enemies/basic_enemy.gd" id="1_8xi43"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime_enemy.png" id="2_8xi43"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime_small.png" id="2_8xi43"]
 [ext_resource type="PackedScene" uid="uid://lowuyis8rtye" path="res://scenes/pickups/xp_orb.tscn" id="2_ibjif"]
 [ext_resource type="PackedScene" uid="uid://5825rpwmaqfe" path="res://scenes/pickups/card_pickup.tscn" id="3_4mpuu"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_8xi43"]
 radius = 8.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f0"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(0, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f1"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(16, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f2"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f3"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(48, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f4"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(64, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f5"]
+atlas = ExtResource("2_8xi43")
+region = Rect2(80, 16, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_slime"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f5")
+}],
+"loop": true,
+"name": &"default",
+"speed": 7.0
+}]
 
 [node name="Enemy" type="CharacterBody2D" unique_id=1540579015]
 script = ExtResource("1_8xi43")
@@ -16,9 +66,11 @@ xp_orb_scene = ExtResource("2_ibjif")
 card_pickup_scene = ExtResource("3_4mpuu")
 card_drop_chance = 0.16
 
-[node name="Sprite" type="Sprite2D" parent="." unique_id=16698256]
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=16698256]
 texture_filter = 1
-texture = ExtResource("2_8xi43")
+scale = Vector2(1.5, 1.5)
+sprite_frames = SubResource("SpriteFrames_slime")
+autoplay = "default"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1284222687]
 shape = SubResource("CircleShape2D_8xi43")

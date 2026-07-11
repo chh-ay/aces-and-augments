@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_rock.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/mole.png" id="2_tex"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rock"]
+radius = 5.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rock"]
+atlas = ExtResource("2_tex")
+region = Rect2(224, 96, 32, 32)
+
+[node name="EnemyRock" type="Area2D"]
+collision_layer = 0
+script = ExtResource("1_script")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = SubResource("AtlasTexture_rock")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_rock")

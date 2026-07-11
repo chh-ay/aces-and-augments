@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://botxn1dgele4p"
-path="res://.godot/imported/drone_enemy.png-8bd8b8d8e5385bafe8b1644022d23670.ctex"
+uid="uid://bfxksyyqb7wnu"
+path="res://.godot/imported/jelsquid.png-efc247b5bf4b537895f86cf49e0d88d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/drone_enemy.png"
-dest_files=["res://.godot/imported/drone_enemy.png-8bd8b8d8e5385bafe8b1644022d23670.ctex"]
+source_file="res://assets/sprites/enemies/jelsquid.png"
+dest_files=["res://.godot/imported/jelsquid.png-efc247b5bf4b537895f86cf49e0d88d7.ctex"]
 
 [params]
 

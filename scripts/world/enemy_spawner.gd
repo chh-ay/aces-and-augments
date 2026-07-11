@@ -12,6 +12,9 @@ extends Node
 
 @export var enemy_scene: PackedScene
 @export var enemy_scenes: Array[PackedScene] = []
+## Run progress (0..1) at which the same-index entry of `enemy_scenes`
+## joins the spawn pool. Missing entries unlock immediately.
+@export var enemy_unlock_progress: Array[float] = []
 @export var enemy_container_path: NodePath
 @export var player_path: NodePath
 @export var floor_generator_path: NodePath
@@ -59,6 +62,8 @@ var _difficulty_speed_multiplier: float = 1.0
 var _difficulty_health_multiplier: float = 1.0
 var _difficulty_damage_multiplier: float = 1.0
 var _difficulty_card_drop_multiplier: float = 1.0
+var _frenzy_time_remaining: float = 0.0
+var _meta_card_drop_bonus: float = 0.0
 
 var _enemy_container: Node2D
 var _player_override: PlayerController
@@ -77,6 +82,7 @@ func _ready() -> void:
 		run_duration_seconds = max(_run_director.run_duration_seconds, 0.0)
 	_base_spawn_interval = max(spawn_interval, minimum_spawn_interval)
 	_apply_selected_difficulty()
+	_meta_card_drop_bonus = float(GameManager.get_player_meta_profile().get("card_drop", 0.0))
 	_prewarm_pool()
 	_spawn_timer = _get_current_spawn_interval()
 
@@ -88,6 +94,7 @@ func _physics_process(delta: float) -> void:
 	if player == null:
 		return
 	_elapsed_run_time += delta
+	_frenzy_time_remaining = maxf(_frenzy_time_remaining - delta, 0.0)
 	_spawn_timer = maxf(_spawn_timer - delta, 0.0)
 	_despawn_timer = maxf(_despawn_timer - delta, 0.0)
 	if _spawn_timer <= 0.0:
@@ -96,6 +103,55 @@ func _physics_process(delta: float) -> void:
 	if _despawn_timer <= 0.0:
 		_despawn_timer = despawn_check_interval
 		_despawn_far_enemies(player)
+
+
+# -- Run events -------------------------------------------------------------
+
+## Ring burst of currently-unlocked enemies, on top of the normal cadence.
+func spawn_surge(count: int) -> void:
+	var player: PlayerController = _resolve_player()
+	if player == null or _enemy_container == null:
+		return
+	for index in range(count):
+		var scene: PackedScene = _pick_enemy_scene()
+		if scene == null:
+			continue
+		var angle: float = TAU * float(index) / float(count)
+		var position: Vector2 = _resolve_ring_position(player, angle, randf_range(spawn_radius_min, spawn_radius_max))
+		if position == Vector2.INF:
+			continue
+		_spawn_single_enemy(scene, position)
+
+
+## One oversized, gold-tinted hunter with a guaranteed card drop.
+func spawn_elite() -> void:
+	var player: PlayerController = _resolve_player()
+	if player == null or _enemy_container == null:
+		return
+	var scene: PackedScene = _pick_enemy_scene()
+	if scene == null:
+		return
+	var position: Vector2 = _resolve_ring_position(player, randf() * TAU, spawn_radius_max)
+	if position == Vector2.INF:
+		return
+	var enemy: AbstractEnemy = PoolManager.spawn(scene, _enemy_container) as AbstractEnemy
+	if enemy == null:
+		return
+	enemy.global_position = position
+	enemy.card_drop_multiplier = 1000.0
+	apply_scaling_to(enemy)
+	var elite_mutation: Dictionary = _enemy_mutation_profile.duplicate(true)
+	elite_mutation["health"] = float(elite_mutation.get("health", 1.0)) * 6.0
+	elite_mutation["damage"] = float(elite_mutation.get("damage", 1.0)) * 1.4
+	elite_mutation["speed"] = float(elite_mutation.get("speed", 1.0)) * 1.1
+	enemy.apply_mutation_profile(elite_mutation)
+	enemy.scrap_reward_multiplier = 5.0
+	enemy.scale = Vector2(1.35, 1.35)
+	enemy.modulate = Color(1.35, 1.15, 0.7)
+
+
+func start_frenzy(duration: float) -> void:
+	_frenzy_time_remaining = maxf(duration, 0.0)
 
 
 # -- Public API ------------------------------------------------------------
@@ -169,11 +225,14 @@ func _spawn_single_enemy(scene: PackedScene, position: Vector2) -> void:
 	if enemy == null:
 		return
 	enemy.global_position = position
-	enemy.card_drop_chance = clampf(enemy.card_drop_chance * _difficulty_card_drop_multiplier, 0.0, 1.0)
-	_apply_enemy_scaling(enemy)
+	enemy.card_drop_multiplier = _difficulty_card_drop_multiplier * (1.0 + _meta_card_drop_bonus)
+	apply_scaling_to(enemy)
 
 
-func _apply_enemy_scaling(enemy: AbstractEnemy) -> void:
+## Applies the current run-progress + difficulty multipliers and the active
+## curse mutation. Also used by Main for the boss so it scales like the
+## enemies around it.
+func apply_scaling_to(enemy: AbstractEnemy) -> void:
 	var progress: float = _get_run_progress()
 	var eased: float = progress * progress * (3.0 - 2.0 * progress)
 	var speed_multiplier: float = lerpf(1.0, peak_speed_multiplier, eased) * _difficulty_speed_multiplier
@@ -185,9 +244,14 @@ func _apply_enemy_scaling(enemy: AbstractEnemy) -> void:
 
 func _pick_enemy_scene() -> PackedScene:
 	if not enemy_scenes.is_empty():
+		var progress: float = _get_run_progress()
 		var available: Array[PackedScene] = []
-		for scene in enemy_scenes:
-			if scene != null:
+		for index in range(enemy_scenes.size()):
+			var scene: PackedScene = enemy_scenes[index]
+			if scene == null:
+				continue
+			var unlock: float = enemy_unlock_progress[index] if index < enemy_unlock_progress.size() else 0.0
+			if progress >= unlock:
 				available.append(scene)
 		if not available.is_empty():
 			return available[randi_range(0, available.size() - 1)]
@@ -245,7 +309,10 @@ func _get_current_max_enemies() -> int:
 
 func _get_current_spawn_interval() -> float:
 	var interval_start: float = maxf(_difficulty_spawn_interval, minimum_spawn_interval)
-	return maxf(lerpf(interval_start, minimum_spawn_interval, _get_group_pressure_progress()), minimum_spawn_interval)
+	var interval: float = lerpf(interval_start, minimum_spawn_interval, _get_group_pressure_progress())
+	if _frenzy_time_remaining > 0.0:
+		interval *= 0.45
+	return maxf(interval, minimum_spawn_interval * 0.45)
 
 
 func _apply_selected_difficulty() -> void:

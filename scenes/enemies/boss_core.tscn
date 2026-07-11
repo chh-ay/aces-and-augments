@@ -1,10 +1,47 @@
-[gd_scene format=3 uid="uid://dx00oojl67cbw"]
+[gd_scene load_steps=9 format=3 uid="uid://dx00oojl67cbw"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/boss_core.png" id="1_d3dhf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/boss_slicer.png" id="1_d3dhf"]
 [ext_resource type="Script" path="res://scripts/enemies/boss_core.gd" id="1_fufmt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/shadow_small.png" id="2_shadow"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_fufmt"]
 radius = 22.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f0"]
+atlas = ExtResource("1_d3dhf")
+region = Rect2(0, 56, 32, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f1"]
+atlas = ExtResource("1_d3dhf")
+region = Rect2(32, 56, 32, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f2"]
+atlas = ExtResource("1_d3dhf")
+region = Rect2(64, 56, 32, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f3"]
+atlas = ExtResource("1_d3dhf")
+region = Rect2(96, 56, 32, 56)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_slicer"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f3")
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]
 
 [node name="BossCore" type="CharacterBody2D" unique_id=1640364229]
 script = ExtResource("1_fufmt")
@@ -14,6 +51,7 @@ damage_interval = 0.7
 damage_range = 36.0
 max_health = 90
 xp_reward = 10
+face_velocity_x = true
 hit_flash_strength = 0.42
 hit_flash_color = Color(1, 0.88, 0.9, 1)
 hit_flash_duration = 0.14
@@ -22,7 +60,16 @@ hit_flash_pulses = 2.2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=239603289]
 shape = SubResource("CircleShape2D_fufmt")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=297274093]
+[node name="Shadow" type="Sprite2D" parent="."]
 texture_filter = 1
-scale = Vector2(0.58, 0.58)
-texture = ExtResource("1_d3dhf")
+modulate = Color(1, 1, 1, 0.55)
+position = Vector2(0, 26)
+scale = Vector2(2.2, 2.2)
+texture = ExtResource("2_shadow")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=297274093]
+texture_filter = 1
+position = Vector2(0, -14)
+scale = Vector2(2, 2)
+sprite_frames = SubResource("SpriteFrames_slicer")
+autoplay = "default"
