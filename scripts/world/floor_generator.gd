@@ -1,30 +1,105 @@
 class_name FloorGenerator
 extends Node
 ##
-## Streams floor tiles around the player using Wang-corner tiling.
+## Streams floor tiles around the player.
+##
+## Base layer: land floor variants (grass / dirt decor) picked by cell hash.
+## Detail layer: cell-based water regions rendered with a 47-tile blob
+## autotile (32rogues watertiles; mask table verified against the pack's
+## Tiled wang set). Full-water cells use an animated wave tile.
 ##
 ## Both TileMapLayer nodes MUST have `tile_set` assigned in the editor
-## (res://resources/tilesets/floor_tileset.tres). Source 0 = base atlas
-## (single (0,0) tile). Source 1 = detail atlas (7x7 grid of wang tiles).
+## (res://resources/tilesets/floor_tileset.tres). Source 0 = base floor
+## variants (7 tiles in one row). Source 1 = water blob atlas.
+##
+## `is_cell_water()` is the single terrain predicate shared by rendering,
+## movement slowdown, and prop placement: a noise-water cell with no
+## edge-adjacent water is normalized to land (the blob set has no
+## isolated-puddle tile). That normalization is closed: any remaining
+## water cell keeps at least one water edge neighbor, so its blob mask
+## is never 0.
 ##
 
 signal chunk_generated(chunk: Vector2i)
 signal chunk_cleared(chunk: Vector2i)
 signal initial_chunks_ready
 
-const TILESET_MAPPING_PATH: String = "res://data/arena_tileset.json"
 const DEFAULT_CHUNK_SIZE: Vector2i = Vector2i(64, 64)
 const DEFAULT_TILE_SIZE: Vector2i = Vector2i(32, 32)
 const BASE_SOURCE_INDEX: int = 0
-const DETAIL_SOURCE_INDEX: int = 1
-const BASE_COORDS: Vector2i = Vector2i.ZERO
-const ALL_UPPER_KEY: String = "upper|upper|upper|upper"
-const ALL_LOWER_KEY: String = "lower|lower|lower|lower"
+const WATER_SOURCE_INDEX: int = 1
 const WORLD_LIMIT_DISABLED: int = 0
 const INVALID_CHUNK: Vector2i = Vector2i(1_000_000, 1_000_000)
 const CHUNK_LIMIT_PADDING: int = 1
 const FLOOR_BASE_Z_INDEX: int = -30
 const FLOOR_DETAIL_Z_INDEX: int = -20
+
+## Base floor variants (atlas x in source 0): blank, dirt 1-3, grass 1-3.
+const BASE_BLANK: Vector2i = Vector2i(0, 0)
+const BASE_DECOR: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0),
+	Vector2i(4, 0), Vector2i(5, 0), Vector2i(6, 0),
+]
+## Rocky biome patches (second noise channel) use these tiles instead.
+const STONE_BLANK: Vector2i = Vector2i(7, 0)
+const STONE_DECOR: Array[Vector2i] = [
+	Vector2i(8, 0), Vector2i(9, 0), Vector2i(10, 0),
+]
+const STONE_ZONE_THRESHOLD: float = 0.3
+## Fraction of land cells that get a decor variant instead of blank floor.
+const BASE_DECOR_CHANCE: float = 0.16
+
+## Blob mask -> water atlas coords. Bits: N=1, NE=2, E=4, SE=8, S=16,
+## SW=32, W=64, NW=128; corner bits only count when both adjacent edge
+## bits are set. Full water (255) is the animated wave tile.
+const WATER_TILES: Dictionary = {
+	1: Vector2i(0, 3),
+	4: Vector2i(1, 3),
+	5: Vector2i(1, 2),
+	7: Vector2i(8, 3),
+	16: Vector2i(0, 0),
+	17: Vector2i(0, 1),
+	20: Vector2i(1, 0),
+	21: Vector2i(1, 1),
+	23: Vector2i(4, 2),
+	28: Vector2i(8, 0),
+	29: Vector2i(4, 1),
+	31: Vector2i(8, 1),
+	64: Vector2i(3, 3),
+	65: Vector2i(3, 2),
+	68: Vector2i(2, 3),
+	69: Vector2i(2, 2),
+	71: Vector2i(5, 3),
+	80: Vector2i(3, 0),
+	81: Vector2i(3, 1),
+	84: Vector2i(2, 0),
+	85: Vector2i(2, 1),
+	87: Vector2i(7, 0),
+	92: Vector2i(5, 0),
+	93: Vector2i(7, 3),
+	95: Vector2i(8, 2),
+	112: Vector2i(11, 0),
+	113: Vector2i(7, 1),
+	116: Vector2i(6, 0),
+	117: Vector2i(4, 3),
+	119: Vector2i(9, 1),
+	124: Vector2i(10, 0),
+	125: Vector2i(9, 0),
+	127: Vector2i(5, 1),
+	193: Vector2i(11, 3),
+	197: Vector2i(6, 3),
+	199: Vector2i(9, 3),
+	209: Vector2i(7, 2),
+	213: Vector2i(4, 0),
+	215: Vector2i(10, 3),
+	221: Vector2i(10, 2),
+	223: Vector2i(5, 2),
+	241: Vector2i(11, 2),
+	245: Vector2i(11, 1),
+	247: Vector2i(6, 2),
+	253: Vector2i(6, 1),
+	255: Vector2i(0, 4),
+}
 
 
 class SimpleNoise2D:
@@ -68,6 +143,9 @@ class SimpleNoise2D:
 @export var upper_threshold: float = 0.12
 @export var noise_frequency: float = 0.04
 @export var noise_smoothing_radius: int = 1
+## Guaranteed-land radius around the spawn point; the clearing fades out
+## through noise up to twice this radius, keeping the shoreline organic.
+@export var spawn_clearing_radius_tiles: int = 10
 @export var generate_initial_chunks_immediately: bool = true
 @export var max_chunk_rows_generated_per_frame: int = 8
 @export var max_chunk_rows_cleared_per_frame: int = 12
@@ -76,9 +154,7 @@ var _player: Node2D
 var _floor_base: TileMapLayer
 var _floor_detail: TileMapLayer
 var _noise: SimpleNoise2D
-var _detail_atlas: TileSetAtlasSource
-var _mapping: Dictionary = {}
-var _border_coords: Vector2i = Vector2i.ZERO
+var _zone_noise: SimpleNoise2D
 var _tile_size: Vector2i = DEFAULT_TILE_SIZE
 var _chunk_world_size: Vector2 = Vector2.ZERO
 var _playable_radius_world: Vector2 = Vector2.ZERO
@@ -125,6 +201,10 @@ func get_upper_threshold() -> float: return upper_threshold
 func has_initial_chunks_ready() -> bool: return _initial_chunks_ready
 
 
+func get_generated_chunks() -> Array:
+	return _generated_chunks.keys()
+
+
 func is_world_position_within_limit(world_pos: Vector2) -> bool:
 	if world_radius_chunks <= WORLD_LIMIT_DISABLED:
 		return true
@@ -134,14 +214,20 @@ func is_world_position_within_limit(world_pos: Vector2) -> bool:
 func is_world_position_in_upper_terrain(world_pos: Vector2) -> bool:
 	if _noise == null or _chunk_world_size == Vector2.ZERO:
 		return false
-	var tile_x: int = int(floor(world_pos.x / float(_tile_size.x)))
-	var tile_y: int = int(floor(world_pos.y / float(_tile_size.y)))
-	if _is_chunk_in_border_ring(_world_to_chunk(world_pos)):
-		return true
-	return (_corner_type(tile_x, tile_y) == "upper"
-		or _corner_type(tile_x + 1, tile_y) == "upper"
-		or _corner_type(tile_x, tile_y + 1) == "upper"
-		or _corner_type(tile_x + 1, tile_y + 1) == "upper")
+	var cell: Vector2i = Vector2i(
+		int(floor(world_pos.x / float(_tile_size.x))),
+		int(floor(world_pos.y / float(_tile_size.y)))
+	)
+	return is_cell_water(cell.x, cell.y)
+
+
+## Single terrain predicate shared by rendering, movement, and props.
+func is_cell_water(x: int, y: int) -> bool:
+	if _noise == null:
+		return false
+	if not _raw_water(x, y):
+		return false
+	return _raw_water(x, y - 1) or _raw_water(x + 1, y) or _raw_water(x, y + 1) or _raw_water(x - 1, y)
 
 
 # -- Boot ------------------------------------------------------------------
@@ -158,15 +244,15 @@ func _init_floor() -> void:
 		_floor_detail.tile_set = tileset
 	if not _verify_sources(tileset):
 		return
-	_detail_atlas = tileset.get_source(DETAIL_SOURCE_INDEX) as TileSetAtlasSource
 	_tile_size = tileset.tile_size
-	_mapping = _load_tileset_mapping()
-	_border_coords = _mapping.get(ALL_UPPER_KEY, BASE_COORDS)
 	_validate_chunk_settings()
 	_refresh_cached_metrics()
 	_noise = SimpleNoise2D.new()
 	_noise.noise_seed = randi()
 	_noise.frequency = noise_frequency
+	_zone_noise = SimpleNoise2D.new()
+	_zone_noise.noise_seed = _noise.noise_seed + 977
+	_zone_noise.frequency = noise_frequency * 0.45
 	_reset_streaming_state()
 	if generate_initial_chunks_immediately:
 		_generate_initial_chunks()
@@ -177,11 +263,11 @@ func _init_floor() -> void:
 
 func _verify_sources(tileset: TileSet) -> bool:
 	if tileset.get_source_count() < 2:
-		_finish_boot_fallback("Floor tileset needs 2 sources (base + detail)")
+		_finish_boot_fallback("Floor tileset needs 2 sources (base + water)")
 		return false
 	var base_source: TileSetSource = tileset.get_source(BASE_SOURCE_INDEX)
-	var detail_source: TileSetSource = tileset.get_source(DETAIL_SOURCE_INDEX)
-	if base_source == null or detail_source == null:
+	var water_source: TileSetSource = tileset.get_source(WATER_SOURCE_INDEX)
+	if base_source == null or water_source == null:
 		_finish_boot_fallback("Floor tileset sources resolved to null")
 		return false
 	return true
@@ -262,12 +348,28 @@ func _create_chunk_job(chunk: Vector2i) -> Dictionary:
 	var start_y: int = chunk.y * chunk_size.y
 	return {
 		"chunk": chunk,
-		"is_border_chunk": _is_chunk_in_border_ring(chunk),
 		"start_x": start_x,
 		"start_y": start_y,
-		"corner_types": _build_corner_type_grid(start_x, start_y),
+		"raw_water": _build_raw_water_grid(start_x, start_y),
 		"row_index": 0
 	}
+
+
+## Raw water cached for the chunk plus a 2-cell margin: normalization needs
+## direct neighbors, and each cell's blob mask needs its neighbors' own
+## normalized state (neighbors-of-neighbors).
+func _build_raw_water_grid(start_x: int, start_y: int) -> Array:
+	var width: int = chunk_size.x + 4
+	var height: int = chunk_size.y + 4
+	var grid: Array = []
+	grid.resize(width)
+	for gx in range(width):
+		var column: Array = []
+		column.resize(height)
+		for gy in range(height):
+			column[gy] = _raw_water(start_x + gx - 2, start_y + gy - 2)
+		grid[gx] = column
+	return grid
 
 
 func _generate_chunk_row(job: Dictionary) -> void:
@@ -275,32 +377,63 @@ func _generate_chunk_row(job: Dictionary) -> void:
 	var start_y: int = int(job["start_y"])
 	var row_index: int = int(job["row_index"])
 	var y: int = start_y + row_index
-	var is_border_chunk: bool = bool(job["is_border_chunk"])
-	var corner_types: Array = job["corner_types"]
+	var grid: Array = job["raw_water"]
 	for x in range(start_x, start_x + chunk_size.x):
-		var detail_coords: Vector2i = BASE_COORDS
-		var has_upper: bool = false
-		if is_border_chunk:
-			detail_coords = _border_coords
-			has_upper = true
-		else:
-			var local_x: int = x - start_x
-			var local_y: int = y - start_y
-			var nw: String = corner_types[local_x][local_y]
-			var ne: String = corner_types[local_x + 1][local_y]
-			var sw: String = corner_types[local_x][local_y + 1]
-			var se: String = corner_types[local_x + 1][local_y + 1]
-			has_upper = nw == "upper" or ne == "upper" or sw == "upper" or se == "upper"
-			var key: String = "%s|%s|%s|%s" % [nw, ne, sw, se]
-			detail_coords = _mapping.get(key, BASE_COORDS)
-		if _detail_atlas != null and not _detail_atlas.has_tile(detail_coords):
-			detail_coords = BASE_COORDS
-		_floor_base.set_cell(Vector2i(x, y), BASE_SOURCE_INDEX, BASE_COORDS)
-		if use_detail_layer and has_upper:
-			_floor_detail.set_cell(Vector2i(x, y), DETAIL_SOURCE_INDEX, detail_coords)
-		else:
+		var local_x: int = x - start_x
+		_floor_base.set_cell(Vector2i(x, y), BASE_SOURCE_INDEX, _base_variant(x, y))
+		if not use_detail_layer:
+			continue
+		if not _grid_water(grid, local_x, row_index):
 			_floor_detail.erase_cell(Vector2i(x, y))
+			continue
+		var mask: int = _blob_mask(grid, local_x, row_index)
+		if mask == 0:
+			_floor_detail.erase_cell(Vector2i(x, y))
+			continue
+		_floor_detail.set_cell(Vector2i(x, y), WATER_SOURCE_INDEX, WATER_TILES.get(mask, WATER_TILES[255]))
 	job["row_index"] = row_index + 1
+
+
+## Normalized water lookup in grid space (local chunk coords; margin 2).
+func _grid_water(grid: Array, local_x: int, local_y: int) -> bool:
+	var gx: int = local_x + 2
+	var gy: int = local_y + 2
+	if not grid[gx][gy]:
+		return false
+	return grid[gx][gy - 1] or grid[gx + 1][gy] or grid[gx][gy + 1] or grid[gx - 1][gy]
+
+
+func _blob_mask(grid: Array, local_x: int, local_y: int) -> int:
+	var n: bool = _grid_water(grid, local_x, local_y - 1)
+	var e: bool = _grid_water(grid, local_x + 1, local_y)
+	var s: bool = _grid_water(grid, local_x, local_y + 1)
+	var w: bool = _grid_water(grid, local_x - 1, local_y)
+	var mask: int = 0
+	if n: mask |= 1
+	if e: mask |= 4
+	if s: mask |= 16
+	if w: mask |= 64
+	if n and e and _grid_water(grid, local_x + 1, local_y - 1): mask |= 2
+	if s and e and _grid_water(grid, local_x + 1, local_y + 1): mask |= 8
+	if s and w and _grid_water(grid, local_x - 1, local_y + 1): mask |= 32
+	if n and w and _grid_water(grid, local_x - 1, local_y - 1): mask |= 128
+	return mask
+
+
+func _base_variant(x: int, y: int) -> Vector2i:
+	var stony: bool = _zone_noise.get_noise_2d(float(x), float(y)) > STONE_ZONE_THRESHOLD
+	var hash_value: int = _cell_hash(x, y)
+	if float(hash_value & 0xffff) / 65535.0 >= BASE_DECOR_CHANCE:
+		return STONE_BLANK if stony else BASE_BLANK
+	if stony:
+		return STONE_DECOR[(hash_value >> 16) % STONE_DECOR.size()]
+	return BASE_DECOR[(hash_value >> 16) % BASE_DECOR.size()]
+
+
+func _cell_hash(x: int, y: int) -> int:
+	var value: int = x * 374761393 + y * 668265263 + _noise.noise_seed * 974634599
+	value = int((value ^ (value >> 13)) * 1274126177)
+	return (value ^ (value >> 16)) & 0x7fffffff
 
 
 func _finalize_chunk_job(job: Dictionary) -> void:
@@ -411,8 +544,35 @@ func _cancel_chunk_clear(chunk: Vector2i) -> void:
 
 # -- Sampling helpers ------------------------------------------------------
 
-func _corner_type(x: int, y: int) -> String:
-	return "upper" if _smoothed_noise(x, y) > upper_threshold else "lower"
+## Raw water predicate before isolation normalization: forced water outside
+## the playable area and in the border ring; near the spawn point the noise
+## is biased toward land so the player never spawns in a lake.
+func _raw_water(x: int, y: int) -> bool:
+	var chunk: Vector2i = Vector2i(
+		int(floor(float(x) / float(chunk_size.x))),
+		int(floor(float(y) / float(chunk_size.y)))
+	)
+	if not _is_chunk_within_world_limit(chunk):
+		return true
+	if _is_chunk_in_border_ring(chunk):
+		return true
+	return _smoothed_noise(x, y) - _spawn_clearing_bias(x, y) > upper_threshold
+
+
+## Land bias near the spawn point: guaranteed inside the clearing radius,
+## fading smoothly to zero at twice the radius so the shoreline stays
+## noise-shaped instead of a hard square/circle.
+func _spawn_clearing_bias(x: int, y: int) -> float:
+	if spawn_clearing_radius_tiles <= 0:
+		return 0.0
+	var radius: float = float(spawn_clearing_radius_tiles)
+	var distance: float = sqrt(float(x * x + y * y))
+	if distance >= radius * 2.0:
+		return 0.0
+	if distance <= radius:
+		return 2.0
+	var t: float = (distance - radius) / radius
+	return 2.0 * (1.0 - t * t * (3.0 - 2.0 * t))
 
 
 func _smoothed_noise(x: int, y: int) -> float:
@@ -454,43 +614,6 @@ func _world_to_chunk(world_pos: Vector2) -> Vector2i:
 		int(floor(world_pos.x / _chunk_world_size.x)),
 		int(floor(world_pos.y / _chunk_world_size.y))
 	)
-
-
-func _build_corner_type_grid(start_x: int, start_y: int) -> Array:
-	var grid_width: int = chunk_size.x + 1
-	var grid_height: int = chunk_size.y + 1
-	var grid: Array = []
-	grid.resize(grid_width)
-	for gx in range(grid_width):
-		var column: Array = []
-		column.resize(grid_height)
-		for gy in range(grid_height):
-			column[gy] = _corner_type(start_x + gx, start_y + gy)
-		grid[gx] = column
-	return grid
-
-
-func _load_tileset_mapping() -> Dictionary:
-	var mapping: Dictionary = {}
-	if not FileAccess.file_exists(TILESET_MAPPING_PATH):
-		return mapping
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(TILESET_MAPPING_PATH))
-	if not (parsed is Dictionary):
-		return mapping
-	var tileset_data: Dictionary = parsed.get("tileset", {})
-	for tile_data in tileset_data.get("tiles", []):
-		if not (tile_data is Dictionary):
-			continue
-		var corners: Dictionary = tile_data.get("corners", {})
-		var pos: Dictionary = tile_data.get("original_position", {})
-		var key: String = "%s|%s|%s|%s" % [
-			corners.get("NW", "lower"),
-			corners.get("NE", "lower"),
-			corners.get("SW", "lower"),
-			corners.get("SE", "lower")
-		]
-		mapping[key] = Vector2i(int(pos.get("col", 0)), int(pos.get("row", 0)))
-	return mapping
 
 
 func _setup_render_layers() -> void:
