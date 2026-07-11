@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://clvafksqq7co7"
-path="res://.godot/imported/prop_warning_sign.png-34d9f2309cce0487cbc7f4c7b58dfe28.ctex"
+uid="uid://c8g54k05n3cg6"
+path="res://.godot/imported/chest.png-61f7c2f688f9bd5a4802d3d822f22d08.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/environment/prop_warning_sign.png"
-dest_files=["res://.godot/imported/prop_warning_sign.png-34d9f2309cce0487cbc7f4c7b58dfe28.ctex"]
+source_file="res://assets/sprites/environment/chest.png"
+dest_files=["res://.godot/imported/chest.png-61f7c2f688f9bd5a4802d3d822f22d08.ctex"]
 
 [params]
 

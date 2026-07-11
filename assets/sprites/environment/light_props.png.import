@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxxrs3dp3sw1l"
-path="res://.godot/imported/prop_machinery.png-fe322cb3c17536cbb4c26ef054fd2702.ctex"
+uid="uid://r7f5aq6hiyac"
+path="res://.godot/imported/light_props.png-fdd4edbdc55111958aee2269042b33a6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/environment/prop_machinery.png"
-dest_files=["res://.godot/imported/prop_machinery.png-fe322cb3c17536cbb4c26ef054fd2702.ctex"]
+source_file="res://assets/sprites/environment/light_props.png"
+dest_files=["res://.godot/imported/light_props.png-fdd4edbdc55111958aee2269042b33a6.ctex"]
 
 [params]
 

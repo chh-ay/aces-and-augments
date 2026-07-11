@@ -16,8 +16,6 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 
 @export var boss_scene: PackedScene
 @export var exit_door_scene: PackedScene
-@export var lucky_terminal_scene: PackedScene
-@export_range(0, 6, 1) var lucky_terminal_count: int = 2
 @export var run_music_id: String = "run"
 
 @onready var player: PlayerController = $Player
@@ -28,7 +26,6 @@ const BAD_ENDING_TEXTURE: Texture2D = preload("res://assets/sprites/ui/ending_ba
 @onready var enemies: Node2D = $RunContainers/Enemies
 @onready var bosses: Node2D = $RunContainers/Bosses
 @onready var exits: Node2D = $RunContainers/Exits
-@onready var lucky_terminals_root: Node2D = $RunContainers/LuckyTerminals
 
 @onready var hud: Hud = $HUD
 @onready var overlay: RunOverlay = $RunOverlay
@@ -40,6 +37,17 @@ var _last_boss_defeat_position: Vector2 = Vector2.ZERO
 var _run_rewards_committed: bool = false
 
 
+const CARD_CACHE_SCENE: PackedScene = preload("res://scenes/world/card_cache.tscn")
+## Scripted run beats: elapsed seconds -> event id. Skipped when the run is
+## shorter (test ground).
+const RUN_EVENTS: Array[Dictionary] = [
+	{"at": 120.0, "id": "swarm", "banner": "A SWARM APPROACHES"},
+	{"at": 300.0, "id": "elite", "banner": "AN ELITE HUNTS YOU"},
+	{"at": 450.0, "id": "frenzy", "banner": "FRENZY - THEY POUR IN"},
+]
+
+var _fired_events: Dictionary = {}
+
 func _ready() -> void:
 	randomize()
 	_wire_signals()
@@ -48,10 +56,10 @@ func _ready() -> void:
 	hud.bind_player(player)
 	hud.bind_run_director(run_director)
 	AudioManager.play_music(run_music_id)
-	_spawn_lucky_terminals()
 	_set_gameplay_active(false)
 	overlay.game_over.dismiss()
 	overlay.boot.bind(floor_generator)
+	_spawn_card_caches.call_deferred()
 	_update_mouse_mode()
 
 
@@ -85,8 +93,51 @@ func _wire_signals() -> void:
 	overlay.pause.menu_requested.connect(_on_pause_menu_requested)
 	overlay.settings.closed.connect(_on_pause_settings_closed)
 	run_director.time_expired.connect(_on_run_time_expired)
+	run_director.time_updated.connect(_on_run_time_updated)
 	overlay.boot.finished.connect(_on_boot_finished)
 
+
+# -- Run events --------------------------------------------------------------
+
+func _on_run_time_updated(remaining_seconds: float) -> void:
+	if _game_over:
+		return
+	var elapsed: float = run_director.run_duration_seconds - remaining_seconds
+	for event in RUN_EVENTS:
+		var event_id: String = String(event.get("id", ""))
+		if _fired_events.has(event_id) or elapsed < float(event.get("at", 0.0)):
+			continue
+		_fired_events[event_id] = true
+		_fire_run_event(event_id, String(event.get("banner", "")))
+
+
+func _fire_run_event(event_id: String, banner: String) -> void:
+	if not banner.is_empty():
+		hud.show_announcement(banner)
+	AudioManager.play_sfx("hand_lock", 0.8, -6.0)
+	match event_id:
+		"swarm":
+			enemy_spawner.spawn_surge(12)
+		"elite":
+			enemy_spawner.spawn_elite()
+		"frenzy":
+			enemy_spawner.start_frenzy(25.0)
+
+
+## A few chests scattered on land give the map a reason to be crossed.
+func _spawn_card_caches(count: int = 3) -> void:
+	for _index in range(count):
+		for _attempt in range(10):
+			var direction: Vector2 = Vector2.RIGHT.rotated(randf() * TAU)
+			var target: Vector2 = player.global_position + direction * randf_range(420.0, 850.0)
+			target = _arena_clamped(target, 64.0)
+			var cell: Vector2i = Vector2i(int(floor(target.x / 32.0)), int(floor(target.y / 32.0)))
+			if floor_generator.is_cell_water(cell.x, cell.y):
+				continue
+			var cache: CardCache = CARD_CACHE_SCENE.instantiate() as CardCache
+			exits.add_child(cache)
+			cache.global_position = target
+			break
 
 # -- Boot ------------------------------------------------------------------
 
@@ -105,7 +156,7 @@ func _set_gameplay_active(is_active: bool) -> void:
 # -- Player events ---------------------------------------------------------
 
 func _on_player_died() -> void:
-	_end_run("GAME OVER", "Press Enter or Esc to return to menu")
+	_end_run("GAME OVER", "Press Enter or Esc to return to menu", null, false)
 
 
 func _on_player_level_up_requested(choices: Array) -> void:
@@ -139,6 +190,7 @@ func _on_hand_augment_option_selected(choice_id: String) -> void:
 
 
 func _on_player_hand_locked(_hand_name: String, _player_profile: Dictionary, enemy_profile: Dictionary) -> void:
+	GameManager.record_hand_locked()
 	enemy_spawner.set_enemy_mutation_profile(enemy_profile)
 
 
@@ -184,7 +236,7 @@ func _on_pause_settings_closed() -> void:
 
 
 func _on_pause_menu_requested() -> void:
-	_finalize_run_rewards()
+	_finalize_run_rewards(false)
 	_pause_open = false
 	get_tree().paused = false
 	overlay.pause.dismiss()
@@ -198,6 +250,7 @@ func _on_run_time_expired() -> void:
 	if _boss_spawned or boss_scene == null:
 		return
 	_boss_spawned = true
+	hud.show_announcement("THE GOLDEN SLICER AWAKENS")
 	enemy_spawner.set_active(false)
 	_clear_enemies()
 	_spawn_boss.call_deferred()
@@ -211,7 +264,7 @@ func _spawn_boss() -> void:
 		return
 	bosses.add_child(boss)
 	boss.global_position = _arena_clamped(player.global_position + Vector2(240.0, -80.0), 48.0)
-	boss.apply_mutation_profile(player.get_enemy_mutation_profile())
+	enemy_spawner.apply_scaling_to(boss)
 	boss.defeated.connect(_on_boss_defeated)
 
 
@@ -240,14 +293,15 @@ func _on_player_exited_run() -> void:
 		return
 	if player.has_royal_flush_run():
 		AudioManager.play_sfx("ending_good", 1.0, -2.0)
-		_end_run("GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.", GOOD_ENDING_TEXTURE)
+		_end_run("GOOD ENDING", "Royal Flush secured. Press Enter or Esc to return to menu.", GOOD_ENDING_TEXTURE, true)
 	else:
 		AudioManager.play_sfx("ending_bad", 1.0, -2.0)
-		_end_run("BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.", BAD_ENDING_TEXTURE)
+		_end_run("BAD ENDING", "You escaped, but not with a Royal Flush. Press Enter or Esc to return to menu.", BAD_ENDING_TEXTURE, true)
 
 
-func _end_run(title: String, hint: String, art: Texture2D = null) -> void:
-	_finalize_run_rewards()
+func _end_run(title: String, hint: String, art: Texture2D = null, completed: bool = false) -> void:
+	var summary: Dictionary = _build_run_summary(completed)
+	_finalize_run_rewards(completed)
 	_game_over = true
 	_pause_open = false
 	get_tree().paused = false
@@ -259,28 +313,8 @@ func _end_run(title: String, hint: String, art: Texture2D = null) -> void:
 	enemy_spawner.stop_enemies()
 	_clear_enemies()
 	player.add_screen_shake(6.0, 0.18)
-	overlay.game_over.show_result(title, hint, art)
+	overlay.game_over.show_result(title, hint, art, "RUN RESULT", summary)
 	_update_mouse_mode()
-
-
-# -- Lucky terminals -------------------------------------------------------
-
-func _spawn_lucky_terminals() -> void:
-	if lucky_terminal_scene == null or lucky_terminal_count <= 0:
-		return
-	var inner_radius: float = arena.get_inner_radius(160.0)
-	var offset_distance: float = clampf(640.0, arena.get_inner_radius(240.0) * 0.72, inner_radius)
-	var base_angle: float = randf() * TAU
-	for index in range(lucky_terminal_count):
-		var terminal: LuckyTerminal = lucky_terminal_scene.instantiate() as LuckyTerminal
-		if terminal == null:
-			continue
-		terminal.name = "LuckyTerminal%d" % (index + 1)
-		lucky_terminals_root.add_child(terminal)
-		var angle: float = base_angle + (TAU / float(lucky_terminal_count)) * float(index) + randf_range(-0.08, 0.08)
-		var radius: float = offset_distance * randf_range(0.92, 1.0)
-		var target_pos: Vector2 = player.global_position + Vector2.RIGHT.rotated(angle) * radius
-		terminal.global_position = _arena_clamped(target_pos, 48.0)
 
 
 # -- Helpers ---------------------------------------------------------------
@@ -302,12 +336,29 @@ func _is_overlay_open() -> bool:
 		or _pause_open)
 
 
-func _finalize_run_rewards() -> void:
+## Completed runs bank their scrap; failed or abandoned runs forfeit it.
+func _finalize_run_rewards(completed: bool) -> void:
 	if _run_rewards_committed:
 		return
 	_run_rewards_committed = true
-	GameManager.commit_run_scrap()
+	if completed:
+		GameManager.commit_run_scrap()
+	else:
+		GameManager.discard_run_scrap()
 
+
+## Snapshot of run stats taken BEFORE rewards are finalized, so provisional
+## scrap is still visible and can be labeled banked or lost.
+func _build_run_summary(completed: bool) -> Dictionary:
+	var stats: Dictionary = GameManager.get_run_stats()
+	return {
+		"time_seconds": max(run_director.run_duration_seconds - run_director.remaining_seconds, 0.0),
+		"level": player.current_level,
+		"kills": int(stats.get("kills", 0)),
+		"hands_locked": int(stats.get("hands_locked", 0)),
+		"scrap": GameManager.get_current_run_scrap(),
+		"banked": completed,
+	}
 
 func _return_to_main_menu() -> void:
 	get_tree().paused = false
