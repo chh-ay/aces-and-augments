@@ -13,78 +13,21 @@ signal hand_selection_requested(choices: Array, summary: Dictionary)
 signal hand_locked(hand_name: String, player_profile: Dictionary, enemy_profile: Dictionary)
 signal aim_mode_changed(is_manual: bool)
 
-const UPGRADE_RARITIES: Array[Dictionary] = [
-	{"name": "Common", "weight": 60.0, "band_min": 0.00, "band_max": 0.24, "color": Color("c7d0d9")},
-	{"name": "Uncommon", "weight": 25.0, "band_min": 0.25, "band_max": 0.49, "color": Color("73d98c")},
-	{"name": "Rare", "weight": 10.0, "band_min": 0.50, "band_max": 0.72, "color": Color("56b7ff")},
-	{"name": "Epic", "weight": 4.5, "band_min": 0.73, "band_max": 0.90, "color": Color("d182ff")},
-	{"name": "Legendary", "weight": 0.5, "band_min": 0.91, "band_max": 1.00, "color": Color("ffcc55")}
-]
-
-const HAND_TIER_DATA: Dictionary = {
-	PokerHandEvaluator.HandRank.HIGH_CARD: {"name": "Common", "color": Color("c7d0d9"), "player_scale": 0.55, "enemy_scale": 0.60},
-	PokerHandEvaluator.HandRank.PAIR: {"name": "Common", "color": Color("c7d0d9"), "player_scale": 0.72, "enemy_scale": 0.76},
-	PokerHandEvaluator.HandRank.TWO_PAIR: {"name": "Uncommon", "color": Color("73d98c"), "player_scale": 0.86, "enemy_scale": 0.88},
-	PokerHandEvaluator.HandRank.THREE_OF_A_KIND: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.00, "enemy_scale": 1.00},
-	PokerHandEvaluator.HandRank.STRAIGHT: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.08, "enemy_scale": 1.06},
-	PokerHandEvaluator.HandRank.FLUSH: {"name": "Rare", "color": Color("56b7ff"), "player_scale": 1.08, "enemy_scale": 1.06},
-	PokerHandEvaluator.HandRank.FULL_HOUSE: {"name": "Epic", "color": Color("d182ff"), "player_scale": 1.20, "enemy_scale": 1.16},
-	PokerHandEvaluator.HandRank.FOUR_OF_A_KIND: {"name": "Epic", "color": Color("d182ff"), "player_scale": 1.30, "enemy_scale": 1.22},
-	PokerHandEvaluator.HandRank.STRAIGHT_FLUSH: {"name": "Legendary", "color": Color("ffcc55"), "player_scale": 1.45, "enemy_scale": 1.30},
-	PokerHandEvaluator.HandRank.ROYAL_FLUSH: {"name": "Mythic", "color": Color("ff8b39"), "player_scale": 1.80, "enemy_scale": 1.40}
+## Hard ceilings for the multiplicative augment profile; picks past the cap
+## are removed from the level-up pool.
+const AUGMENT_CAPS: Dictionary = {
+	"damage": 4.0,
+	"move_speed": 2.0,
+	"attack_speed": 2.8,
+	"range": 2.0,
+	"max_health": 3.5
 }
-
-const HAND_CHOICE_TEMPLATES: Array[Dictionary] = [
-	{
-		"id": "kill_chain",
-		"title": "Kill Chain",
-		"curse_name": "Thick Hide",
-		"player_stats": {"damage": 0.11, "attack_speed": 0.09},
-		"enemy_stats": {"health": 0.07}
-	},
-	{
-		"id": "vector_lens",
-		"title": "Vector Lens",
-		"curse_name": "Pursuit Grid",
-		"player_stats": {"range": 0.14, "move_speed": 0.07},
-		"enemy_stats": {"speed": 0.07}
-	},
-	{
-		"id": "fortress_stack",
-		"title": "Fortress Stack",
-		"curse_name": "War Engine",
-		"player_stats": {"max_health": 0.15},
-		"enemy_stats": {"health": 0.08, "damage": 0.05}
-	},
-	{
-		"id": "overdrive_loop",
-		"title": "Overdrive Loop",
-		"curse_name": "Hot Pursuit",
-		"player_stats": {"move_speed": 0.08, "attack_speed": 0.08},
-		"enemy_stats": {"speed": 0.08, "damage": 0.03}
-	},
-	{
-		"id": "breach_rounds",
-		"title": "Breach Rounds",
-		"curse_name": "Bulwark Swarm",
-		"player_stats": {"damage": 0.08, "range": 0.10},
-		"enemy_stats": {"health": 0.08, "speed": 0.04}
-	}
-]
-
-const PLAYER_STAT_LABELS: Dictionary = {
-	"damage": "damage",
-	"move_speed": "move speed",
-	"attack_speed": "atk speed",
-	"range": "range",
-	"max_health": "max HP"
-}
-
-const ENEMY_STAT_LABELS: Dictionary = {
-	"health": "enemy HP",
-	"damage": "enemy damage",
-	"speed": "enemy speed"
-}
+const LIFESTEAL_CAP: float = 0.3
+const REGEN_CAP: float = 3.5
+const MELEE_REACH_CAP: float = 150.0
+const LUCK_CAP: int = 3
+## Each repeat pick of the same stat is worth this fraction of the last one.
+const REPEAT_PICK_FALLOFF: float = 0.85
 
 enum AimMode {
 	AUTO,
@@ -107,24 +50,16 @@ enum AimMode {
 @export_range(0.1, 1.0, 0.05) var upper_terrain_move_multiplier: float = 0.72
 @export var aim_mode: int = AimMode.AUTO
 @export var manual_aim_deadzone: float = 10.0
-@export_range(0.5, 4.0, 0.05) var camera_zoom_scale: float = 1.75
+@export_range(0.5, 4.0, 0.05) var camera_zoom_scale: float = 1.4
+@export var dash_speed_multiplier: float = 3.2
+@export var dash_duration: float = 0.16
+@export var dash_cooldown: float = 2.6
+@export var discard_cooldown: float = 6.0
 
 var current_health: int = 0
 var current_experience: int = 0
 var current_level: int = 1
 var required_experience: int = 6
-var collected_cards: int = 0
-var active_hand_name: String = "No Hand"
-var active_hand_tier: String = "None"
-var active_blessing_title: String = "No Blessing"
-var active_blessing_text: String = "No active blessing"
-var active_curse_name: String = "No Curse"
-var active_curse_text: String = "No enemy mutation"
-var pending_hand_name: String = "No Hand"
-var _hand_cards: Array = []
-var _pending_hand_result: PokerHandEvaluator.HandResult
-var _pending_hand_choices: Array[Dictionary] = []
-var _applied_hand_history: Array[Dictionary] = []
 var _player_augment_profile: Dictionary = {
 	"damage": 1.0,
 	"move_speed": 1.0,
@@ -137,9 +72,9 @@ var _enemy_mutation_profile: Dictionary = {
 	"damage": 1.0,
 	"speed": 1.0
 }
-var _royal_flush_achieved: bool = false
 var _is_dead: bool = false
 var _facing: Vector2 = Vector2.DOWN
+var _combat_profile: CombatProfile = CombatProfile.new()
 var _arena: Arena
 var _floor_generator: FloorGenerator
 var _pending_level_ups: int = 0
@@ -156,21 +91,39 @@ var _meta_upgrade_bonus: Dictionary = {
 @onready var _camera: Camera2D = $Camera2D
 @onready var _hit_flash_target: CanvasItem = $AnimatedSprite2D
 @onready var _aim_crosshair: AimCrosshair = $AimCrosshair
+@onready var _hand: HandManager = $HandManager
 
 var _shake_strength: float = 0.0
 var _shake_time_remaining: float = 0.0
 var _shake_duration: float = 0.0
 var _hit_flash_time_remaining: float = 0.0
+var _attack_time_remaining: float = 0.0
+var _stat_pick_counts: Dictionary = {}
+var _dash_time_remaining: float = 0.0
+var _dash_cooldown_remaining: float = 0.0
+var _dash_direction: Vector2 = Vector2.RIGHT
+var _dash_cooldown_multiplier: float = 1.0
+var bonus_pierce: int = 0
+var melee_full_circle: bool = false
+## Each point rerolls upgrade rarity and keeps the best result.
+var luck: int = 0
 
 func _ready() -> void:
 	add_to_group("player")
 	RunContext.register_player(self)
+	var character_id: String = GameManager.get_selected_character_id()
+	_combat_profile = CharacterLibrary.get_combat_profile(character_id)
+	_anim.sprite_frames = CharacterLibrary.load_sprite_frames(character_id)
 	_arena = (get_node_or_null(arena_path) as Arena) if arena_path else RunContext.arena
 	_floor_generator = (get_node_or_null(floor_generator_path) as FloorGenerator) if floor_generator_path else RunContext.floor_generator
 	required_experience = _get_required_experience_for_level(current_level)
 	current_health = get_effective_max_health()
 	health_changed.emit(current_health)
 	experience_changed.emit(current_experience, required_experience, current_level)
+	_hand.discard_cooldown = discard_cooldown
+	_hand.updated.connect(_emit_hand_updated)
+	_hand.selection_requested.connect(_on_hand_selection_requested)
+	_hand.choice_applied.connect(_on_hand_choice_applied)
 	_emit_hand_updated()
 	_regen_timer = health_regen_interval
 	_ensure_hit_flash_material()
@@ -187,8 +140,14 @@ func _exit_tree() -> void:
 func _physics_process(delta: float) -> void:
 	if _is_dead:
 		return
+	_attack_time_remaining = maxf(_attack_time_remaining - delta, 0.0)
+	_dash_cooldown_remaining = maxf(_dash_cooldown_remaining - delta, 0.0)
 	var input_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_vector * get_effective_move_speed()
+	if _dash_time_remaining > 0.0:
+		_dash_time_remaining = maxf(_dash_time_remaining - delta, 0.0)
+		velocity = _dash_direction * get_effective_move_speed() * dash_speed_multiplier
+	else:
+		velocity = input_vector * get_effective_move_speed()
 	move_and_slide()
 	_clamp_to_arena()
 	_update_animation()
@@ -214,11 +173,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("toggle_aim_mode"):
 		get_viewport().set_input_as_handled()
 		toggle_aim_mode()
+	elif event.is_action_pressed("dash"):
+		get_viewport().set_input_as_handled()
+		start_dash()
+	elif event.is_action_pressed("discard_card"):
+		get_viewport().set_input_as_handled()
+		cycle_discard_selection()
+	elif event.is_action_pressed("discard_confirm"):
+		get_viewport().set_input_as_handled()
+		discard_card()
 
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return
-	var next_health: int = max(current_health - amount, 0)
+	if _dash_time_remaining > 0.0:
+		return
+	var reduced: int = max(int(round(float(amount) * _combat_profile.damage_taken_mult)), 1)
+	var next_health: int = max(current_health - reduced, 0)
 	current_health = next_health
 	health_changed.emit(current_health)
 	AudioManager.play_sfx("player_hit", randf_range(0.96, 1.02), -4.0)
@@ -273,124 +244,77 @@ func apply_level_up_choice(stat_id: String) -> void:
 		"range":
 			_multiply_augment("range", 1.0 + value)
 		"regen":
-			health_regen_rate += value
+			health_regen_rate = minf(health_regen_rate + value, REGEN_CAP)
 		"lifesteal":
-			lifesteal_ratio = min(lifesteal_ratio + value, 0.5)
+			lifesteal_ratio = minf(lifesteal_ratio + value, LIFESTEAL_CAP)
+		"keystone_cyclone":
+			melee_full_circle = true
+		"keystone_ricochet":
+			bonus_pierce += 2
+		"keystone_adrenaline":
+			_dash_cooldown_multiplier = 0.6
+		"luck":
+			luck = mini(luck + 1, LUCK_CAP)
 		_:
 			return
+	_stat_pick_counts[stat_id] = int(_stat_pick_counts.get(stat_id, 0)) + 1
 	_active_level_up_choices.clear()
 	_emit_level_up_if_ready()
 	_emit_hand_updated()
 
 
 func _multiply_augment(key: String, multiplier: float) -> void:
-	_player_augment_profile[key] = float(_player_augment_profile.get(key, 1.0)) * multiplier
+	var next: float = float(_player_augment_profile.get(key, 1.0)) * multiplier
+	_player_augment_profile[key] = minf(next, float(AUGMENT_CAPS.get(key, 100.0)))
 
 func is_dead() -> bool:
 	return _is_dead
 
 func add_card_to_hand(suit: String, value: int) -> void:
-	if _hand_cards.size() >= 5 or not _pending_hand_choices.is_empty():
-		return
-	var card: PokerHandEvaluator.Card = PokerHandEvaluator.Card.new(suit, value)
-	_hand_cards.append(card)
-	_refresh_pending_hand_state()
-	_emit_hand_updated()
-
-func convert_random_hand_card_to_ace() -> Dictionary:
-	if _hand_cards.is_empty() or not _pending_hand_choices.is_empty():
-		return {"applied": false, "reason": "no_cards"}
-	var eligible_indices: Array[int] = []
-	for index in range(_hand_cards.size()):
-		var card: PokerHandEvaluator.Card = _hand_cards[index] as PokerHandEvaluator.Card
-		if card != null and card.value != 1:
-			eligible_indices.append(index)
-	if eligible_indices.is_empty():
-		return {"applied": false, "reason": "all_aces"}
-	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.randomize()
-	var target_index: int = eligible_indices[rng.randi_range(0, eligible_indices.size() - 1)]
-	var target_card: PokerHandEvaluator.Card = _hand_cards[target_index] as PokerHandEvaluator.Card
-	var previous_value: int = target_card.value
-	target_card.value = 1
-	_refresh_pending_hand_state()
-	_emit_hand_updated()
-	return {
-		"applied": true,
-		"suit": target_card.suit,
-		"from_value": previous_value,
-		"to_value": target_card.value,
-		"hand_name": pending_hand_name
-	}
-
-func _refresh_pending_hand_state() -> void:
-	collected_cards = _hand_cards.size()
-	if collected_cards == 5:
-		_pending_hand_result = PokerHandEvaluator.evaluate_hand(_hand_cards)
-		pending_hand_name = _pending_hand_result.name
-	else:
-		_pending_hand_result = null
-		pending_hand_name = "Drawing..."
+	_hand.add_card(suit, value)
 
 func lock_current_hand() -> void:
-	if not can_lock_hand():
-		return
-	_pending_hand_choices = _build_hand_choices(_pending_hand_result)
-	_emit_hand_updated()
-	hand_selection_requested.emit(_pending_hand_choices, _build_hand_choice_summary())
+	_hand.lock()
 
 func apply_hand_choice(choice_id: String) -> void:
-	if _pending_hand_result == null:
-		return
-	var choice: Dictionary = {}
-	for entry in _pending_hand_choices:
-		if String(entry.get("id", "")) == choice_id:
-			choice = entry
-			break
-	if choice.is_empty():
-		return
+	_hand.apply_choice(choice_id)
+
+func can_lock_hand() -> bool:
+	return _hand.can_lock()
+
+## Blessing/curse chosen: folds the choice profiles into player/enemy stats,
+## adjusts current HP for the new max, and notifies the run (spawner, stats).
+func _on_hand_choice_applied(choice: Dictionary) -> void:
 	var previous_effective_max: int = get_effective_max_health()
 	_apply_profile_modifiers(_player_augment_profile, choice.get("player_profile", {}))
 	_apply_profile_modifiers(_enemy_mutation_profile, choice.get("enemy_profile", {}))
-	active_hand_name = _pending_hand_result.name
-	active_hand_tier = String(choice.get("tier_name", "Common"))
-	active_blessing_title = String(choice.get("title", "Blessing"))
-	active_blessing_text = String(choice.get("player_text", ""))
-	active_curse_name = String(choice.get("curse_name", "Curse"))
-	active_curse_text = String(choice.get("enemy_text", ""))
 	var next_effective_max: int = get_effective_max_health()
 	if next_effective_max >= previous_effective_max:
 		current_health = min(current_health + (next_effective_max - previous_effective_max), next_effective_max)
 	else:
 		current_health = min(current_health, next_effective_max)
 	health_changed.emit(current_health)
-	_applied_hand_history.append({
-		"name": _pending_hand_result.name,
-		"tier": active_hand_tier,
-		"title": active_blessing_title,
-		"curse_name": active_curse_name
-	})
-	if _pending_hand_result.is_royal_flush:
-		_royal_flush_achieved = true
-	_hand_cards.clear()
-	collected_cards = 0
-	pending_hand_name = "No Hand"
-	_pending_hand_result = null
-	_pending_hand_choices.clear()
-	_emit_hand_updated()
-	hand_locked.emit(active_hand_name, _enemy_safe_duplicate(_player_augment_profile), _enemy_safe_duplicate(_enemy_mutation_profile))
+	hand_locked.emit(_hand.active_hand_name, _player_augment_profile.duplicate(true), _enemy_mutation_profile.duplicate(true))
 	AudioManager.play_sfx("hand_lock", 1.0, -2.0)
 	add_screen_shake(3.0, 0.12)
 
-func can_lock_hand() -> bool:
-	return _pending_hand_result != null and _hand_cards.size() == 5 and _pending_hand_choices.is_empty()
+func _on_hand_selection_requested(choices: Array) -> void:
+	var summary: Dictionary = get_level_up_summary()
+	var locked_text: String = _hand.get_locked_hand_text()
+	if not locked_text.is_empty():
+		summary["hand_text"] = locked_text
+	hand_selection_requested.emit(choices, summary)
+
+func get_combat_profile() -> CombatProfile:
+	return _combat_profile
 
 func get_effective_projectile_damage() -> int:
 	var base_damage: int = projectile_damage + int(_meta_upgrade_bonus.get("projectile_damage", 0))
-	return max(int(round(float(base_damage) * float(_player_augment_profile.get("damage", 1.0)))), 1)
+	var damage: float = float(base_damage) * float(_player_augment_profile.get("damage", 1.0))
+	return max(int(round(damage * _combat_profile.damage_mult)), 1)
 
 func get_effective_move_speed() -> float:
-	var base_speed: float = move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))
+	var base_speed: float = (move_speed + float(_meta_upgrade_bonus.get("move_speed", 0.0))) * _combat_profile.move_speed_mult
 	var effective_speed: float = base_speed * float(_player_augment_profile.get("move_speed", 1.0))
 	if _is_in_upper_terrain():
 		effective_speed *= upper_terrain_move_multiplier
@@ -402,10 +326,63 @@ func get_effective_move_speed() -> float:
 
 func get_effective_attack_interval() -> float:
 	var speed_multiplier: float = float(_player_augment_profile.get("attack_speed", 1.0))
-	return max(attack_interval / max(speed_multiplier, 0.01), 0.18)
+	var base_interval: float = attack_interval * _combat_profile.interval_mult
+	return max(base_interval / max(speed_multiplier, 0.01), 0.12)
 
 func get_effective_attack_range() -> float:
-	return attack_range * float(_player_augment_profile.get("range", 1.0))
+	return attack_range * float(_player_augment_profile.get("range", 1.0)) * _combat_profile.range_mult
+
+## Melee reach: range upgrades apply at sqrt strength (the swept area grows
+## with reach squared) and reach is hard-capped. Arc never scales.
+func get_effective_melee_range() -> float:
+	var reach: float = attack_range * _combat_profile.range_mult
+	reach *= sqrt(float(_player_augment_profile.get("range", 1.0)))
+	return minf(reach, MELEE_REACH_CAP)
+
+func start_dash() -> void:
+	if _dash_cooldown_remaining > 0.0 or _dash_time_remaining > 0.0:
+		return
+	var input_vector: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	_dash_direction = input_vector.normalized() if input_vector != Vector2.ZERO else _facing
+	_dash_time_remaining = dash_duration
+	_dash_cooldown_remaining = dash_cooldown * _dash_cooldown_multiplier
+	AudioManager.play_sfx("shoot", 1.5, -12.0)
+
+func get_dash_cooldown_remaining() -> float:
+	return _dash_cooldown_remaining
+
+func get_dash_cooldown_total() -> float:
+	return dash_cooldown * _dash_cooldown_multiplier
+
+## Public read API for UpgradePool (keeps the module off private fields).
+func get_augment_value(key: String) -> float:
+	return float(_player_augment_profile.get(key, 1.0))
+
+func get_stat_pick_count(stat_id: String) -> int:
+	return int(_stat_pick_counts.get(stat_id, 0))
+
+func has_adrenaline_keystone() -> bool:
+	return _dash_cooldown_multiplier < 1.0
+
+func get_discard_cooldown_remaining() -> float:
+	return _hand.get_discard_cooldown_remaining()
+
+func get_discard_cooldown_total() -> float:
+	return discard_cooldown
+
+## Label of the card X currently targets (selected slot, newest by default).
+func get_discard_target_label() -> String:
+	return _hand.get_discard_target_label()
+
+## X cycles which card the next discard removes.
+func cycle_discard_selection() -> void:
+	if _hand.cycle_discard_selection():
+		AudioManager.play_sfx("card_pickup", 1.3, -14.0)
+
+## C removes the selected card (newest when nothing is selected).
+func discard_card() -> void:
+	if _hand.discard_selected():
+		AudioManager.play_sfx("card_pickup", 0.72, -6.0)
 
 func is_manual_aim_enabled() -> bool:
 	return aim_mode == AimMode.MANUAL
@@ -422,14 +399,15 @@ func get_manual_aim_direction() -> Vector2:
 	return aim_vector.normalized()
 
 func get_effective_max_health() -> int:
-	var base_health: int = max_health + int(_meta_upgrade_bonus.get("max_health", 0))
-	return max(int(round(float(base_health) * float(_player_augment_profile.get("max_health", 1.0)))), 1)
+	var base_health: float = float(max_health + int(_meta_upgrade_bonus.get("max_health", 0))) * _combat_profile.max_health_mult
+	return max(int(round(base_health * float(_player_augment_profile.get("max_health", 1.0)))), 1)
 
 func apply_meta_upgrades(profile: Dictionary) -> void:
 	var previous_max: int = get_effective_max_health()
 	_meta_upgrade_bonus["max_health"] = int(profile.get("max_health", 0))
 	_meta_upgrade_bonus["move_speed"] = float(profile.get("move_speed", 0.0))
 	_meta_upgrade_bonus["projectile_damage"] = int(profile.get("projectile_damage", 0))
+	health_regen_rate = minf(health_regen_rate + float(profile.get("regen", 0.0)), REGEN_CAP)
 	var next_max: int = get_effective_max_health()
 	if current_health > 0:
 		current_health = min(current_health + max(next_max - previous_max, 0), next_max)
@@ -437,7 +415,7 @@ func apply_meta_upgrades(profile: Dictionary) -> void:
 	_emit_hand_updated()
 
 func get_enemy_mutation_profile() -> Dictionary:
-	return _enemy_safe_duplicate(_enemy_mutation_profile)
+	return _enemy_mutation_profile.duplicate(true)
 
 func apply_lifesteal(damage_dealt: int) -> void:
 	if lifesteal_ratio <= 0.0 or damage_dealt <= 0 or current_health >= get_effective_max_health():
@@ -453,9 +431,6 @@ func heal(amount: int) -> void:
 
 func get_level_up_summary() -> Dictionary:
 	var regen_per_tick: float = health_regen_rate * health_regen_interval
-	var hand_label: String = active_hand_name
-	if not _pending_hand_choices.is_empty():
-		hand_label = "%s locked" % pending_hand_name
 	return {
 		"stats_text": "HP %d / %d\nMove %.0f\nDamage %d\nAtk %.2fs\nRange %.0f\nRegen %.1f / s (%.1f / 10s)\nLifesteal %.0f%%" % [
 			current_health,
@@ -468,26 +443,14 @@ func get_level_up_summary() -> Dictionary:
 			regen_per_tick,
 			lifesteal_ratio * 100.0
 		],
-		"hand_text": "Cards %d / 5\nPending %s\nActive %s [%s]\nBlessing %s\nCurse %s" % [
-			collected_cards,
-			pending_hand_name,
-			hand_label,
-			active_hand_tier,
-			active_blessing_title,
-			active_curse_name
-		]
+		"hand_text": _hand.get_hand_text()
 	}
 
 func has_royal_flush_run() -> bool:
-	return _royal_flush_achieved
+	return _hand.has_royal_flush()
 
 func debug_force_royal_flush() -> void:
-	_pending_hand_result = PokerHandEvaluator.HandResult.new(PokerHandEvaluator.HandRank.ROYAL_FLUSH, [])
-	pending_hand_name = _pending_hand_result.name
-	_pending_hand_choices = _build_hand_choices(_pending_hand_result)
-	if _pending_hand_choices.is_empty():
-		return
-	apply_hand_choice(String(_pending_hand_choices[0].get("id", "")))
+	_hand.force_royal_flush()
 
 func _die() -> void:
 	if _is_dead:
@@ -498,6 +461,7 @@ func _die() -> void:
 	add_screen_shake(8.0, 0.26)
 	died.emit()
 	velocity = Vector2.ZERO
+	_attack_time_remaining = 0.0
 	_update_animation()
 
 func add_screen_shake(strength: float, duration: float) -> void:
@@ -507,24 +471,42 @@ func add_screen_shake(strength: float, duration: float) -> void:
 	_shake_duration = max(duration, 0.01)
 	_shake_time_remaining = max(_shake_time_remaining, duration)
 
+## Faces the aim direction and plays the weapon animation once. Duration
+## comes from the animation itself so edits in the SpriteFrames panel stick.
+func play_attack(direction: Vector2) -> void:
+	if direction != Vector2.ZERO:
+		_facing = direction.normalized()
+	_attack_time_remaining = 0.0
+	if _anim == null or _anim.sprite_frames == null:
+		return
+	var attack_name: String = "attack_" + _facing_direction_name()
+	var frames: SpriteFrames = _anim.sprite_frames
+	if not frames.has_animation(attack_name):
+		return
+	var speed: float = maxf(frames.get_animation_speed(attack_name), 0.01)
+	_attack_time_remaining = float(frames.get_frame_count(attack_name)) / speed
+	_anim.play(attack_name)
+	_anim.frame = 0
+
+func is_attack_animation_active() -> bool:
+	return _attack_time_remaining > 0.0
+
 func _update_animation() -> void:
 	if _anim == null:
+		return
+	if _attack_time_remaining > 0.0:
+		_play_animation("attack_" + _facing_direction_name())
 		return
 	var is_moving: bool = velocity.length_squared() > 0.0
 	if is_moving:
 		_facing = velocity.normalized()
-	var use_north: bool = _facing.y < 0.0 and abs(_facing.y) >= abs(_facing.x)
-	if is_moving:
-		if use_north:
-			_play_animation("walk_north")
-		else:
-			_play_animation("walk_south")
-	else:
-		if use_north:
-			_play_animation("idle_north")
-		else:
-			_play_animation("idle_south")
-	_anim.flip_h = _facing.x < 0.0
+	var prefix: String = "walk_" if is_moving else "idle_"
+	_play_animation(prefix + _facing_direction_name())
+
+func _facing_direction_name() -> String:
+	if absf(_facing.y) >= absf(_facing.x):
+		return "north" if _facing.y < 0.0 else "south"
+	return "west" if _facing.x < 0.0 else "east"
 
 func _play_animation(animation_name: String) -> void:
 	if _anim == null:
@@ -534,8 +516,8 @@ func _play_animation(animation_name: String) -> void:
 		return
 	if frames.has_animation(animation_name):
 		if _anim.animation != animation_name:
-			_anim.animation = animation_name
-		if not _anim.is_playing():
+			_anim.play(animation_name)
+		elif not _anim.is_playing() and frames.get_animation_loop(animation_name):
 			_anim.play()
 	elif frames.has_animation("walk_south"):
 		if _anim.animation != "walk_south":
@@ -576,102 +558,14 @@ func _emit_level_up_if_ready() -> void:
 	if _pending_level_ups <= 0 or not _active_level_up_choices.is_empty():
 		return
 	_pending_level_ups -= 1
-	_active_level_up_choices = _build_level_up_choices()
+	_active_level_up_choices = UpgradePool.build_choices(self)
 	level_up_requested.emit(_active_level_up_choices)
 
 func _emit_hand_updated() -> void:
-	hand_updated.emit(get_hand_state())
+	hand_updated.emit(_hand.get_state())
 
 func get_hand_state() -> Dictionary:
-	var history_lines: Array[String] = []
-	for entry in _applied_hand_history.slice(max(_applied_hand_history.size() - 3, 0), _applied_hand_history.size()):
-		history_lines.append("%s [%s]\nBlessing %s\nCurse %s" % [
-			String(entry.get("name", "")),
-			String(entry.get("tier", "Common")),
-			String(entry.get("title", "Route")),
-			String(entry.get("curse_name", "Curse"))
-		])
-	var pending_tier_name: String = "None"
-	if _pending_hand_result != null:
-		pending_tier_name = String(_get_hand_tier_data(_pending_hand_result.rank).get("name", "Common"))
-	return {
-		"card_count": collected_cards,
-		"cards": _build_card_slot_data(),
-		"pending_hand_name": pending_hand_name,
-		"pending_tier_name": pending_tier_name,
-		"active_hand_name": active_hand_name,
-		"active_tier_name": active_hand_tier,
-		"active_blessing_title": active_blessing_title,
-		"active_blessing_text": active_blessing_text,
-		"active_curse_name": active_curse_name,
-		"active_curse_text": active_curse_text,
-		"can_lock": can_lock_hand(),
-		"selection_pending": not _pending_hand_choices.is_empty(),
-		"history_text": "\n\n".join(history_lines),
-		"royal_flush_achieved": _royal_flush_achieved
-	}
-
-func _build_card_slot_data() -> Array[Dictionary]:
-	var cards: Array[Dictionary] = []
-	for card in _hand_cards:
-		if card is PokerHandEvaluator.Card:
-			cards.append(_card_to_display_data(card as PokerHandEvaluator.Card))
-	while cards.size() < 5:
-		cards.append({"empty": true})
-	return cards
-
-func _card_to_display_data(card: PokerHandEvaluator.Card) -> Dictionary:
-	return {
-		"empty": false,
-		"rank_value": card.value,
-		"value_text": card.get_display_value(),
-		"suit": card.suit,
-		"suit_symbol": _get_card_suit_symbol(card.suit),
-		"suit_name": card.suit.capitalize(),
-		"code_text": _card_to_short_text(card)
-	}
-
-func _card_to_short_text(card: PokerHandEvaluator.Card) -> String:
-	return "%s%s" % [card.get_display_value(), _get_card_suit_symbol(card.suit)]
-
-func _get_card_suit_symbol(suit: String) -> String:
-	var suit_icon: String = "?"
-	match suit:
-		"spades":
-			suit_icon = "S"
-		"clubs":
-			suit_icon = "C"
-		"hearts":
-			suit_icon = "H"
-		"diamonds":
-			suit_icon = "D"
-	return suit_icon
-
-func _build_level_up_choices() -> Array:
-	var pool: Array[Dictionary] = [
-		{"id": "max_health", "title": "Bulk Up", "weight": 1.0},
-		{"id": "move_speed", "title": "Overclock", "weight": 1.0},
-		{"id": "projectile_damage", "title": "Hot Hands", "weight": 0.85},
-		{"id": "attack_speed", "title": "Loaded Deck", "weight": 0.9},
-		{"id": "range", "title": "Long Reach", "weight": 0.8},
-		{"id": "regen", "title": "Nanoforge", "weight": 0.28},
-		{"id": "lifesteal", "title": "Blood Circuit", "weight": 0.22}
-	]
-	var choices: Array = []
-	while choices.size() < 3 and not pool.is_empty():
-		var total_weight: float = 0.0
-		for entry in pool:
-			total_weight += float(entry.get("weight", 1.0))
-		var roll: float = randf() * total_weight
-		var accumulated: float = 0.0
-		for index in range(pool.size()):
-			var entry: Dictionary = pool[index]
-			accumulated += float(entry.get("weight", 1.0))
-			if roll <= accumulated:
-				choices.append(_materialize_upgrade(entry))
-				pool.remove_at(index)
-				break
-	return choices
+	return _hand.get_state()
 
 func _tick_regen(delta: float) -> void:
 	if health_regen_rate <= 0.0 or health_regen_interval <= 0.0:
@@ -745,135 +639,12 @@ func _set_hit_flash_amount(amount: float) -> void:
 		return
 	shader_material.set_shader_parameter("flash_amount", clampf(amount, 0.0, 1.0))
 
-func _materialize_upgrade(base_entry: Dictionary) -> Dictionary:
-	var rarity: Dictionary = _roll_rarity()
-	var entry: Dictionary = base_entry.duplicate(true)
-	entry["rarity"] = rarity["name"]
-	entry["rarity_color"] = rarity["color"]
-	match String(entry.get("id", "")):
-		"max_health":
-			var max_health_pct: float = _roll_value(rarity, 0.08, 0.30)
-			entry["value"] = max_health_pct
-			entry["description"] = "+%d%% max HP" % int(round(max_health_pct * 100.0))
-		"move_speed":
-			var move_speed_pct: float = _roll_value(rarity, 0.06, 0.22)
-			entry["value"] = move_speed_pct
-			entry["description"] = "+%d%% move speed" % int(round(move_speed_pct * 100.0))
-		"projectile_damage":
-			var projectile_damage_pct: float = _roll_value(rarity, 0.10, 0.32)
-			entry["value"] = projectile_damage_pct
-			entry["description"] = "+%d%% damage" % int(round(projectile_damage_pct * 100.0))
-		"attack_speed":
-			var attack_speed_pct: float = _roll_value(rarity, 0.06, 0.22)
-			entry["value"] = attack_speed_pct
-			entry["description"] = "+%d%% attack speed" % int(round(attack_speed_pct * 100.0))
-		"range":
-			var range_pct: float = _roll_value(rarity, 0.08, 0.25)
-			entry["value"] = range_pct
-			entry["description"] = "+%d%% attack range" % int(round(range_pct * 100.0))
-		"regen":
-			var regen_value: float = _roll_value(rarity, 0.1, 0.8)
-			entry["value"] = snappedf(regen_value, 0.1)
-			entry["description"] = "+%.1f HP/s regen" % entry["value"]
-		"lifesteal":
-			var lifesteal_value: float = _roll_value(rarity, 0.01, 0.06)
-			entry["value"] = snappedf(lifesteal_value, 0.01)
-			entry["description"] = "+%.0f%% lifesteal" % (entry["value"] * 100.0)
-	return entry
-
-func _roll_rarity() -> Dictionary:
-	var total_weight: float = 0.0
-	for rarity in UPGRADE_RARITIES:
-		total_weight += float(rarity.get("weight", 1.0))
-	var roll: float = randf() * total_weight
-	var accumulated: float = 0.0
-	for rarity in UPGRADE_RARITIES:
-		accumulated += float(rarity.get("weight", 1.0))
-		if roll <= accumulated:
-			return rarity
-	return UPGRADE_RARITIES[0]
-
-func _roll_value(rarity: Dictionary, min_value: float, max_value: float) -> float:
-	var t: float = randf_range(float(rarity["band_min"]), float(rarity["band_max"]))
-	return lerpf(min_value, max_value, t)
-
 func _get_required_experience_for_level(level: int) -> int:
 	var base_requirement: int = 5
 	if level > 1:
 		base_requirement += int(round(pow(float(level - 1), 1.24) * 2.6))
 	return max(int(round(float(base_requirement) * 1.2)), 1)
 
-func _build_hand_choices(result: PokerHandEvaluator.HandResult) -> Array[Dictionary]:
-	var templates: Array = HAND_CHOICE_TEMPLATES.duplicate(true)
-	var choices: Array[Dictionary] = []
-	while choices.size() < 3 and not templates.is_empty():
-		var index: int = randi_range(0, templates.size() - 1)
-		var template: Dictionary = templates[index]
-		templates.remove_at(index)
-		choices.append(_materialize_hand_choice(template, result))
-	return choices
-
-func _materialize_hand_choice(template: Dictionary, result: PokerHandEvaluator.HandResult) -> Dictionary:
-	var tier: Dictionary = _get_hand_tier_data(result.rank)
-	var choice_id: String = "%s_%d" % [template.get("id", "choice"), int(result.rank)]
-	var player_profile: Dictionary = _scale_percentage_profile(
-		template.get("player_stats", {}),
-		float(tier.get("player_scale", 1.0))
-	)
-	var enemy_profile: Dictionary = _scale_percentage_profile(
-		template.get("enemy_stats", {}),
-		float(tier.get("enemy_scale", 1.0))
-	)
-	return {
-		"id": choice_id,
-		"title": String(template.get("title", "Route")),
-		"curse_name": String(template.get("curse_name", "Curse")),
-		"tier_name": String(tier.get("name", "Common")),
-		"rarity": String(tier.get("name", "Common")),
-		"rarity_color": tier.get("color", Color.WHITE),
-		"hand_name": result.name,
-		"player_profile": player_profile,
-		"enemy_profile": enemy_profile,
-		"player_text": _format_profile_text(player_profile, PLAYER_STAT_LABELS, "Blessing"),
-		"enemy_text": _format_profile_text(enemy_profile, ENEMY_STAT_LABELS, "Curse"),
-		"description": "%s\n%s" % [
-			_format_profile_text(player_profile, PLAYER_STAT_LABELS, "Blessing"),
-			_format_profile_text(enemy_profile, ENEMY_STAT_LABELS, "Curse")
-		]
-	}
-
-func _build_hand_choice_summary() -> Dictionary:
-	var summary: Dictionary = get_level_up_summary()
-	if _pending_hand_result != null:
-		summary["hand_text"] = "Cards %d / 5\nLocked %s [%s]\nPick one route\nNext curse applies immediately" % [
-			collected_cards,
-			_pending_hand_result.name,
-			String(_get_hand_tier_data(_pending_hand_result.rank).get("name", "Common"))
-		]
-	return summary
-
-func _get_hand_tier_data(rank: int) -> Dictionary:
-	if HAND_TIER_DATA.has(rank):
-		return HAND_TIER_DATA[rank]
-	return HAND_TIER_DATA[PokerHandEvaluator.HandRank.HIGH_CARD]
-
-func _scale_percentage_profile(base_profile: Dictionary, profile_scale: float) -> Dictionary:
-	var scaled: Dictionary = {}
-	for key in base_profile.keys():
-		scaled[key] = 1.0 + float(base_profile[key]) * profile_scale
-	return scaled
-
 func _apply_profile_modifiers(target: Dictionary, modifiers: Dictionary) -> void:
 	for key in modifiers.keys():
 		target[key] = float(target.get(key, 1.0)) * float(modifiers[key])
-
-func _format_profile_text(profile: Dictionary, labels: Dictionary, prefix: String) -> String:
-	var parts: Array[String] = []
-	for key in profile.keys():
-		var label: String = String(labels.get(key, key))
-		var percent: float = (float(profile[key]) - 1.0) * 100.0
-		parts.append("+%d%% %s" % [int(round(percent)), label])
-	return "%s %s" % [prefix, ", ".join(parts)]
-
-func _enemy_safe_duplicate(source: Dictionary) -> Dictionary:
-	return source.duplicate(true)

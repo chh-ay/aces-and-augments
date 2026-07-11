@@ -15,3 +15,6 @@ shape = SubResource("CircleShape2D_2g36u")
 [node name="Visual" type="Polygon2D" parent="." unique_id=592030323]
 color = Color(1, 0.55926263, 0.49612188, 1)
 polygon = PackedVector2Array(0, -2, 10, 0, 0, 2, -2, 0)
+
+[node name="Sprite" type="Sprite2D" parent="."]
+visible = false

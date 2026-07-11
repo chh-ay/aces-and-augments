@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CombatProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" uid="uid://xvhft6dddyl" path="res://scripts/player/combat_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+melee = true
+damage_mult = 1.15
+interval_mult = 1.15
+range_mult = 0.38
+max_health_mult = 1.6
+damage_taken_mult = 0.75
+sfx_pitch = 0.7
+melee_hit_delay = 0.14
