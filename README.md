@@ -81,6 +81,16 @@ builds/aces-augments-custom-built.exe
 
 ## Credits
 
+- `Time Elements & Action Monsters`
+  - Author: `finalbossblues (Jason Perry)`
+  - Used for: player character and monster sprites
+  - Source: `https://finalbossblues.itch.io`
+
+- `32rogues`
+  - Author: `Seth Boyles`
+  - Used for: terrain tiles, water autotiles, and animated light props
+  - Source: `https://sethbb.itch.io/32rogues`
+
 - `Playing Cards Pack`
   - Author: `Kenney`
   - Source: `https://kenney.nl/assets/playing-cards-pack`
@@ -91,10 +101,6 @@ builds/aces-augments-custom-built.exe
   - Source: `https://www.dafont.com/vcr-osd-mono.font`
   - License: `Personal & Commercial use`
 
-- Pixel art used for enemies, player set, environment props, pickups, and some UI art was generated for this project using PixelLab MCP.
-  Since I'm calling the AI through CLI/Terminal, I don't have the exact prompts history to share, but the general approach was to iterate on prompts based on the desired art style and feedback on the generated results until I got assets that fit the project. Assets also get deleted if
-  I don't download it within 8 hours, I can only access it during the 8 hours durations, because I need to download it onto my local machine.
-
 - Gameplay audio in the current build is project-authored procedural audio.
 
 ## AI Usage
@@ -103,5 +109,3 @@ AI-assisted development was used during production, with implementation, review,
 
 - `ChatGPT`
   - used for programming assistance, debugging support, UI iteration, and documentation drafting
-- `PixelLab MCP`
-  - used to generate selected pixel art assets and concepts
