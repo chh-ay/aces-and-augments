@@ -1,23 +1,27 @@
 class_name Hud
 extends CanvasLayer
 
-@onready var _health_label: Label = $Root/TopLeftPanel/Margin/VBox/HealthLabel
-@onready var _health_bar: ProgressBar = $Root/TopLeftPanel/Margin/VBox/HealthBar
-@onready var _aim_label: Label = $Root/TopLeftPanel/Margin/VBox/AimLabel
-@onready var _timer_label: Label = $Root/TimerPanel/Margin/TimerLabel
-@onready var _xp_label: Label = $Root/TopRightPanel/Margin/VBox/XpLabel
-@onready var _xp_bar: ProgressBar = $Root/TopRightPanel/Margin/VBox/XpBar
-@onready var _hand_summary_label: Label = $Root/HandPanel/Margin/VBox/SummaryLabel
-@onready var _lock_button: Button = $Root/HandPanel/Margin/VBox/LockButton
+@onready var _health_label: Label = %HealthLabel
+@onready var _health_bar: ProgressBar = %HealthBar
+@onready var _aim_label: Label = %AimLabel
+@onready var _timer_label: Label = %TimerLabel
+@onready var _dash_chip: AbilityChip = %DashChip
+@onready var _discard_chip: AbilityChip = %DiscardChip
+@onready var _announcement_label: Label = %AnnouncementLabel
+@onready var _xp_label: Label = %XpLabel
+@onready var _xp_bar: ProgressBar = %XpBar
+@onready var _hand_summary_label: Label = %SummaryLabel
+@onready var _lock_button: Button = %LockButton
 @onready var _card_slots: Array[CardSlot] = [
-	$Root/HandPanel/Margin/VBox/CardsRow/CardSlot1,
-	$Root/HandPanel/Margin/VBox/CardsRow/CardSlot2,
-	$Root/HandPanel/Margin/VBox/CardsRow/CardSlot3,
-	$Root/HandPanel/Margin/VBox/CardsRow/CardSlot4,
-	$Root/HandPanel/Margin/VBox/CardsRow/CardSlot5,
+	%CardSlot1,
+	%CardSlot2,
+	%CardSlot3,
+	%CardSlot4,
+	%CardSlot5,
 ]
 
 var _player: PlayerController
+var _announcement_tween: Tween
 
 
 func bind_player(player: PlayerController) -> void:
@@ -31,6 +35,21 @@ func bind_player(player: PlayerController) -> void:
 	_refresh_experience()
 	_on_aim_mode_changed(player.is_manual_aim_enabled())
 	_apply_hand_state(player.get_hand_state())
+
+
+func _process(_delta: float) -> void:
+	if _player == null or not is_instance_valid(_player):
+		return
+	var dash_remaining: float = _player.get_dash_cooldown_remaining()
+	var dash_detail: String = "ready" if dash_remaining <= 0.0 else "%.1fs" % dash_remaining
+	_dash_chip.update_state(dash_remaining, _player.get_dash_cooldown_total(), dash_detail)
+	var discard_remaining: float = _player.get_discard_cooldown_remaining()
+	var discard_target: String = _player.get_discard_target_label()
+	_discard_chip.update_state(
+		discard_remaining,
+		_player.get_discard_cooldown_total(),
+		discard_target if not discard_target.is_empty() else "no cards"
+	)
 
 
 func bind_run_director(run_director: RunDirector) -> void:
@@ -79,9 +98,11 @@ func _refresh_experience() -> void:
 func _apply_hand_state(state: Dictionary) -> void:
 	_hand_summary_label.text = _format_hand_summary(state)
 	var cards: Array = state.get("cards", [])
+	var discard_index: int = int(state.get("discard_index", -1))
 	for index in range(_card_slots.size()):
 		var data: Dictionary = cards[index] if index < cards.size() else {"empty": true}
 		_card_slots[index].set_card_data(data)
+		_card_slots[index].set_selected(index == discard_index)
 	var can_lock: bool = bool(state.get("can_lock", false))
 	_lock_button.disabled = not can_lock
 	_lock_button.text = _format_lock_text(state, can_lock)
@@ -118,3 +139,16 @@ static func _format_lock_text(state: Dictionary, can_lock: bool) -> String:
 	if bool(state.get("selection_pending", false)):
 		return "Choose Route"
 	return "Collect 5 Cards To Lock [Space]"
+
+
+## Transient run-event banner ("A SWARM APPROACHES", boss arrival, ...).
+func show_announcement(text: String) -> void:
+	if _announcement_tween != null and _announcement_tween.is_valid():
+		_announcement_tween.kill()
+	_announcement_label.text = text
+	_announcement_label.modulate.a = 1.0
+	_announcement_label.visible = true
+	_announcement_tween = _announcement_label.create_tween()
+	_announcement_tween.tween_interval(2.0)
+	_announcement_tween.tween_property(_announcement_label, "modulate:a", 0.0, 0.7)
+	_announcement_tween.tween_callback(_announcement_label.hide)

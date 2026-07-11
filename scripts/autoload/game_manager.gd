@@ -19,14 +19,18 @@ const META_UPGRADES: Dictionary = {
 	"hull_plating":   {"name": "Hull Plating",   "description": "+12 max HP each rank", "base_cost": 10, "cost_step": 10, "max_level": 5, "stat": "max_health",        "per_level": 12},
 	"servo_motors":   {"name": "Servo Motors",   "description": "+10 move speed each rank", "base_cost": 12, "cost_step": 12, "max_level": 4, "stat": "move_speed",        "per_level": 10},
 	"hot_loader":     {"name": "Hot Loader",     "description": "+1 projectile damage each rank", "base_cost": 18, "cost_step": 16, "max_level": 3, "stat": "projectile_damage", "per_level": 1},
+	"lucky_draw":     {"name": "Lucky Draw",     "description": "+5% card drop rate each rank (relative)", "base_cost": 14, "cost_step": 12, "max_level": 3, "stat": "card_drop",         "per_level": 0.05},
+	"field_medic":    {"name": "Field Medic",    "description": "+0.2 HP/s regen each rank", "base_cost": 12, "cost_step": 10, "max_level": 3, "stat": "regen",             "per_level": 0.2},
 }
 
 var selected_difficulty_id: String = DEFAULT_DIFFICULTY
+var selected_character_id: String = CharacterLibrary.DEFAULT_CHARACTER_ID
 var _current_run_scrap: int = 0
 
 
 func _ready() -> void:
 	selected_difficulty_id = _sanitize_difficulty_id(SaveManager.get_selected_difficulty(selected_difficulty_id))
+	selected_character_id = _sanitize_character_id(SaveManager.get_selected_character(selected_character_id))
 	_emit_scrap_changed()
 
 
@@ -60,11 +64,49 @@ func get_difficulty_button_text() -> String:
 	return "Difficulty: %s" % get_selected_difficulty_name()
 
 
-# -- Run scrap ------------------------------------------------------------
+# -- Character ------------------------------------------------------------
+
+func set_selected_character(character_id: String) -> Dictionary:
+	selected_character_id = _sanitize_character_id(character_id)
+	SaveManager.set_selected_character(selected_character_id)
+	return get_selected_character()
+
+
+func cycle_character(step: int = 1) -> Dictionary:
+	var current_index: int = CharacterLibrary.get_character_index(selected_character_id)
+	var next_index: int = wrapi(current_index + step, 0, CharacterLibrary.CHARACTERS.size())
+	return set_selected_character(String(CharacterLibrary.CHARACTERS[next_index].get("id", "")))
+
+
+func get_selected_character() -> Dictionary:
+	return CharacterLibrary.get_character(selected_character_id)
+
+
+func get_selected_character_id() -> String:
+	return selected_character_id
+
+
+# -- Run scrap and stats ---------------------------------------------------
+
+var _run_stats: Dictionary = {"kills": 0, "hands_locked": 0}
+
 
 func begin_run() -> void:
 	_current_run_scrap = 0
+	_run_stats = {"kills": 0, "hands_locked": 0}
 	_emit_scrap_changed()
+
+
+func record_kill() -> void:
+	_run_stats["kills"] = int(_run_stats.get("kills", 0)) + 1
+
+
+func record_hand_locked() -> void:
+	_run_stats["hands_locked"] = int(_run_stats.get("hands_locked", 0)) + 1
+
+
+func get_run_stats() -> Dictionary:
+	return _run_stats.duplicate()
 
 
 func add_run_scrap(amount: int) -> void:
@@ -81,6 +123,14 @@ func commit_run_scrap() -> int:
 	_current_run_scrap = 0
 	_emit_scrap_changed()
 	return total
+
+
+## Failed or abandoned runs forfeit their scrap: nothing reaches the bank.
+func discard_run_scrap() -> void:
+	if _current_run_scrap <= 0:
+		return
+	_current_run_scrap = 0
+	_emit_scrap_changed()
 
 
 func get_current_run_scrap() -> int:
@@ -143,7 +193,7 @@ func wipe_progression() -> void:
 
 
 func get_player_meta_profile() -> Dictionary:
-	var profile: Dictionary = {"max_health": 0, "move_speed": 0.0, "projectile_damage": 0}
+	var profile: Dictionary = {"max_health": 0, "move_speed": 0.0, "projectile_damage": 0, "card_drop": 0.0, "regen": 0.0}
 	for upgrade_id in META_UPGRADES.keys():
 		var definition: Dictionary = META_UPGRADES[upgrade_id]
 		var stat_id: String = String(definition.get("stat", ""))
@@ -170,6 +220,10 @@ func get_upgrade_summary(upgrade_id: String) -> Dictionary:
 
 func _sanitize_difficulty_id(difficulty_id: String) -> String:
 	return difficulty_id if DIFFICULTY_CONFIGS.has(difficulty_id) else DEFAULT_DIFFICULTY
+
+
+func _sanitize_character_id(character_id: String) -> String:
+	return character_id if CharacterLibrary.is_valid_character_id(character_id) else CharacterLibrary.DEFAULT_CHARACTER_ID
 
 
 func _emit_scrap_changed() -> void:

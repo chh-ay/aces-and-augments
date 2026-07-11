@@ -71,6 +71,7 @@ theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
 [node name="StatsLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "HP 100 / 100"
@@ -88,6 +89,7 @@ theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
 [node name="HandLabel" type="Label" parent="Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Cards 0 / 5"
@@ -98,6 +100,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 14
 
 [node name="ChoiceA" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -110,6 +113,7 @@ Choice
 Description"
 
 [node name="ChoiceB" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -122,6 +126,7 @@ Choice
 Description"
 
 [node name="ChoiceC" type="Button" parent="Center/Panel/Margin/VBox/ChoicesRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 3

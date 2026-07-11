@@ -1,14 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://byvklghdcujkk"]
+[gd_scene format=3 uid="uid://byvklghdcujkk"]
 
 [ext_resource type="PackedScene" uid="uid://cm4criwagreod" path="res://scenes/main/main.tscn" id="1_main"]
-[ext_resource type="PackedScene" uid="uid://b1mpwwg6y6qny" path="res://scenes/enemies/boss_core_test.tscn" id="2_boss_test"]
-[ext_resource type="Script" uid="uid://bq2dyuwvnt56o" path="res://scripts/world/test_ground.gd" id="3_test_ground"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/boss_core_test.tscn" id="2_boss_test"]
+[ext_resource type="Script" path="res://scripts/world/test_ground.gd" id="3_test_ground"]
 
 [node name="Main" instance=ExtResource("1_main")]
 script = ExtResource("3_test_ground")
 boss_scene = ExtResource("2_boss_test")
 
-[node name="Player" parent="." index="6"]
+[node name="RunDirector" parent="."]
+run_duration_seconds = 18.0
+
+[node name="Player" parent="."]
 move_speed = 240.0
 max_health = 220
 projectile_damage = 5
@@ -16,13 +19,7 @@ attack_interval = 0.42
 attack_range = 360.0
 health_regen_rate = 0.8
 
-[node name="EnemySpawner" parent="." index="7"]
+[node name="EnemySpawner" parent="."]
 spawn_interval = 1.9
 max_enemies = 5
 peak_enemy_count = 10
-
-[node name="PropSpawner" parent="." index="4"]
-enabled = false
-
-[node name="RunDirector" parent="." index="0"]
-run_duration_seconds = 18.0

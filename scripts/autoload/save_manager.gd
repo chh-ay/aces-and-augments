@@ -9,6 +9,7 @@ const SECTION_PROGRESS: String = "progress"
 const SECTION_UPGRADES: String = "upgrades"
 const KEY_VERSION: String = "version"
 const KEY_SELECTED_DIFFICULTY: String = "selected_difficulty"
+const KEY_SELECTED_CHARACTER: String = "selected_character"
 const KEY_FULLSCREEN: String = "fullscreen"
 const KEY_MASTER_VOLUME_PERCENT: String = "master_volume_percent"
 const KEY_TOTAL_SCRAP: String = "total_scrap"
@@ -36,6 +37,15 @@ func get_selected_difficulty(default_value: String = "hard") -> String:
 func set_selected_difficulty(difficulty_id: String) -> void:
 	_ensure_loaded()
 	_settings.set_value(SECTION_GAMEPLAY, KEY_SELECTED_DIFFICULTY, difficulty_id)
+	save_settings()
+
+func get_selected_character(default_value: String = "") -> String:
+	_ensure_loaded()
+	return String(_settings.get_value(SECTION_GAMEPLAY, KEY_SELECTED_CHARACTER, default_value))
+
+func set_selected_character(character_id: String) -> void:
+	_ensure_loaded()
+	_settings.set_value(SECTION_GAMEPLAY, KEY_SELECTED_CHARACTER, character_id)
 	save_settings()
 
 func get_fullscreen_enabled(default_value: bool = false) -> bool:

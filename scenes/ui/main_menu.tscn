@@ -1,12 +1,25 @@
-[gd_scene load_steps=7 format=3 uid="uid://cnaj4kbd8n4uq"]
+[gd_scene load_steps=10 format=3 uid="uid://cnaj4kbd8n4uq"]
 
 [ext_resource type="Script" uid="uid://boqubjjwh4814" path="res://scripts/ui/main_menu.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://cm4criwagreod" path="res://scenes/main/main.tscn" id="2_run"]
-[ext_resource type="PackedScene" uid="uid://byvklghdcujkk" path="res://scenes/main/test_ground.tscn" id="3_test"]
+[ext_resource type="PackedScene" path="res://scenes/main/test_ground.tscn" id="3_test"]
 [ext_resource type="PackedScene" uid="uid://d18nsevj6c67y" path="res://scenes/ui/settings_menu.tscn" id="4_settings"]
-[ext_resource type="PackedScene" uid="uid://uguogkfpzgby" path="res://scenes/ui/upgrade_shop.tscn" id="5_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/upgrade_shop.tscn" id="5_shop"]
 [ext_resource type="PackedScene" uid="uid://b41qx0uxhld0n" path="res://scenes/ui/how_to_play_menu.tscn" id="6_howto"]
 [ext_resource type="PackedScene" uid="uid://dis3mt2pfy82g" path="res://scenes/ui/credits_menu.tscn" id="7_credits"]
+[ext_resource type="PackedScene" path="res://scenes/ui/play_setup_menu.tscn" id="8_setup"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_primary"]
+bg_color = Color(0.09, 0.14, 0.19, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.77, 0.24, 0.75)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -36,99 +49,116 @@ layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.9)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 14
 text = "ACES & AUGMENTS"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 14
-text = "Survive the run, lock poker hands, and escape with the right ending."
+theme_override_font_sizes/font_size = 13
+text = "Survive. Build a poker hand. Escape."
 horizontal_alignment = 1
-autowrap_mode = 2
 
 [node name="ScrapLabel" type="Label" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.77, 0.24, 0.95)
 theme_override_font_sizes/font_size = 15
 text = "Scrap 0"
 horizontal_alignment = 1
 
-[node name="DifficultyButton" type="Button" parent="Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 36)
+[node name="Spacer" type="Control" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
-text = "Difficulty: Hard"
 
-[node name="DifficultyHint" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="StartButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.7, 0.78, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "Enemy speed 100%  |  HP 100%  |  spawn 100%  |  cards 100%"
-horizontal_alignment = 1
-autowrap_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_primary")
+text = "Start Run"
 
-[node name="Buttons" type="VBoxContainer" parent="Center/Panel/Margin/VBox"]
+[node name="SecondaryRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="StartButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 42)
+[node name="ShopButton" type="Button" parent="Center/Panel/Margin/VBox/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-text = "Start Run"
+size_flags_horizontal = 3
+text = "Shop"
 
-[node name="TestGroundButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
+[node name="SettingsButton" type="Button" parent="Center/Panel/Margin/VBox/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-text = "Open Test Ground"
-
-[node name="ShopButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
-layout_mode = 2
-text = "Upgrade Shop"
-
-[node name="SettingsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
-layout_mode = 2
+size_flags_horizontal = 3
 text = "Settings"
 
-[node name="HowToButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
+[node name="HowToButton" type="Button" parent="Center/Panel/Margin/VBox/SecondaryRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "How To Play"
 
-[node name="CreditsButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
+[node name="Footer" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="CreditsButton" type="Button" parent="Center/Panel/Margin/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+flat = true
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
 text = "Credits"
 
-[node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
+[node name="WipeButton" type="Button" parent="Center/Panel/Margin/VBox/Footer"]
+unique_name_in_owner = true
 layout_mode = 2
+flat = true
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
 text = "Wipe Progress"
 
-[node name="QuitButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
-custom_minimum_size = Vector2(0, 36)
+[node name="TestGroundButton" type="Button" parent="Center/Panel/Margin/VBox/Footer"]
+unique_name_in_owner = true
 layout_mode = 2
+flat = true
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
+text = "Test Ground"
+
+[node name="QuitButton" type="Button" parent="Center/Panel/Margin/VBox/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+flat = true
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
 text = "Quit"
 
-[node name="Footer" type="Label" parent="Center/Panel/Margin/VBox"]
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.58, 0.65, 0.72, 0.85)
-theme_override_font_sizes/font_size = 12
-text = "WASD move  |  Q toggles aim  |  Esc pauses"
+theme_override_colors/font_color = Color(0.5, 0.57, 0.64, 0.7)
+theme_override_font_sizes/font_size = 11
+text = "WASD move  |  Shift dash  |  Space lock hand  |  X discard"
 horizontal_alignment = 1
 
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
@@ -138,3 +168,5 @@ horizontal_alignment = 1
 [node name="CreditsMenu" parent="." instance=ExtResource("7_credits")]
 
 [node name="UpgradeShop" parent="." instance=ExtResource("5_shop")]
+
+[node name="PlaySetupMenu" parent="." instance=ExtResource("8_setup")]

@@ -3,7 +3,7 @@ extends Control
 
 signal closed
 
-@onready var _close_button: Button = $Center/Panel/Margin/VBox/CloseButton
+@onready var _close_button: Button = %CloseButton
 
 func _ready() -> void:
 	visible = false

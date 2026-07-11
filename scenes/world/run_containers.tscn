@@ -7,5 +7,3 @@
 [node name="Bosses" type="Node2D" parent="."]
 
 [node name="Exits" type="Node2D" parent="."]
-
-[node name="LuckyTerminals" type="Node2D" parent="."]

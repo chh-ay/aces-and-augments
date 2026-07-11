@@ -108,6 +108,7 @@ theme_override_font_sizes/font_size = 12
 text = "Menu and run mix"
 
 [node name="VolumeDownButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(44, 36)
 layout_mode = 2
 text = "-"
@@ -130,6 +131,7 @@ horizontal_alignment = 1
 text = "100%"
 
 [node name="VolumeUpButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(44, 36)
 layout_mode = 2
 text = "+"
@@ -183,6 +185,7 @@ horizontal_alignment = 1
 text = "Off"
 
 [node name="FullscreenButton" type="Button" parent="Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
 text = "Toggle"
@@ -191,6 +194,7 @@ text = "Toggle"
 layout_mode = 2
 
 [node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "Back"

@@ -25,6 +25,9 @@ const CARD_SUITS: Array[String] = ["hearts", "diamonds", "clubs", "spades"]
 @export var xp_orb_scene: PackedScene
 @export var card_pickup_scene: PackedScene
 @export_range(0.0, 1.0, 0.01) var card_drop_chance: float = 0.18
+## For side-facing sheets (art faces LEFT): mirror the sprite horizontally
+## to match horizontal movement.
+@export var face_velocity_x: bool = false
 
 var _damage_cooldown: float = 0.0
 var _current_health: int = 0
@@ -59,8 +62,16 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	_drive_toward(player)
+	_update_facing()
 	move_and_slide()
 	_try_damage(player)
+
+
+func _update_facing() -> void:
+	if not face_velocity_x or _sprite_target == null:
+		return
+	if absf(velocity.x) > 4.0:
+		_sprite_target.set("flip_h", velocity.x > 0.0)
 
 
 @abstract func _get_target_player() -> PlayerController
@@ -68,9 +79,16 @@ func _physics_process(delta: float) -> void:
 
 # -- Damage and death ------------------------------------------------------
 
+## Runtime card-drop multiplier (difficulty + meta), set by the spawner per
+## spawn; kept off the exported base chance so pooling never compounds it.
+var card_drop_multiplier: float = 1.0
+## Per-spawn scrap multiplier (elites); consumed at death, reset by pooling.
+var scrap_reward_multiplier: float = 1.0
+
 func take_damage(amount: int) -> void:
 	if amount <= 0:
 		return
+	DamageNumber.spawn(get_tree().current_scene, global_position + Vector2(randf_range(-7.0, 7.0), -14.0), amount)
 	_current_health = max(_current_health - amount, 0)
 	_trigger_hit_flash()
 	if _current_health > 0:
@@ -79,9 +97,15 @@ func take_damage(amount: int) -> void:
 		_die()
 
 
+## Common kills only sometimes pay scrap; elites/boss (multiplier > 1) always do.
+@export_range(0.0, 1.0, 0.05) var scrap_drop_chance: float = 0.35
+
 func _die() -> void:
 	AudioManager.play_sfx(_get_death_sfx_id(), randf_range(0.96, 1.04), -5.0)
-	GameManager.add_run_scrap(scrap_reward)
+	if scrap_reward_multiplier > 1.0 or randf() <= scrap_drop_chance:
+		GameManager.add_run_scrap(max(int(round(scrap_reward * scrap_reward_multiplier)), scrap_reward))
+	GameManager.record_kill()
+	DeathEffect.spawn(get_tree().current_scene, global_position, maxf(get_collision_radius() / 10.0, 1.0))
 	_drop_xp_orb()
 	_drop_card_pickup()
 	PoolManager.release.call_deferred(self)
@@ -98,7 +122,7 @@ func _drop_xp_orb() -> void:
 
 
 func _drop_card_pickup() -> void:
-	if card_pickup_scene == null or randf() > card_drop_chance:
+	if card_pickup_scene == null or randf() > clampf(card_drop_chance * card_drop_multiplier, 0.0, 1.0):
 		return
 	var pickup: CardPickup = PoolManager.spawn(card_pickup_scene, get_tree().current_scene) as CardPickup
 	if pickup == null:
@@ -138,6 +162,10 @@ func _drive_toward(player: PlayerController) -> void:
 func on_spawned_from_pool() -> void:
 	_damage_cooldown = 0.0
 	velocity = Vector2.ZERO
+	card_drop_multiplier = 1.0
+	scrap_reward_multiplier = 1.0
+	scale = Vector2.ONE
+	modulate = Color.WHITE
 	_mutation_profile = {"health": 1.0, "damage": 1.0, "speed": 1.0}
 	_difficulty_speed_multiplier = 1.0
 	_difficulty_health_multiplier = 1.0
@@ -151,7 +179,17 @@ func on_spawned_from_pool() -> void:
 	if not is_in_group("enemy"):
 		add_to_group("enemy")
 	_refresh_scaled_stats(true)
+	_desync_animation()
 
+
+## Pooled enemies of one type would otherwise bounce in perfect sync.
+func _desync_animation() -> void:
+	var animated: AnimatedSprite2D = _sprite_target as AnimatedSprite2D
+	if animated == null or animated.sprite_frames == null:
+		return
+	var frame_count: int = animated.sprite_frames.get_frame_count(animated.animation)
+	if frame_count > 1:
+		animated.frame = randi_range(0, frame_count - 1)
 
 func on_released_to_pool() -> void:
 	_damage_cooldown = 0.0
