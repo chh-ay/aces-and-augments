@@ -67,7 +67,24 @@ func _check_projectile_hit() -> void:
 	await get_tree().create_timer(0.25).timeout
 	_check(_total_pack_health() < health_before,
 		"projectile still hits enemies on layer 2")
+	await _check_player_blocked()
 	_finish()
+
+
+## The layer split must not let the player wade through crowds: the player
+## body masks the enemies layer, so a body in the path blocks motion.
+func _check_player_blocked() -> void:
+	var blocker: AbstractEnemy = ENEMY_SCENE.instantiate() as AbstractEnemy
+	blocker.damage_range = 0.0
+	# Position before add_child so the physics body is created in place;
+	# a post-add teleport takes an extra frame to reach the server.
+	blocker.position = Vector2(2000.0, 2000.0)
+	add_child(blocker)
+	blocker.set_physics_process(false)
+	await get_tree().physics_frame
+	var from_left: Transform2D = Transform2D(0.0, blocker.global_position - Vector2(20.0, 0.0))
+	_check(_player.test_move(from_left, Vector2(16.0, 0.0)),
+		"player is body-blocked by enemies")
 
 
 func _total_pack_health() -> int:

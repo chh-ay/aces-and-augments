@@ -29,7 +29,7 @@ extends Node
 @export var max_enemies: int = 10
 @export var peak_enemy_count: int = 64
 ## Absolute population ceiling — a pure perf guard, not a pacing knob.
-## 320 measured at ~10 ms physics on the dev machine (see
+## 320 measured at ~12 ms physics on the dev machine (see
 ## tests/spawn_stress_bench.tscn); rerun the bench before raising further.
 @export var hard_enemy_limit: int = 320
 ## Fraction of the burst that still spawns while over the soft cap, so
