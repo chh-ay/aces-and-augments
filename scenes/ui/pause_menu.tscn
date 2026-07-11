@@ -62,21 +62,25 @@ horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="ResumeButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Resume"
 
 [node name="RestartButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Restart Run"
 
 [node name="SettingsButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Settings"
 
 [node name="MenuButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Return To Menu"

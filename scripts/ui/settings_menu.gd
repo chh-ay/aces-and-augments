@@ -12,10 +12,10 @@ const VOLUME_STEP: int = 10
 @onready var _volume_value: Label = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/ValuePill/Margin/Value
 @onready var _fullscreen_value: Label = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/ValuePill/Margin/Value
 @onready var _fullscreen_hint: Label = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/LabelBlock/Hint
-@onready var _close_button: Button = $Center/Panel/Margin/VBox/Buttons/CloseButton
-@onready var _volume_down_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeDownButton
-@onready var _volume_up_button: Button = $Center/Panel/Margin/VBox/Rows/VolumeCard/Margin/Row/VolumeUpButton
-@onready var _fullscreen_button: Button = $Center/Panel/Margin/VBox/Rows/FullscreenCard/Margin/Row/FullscreenButton
+@onready var _close_button: Button = %CloseButton
+@onready var _volume_down_button: Button = %VolumeDownButton
+@onready var _volume_up_button: Button = %VolumeUpButton
+@onready var _fullscreen_button: Button = %FullscreenButton
 
 
 func _ready() -> void:

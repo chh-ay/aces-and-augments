@@ -73,9 +73,27 @@ theme_override_constants/margin_bottom = 12
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 autowrap_mode = 2
-text = "PixelLab MCP
-Generated player, enemy, environment, and pickup art for Aces & Augments.
-https://api.pixellab.ai"
+text = "Time Elements & Action Monsters by finalbossblues (Jason Perry)
+Player character and monster sprites.
+https://finalbossblues.itch.io"
+
+[node name="RoguesCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/RoguesCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/RoguesCard/Margin"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+text = "32rogues by Seth Boyles
+Terrain tiles, water autotiles, and animated light props.
+https://sethbb.itch.io/32rogues"
 
 [node name="CardsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
@@ -114,6 +132,7 @@ Source: DaFont
 https://www.dafont.com/vcr-osd-mono.font"
 
 [node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 text = "Back"

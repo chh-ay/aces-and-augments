@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://b41qx0uxhld0n"]
+[gd_scene load_steps=3 format=3 uid="uid://b41qx0uxhld0n"]
 
 [ext_resource type="Script" path="res://scripts/ui/how_to_play_menu.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_section_card"]
+bg_color = Color(0.075, 0.105, 0.14, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.74, 0.92, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="HowToPlayMenu" type="Control"]
 layout_mode = 3
@@ -24,19 +36,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Panel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(480, 0)
-layout_mode = 2
+custom_minimum_size = Vector2(768, 0)
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel"]
 layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 22
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
 
 [node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="Eyebrow" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
@@ -54,52 +65,54 @@ horizontal_alignment = 1
 [node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.78, 0.84, 0.92)
-theme_override_font_sizes/font_size = 14
-text = "Move, survive, build a poker hand, then escape with the right ending."
+theme_override_font_sizes/font_size = 13
+text = "Survive, build a poker hand, escape with the right ending."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ControlsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+[node name="Columns" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/ControlsCard"]
+[node name="ControlsCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_section_card")
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Columns/ControlsCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/ControlsCard/Margin"]
+[node name="ControlsSection" type="VBoxContainer" parent="Center/Panel/Margin/VBox/Columns/ControlsCard/Margin"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "WASD  Move
-Mouse  Aim in manual mode
-Q  Toggle Auto / Manual aim
-Space  Lock hand once 5 cards are collected
-Esc  Pause / Back
-Enter / Left Click  Confirm"
+theme_override_constants/separation = 8
 
-[node name="LoopCard" type="PanelContainer" parent="Center/Panel/Margin/VBox"]
+[node name="LoopCard" type="PanelContainer" parent="Center/Panel/Margin/VBox/Columns"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_section_card")
 
-[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/LoopCard"]
+[node name="Margin" type="MarginContainer" parent="Center/Panel/Margin/VBox/Columns/LoopCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 12
 
-[node name="Label" type="Label" parent="Center/Panel/Margin/VBox/LoopCard/Margin"]
+[node name="LoopSection" type="VBoxContainer" parent="Center/Panel/Margin/VBox/Columns/LoopCard/Margin"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-autowrap_mode = 2
-text = "1. Clear enemies and collect XP to level up.
-2. Pick up cards until you have five.
-3. Lock the hand and pick a blessing; the paired curse hits enemies.
-4. Survive until the boss appears.
-5. Kill the boss, take the exit, and aim for a Royal Flush for the good ending."
+theme_override_constants/separation = 8
 
 [node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 36)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 36)
 layout_mode = 2
+size_flags_horizontal = 4
 text = "Back"
