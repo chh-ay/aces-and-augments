@@ -8,21 +8,22 @@ extends Control
 
 signal option_selected(choice_id: String)
 
-@onready var _stats_label: Label = $Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin/StatsLabel
-@onready var _hand_label: Label = $Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/HandLabel
-@onready var _choice_a: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceA
-@onready var _choice_b: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceB
-@onready var _choice_c: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceC
+@onready var _stats_label: Label = %StatsLabel
+@onready var _hand_label: Label = %HandLabel
+@onready var _choice_a: Button = %ChoiceA
+@onready var _choice_b: Button = %ChoiceB
+@onready var _choice_c: Button = %ChoiceC
 @onready var _card_slots: Array[CardSlot] = [
-	$Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot1,
-	$Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot2,
-	$Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot3,
-	$Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot4,
-	$Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandVBox/CardsRow/CardSlot5,
+	%CardSlot1,
+	%CardSlot2,
+	%CardSlot3,
+	%CardSlot4,
+	%CardSlot5,
 ]
 
 var _buttons: Array[Button] = []
 var _choice_ids: Array[String] = []
+var _card_contents: Array[ChoiceCardContent] = []
 
 
 func _ready() -> void:
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_buttons = [_choice_a, _choice_b, _choice_c]
 	for index in range(_buttons.size()):
 		_buttons[index].pressed.connect(_on_choice_pressed.bind(index))
+		_card_contents.append(ChoiceCardContent.attach(_buttons[index]))
 	hide()
 
 
@@ -63,10 +65,14 @@ func _on_choice_pressed(index: int) -> void:
 
 func _bind_choice(button: Button, choice: Dictionary) -> void:
 	button.disabled = choice.is_empty()
-	var rarity: String = String(choice.get("rarity", "Common")).to_upper()
-	var title: String = String(choice.get("title", "Route"))
-	var blessing: String = String(choice.get("player_text", "Blessing"))
-	var curse: String = String(choice.get("enemy_text", "Curse"))
-	button.text = "%s\n%s\n\n%s\n\n%s" % [rarity, title, blessing, curse]
-	var rarity_color: Color = choice.get("rarity_color", Color.WHITE)
-	button.add_theme_color_override("font_color", rarity_color)
+	button.text = ""
+	var content: ChoiceCardContent = _card_contents[_buttons.find(button)]
+	content.set_choice_sections(
+		String(choice.get("rarity", "Common")),
+		choice.get("rarity_color", Color.WHITE),
+		String(choice.get("title", "Route")),
+		[
+			{"header": "Blessing", "color": ChoiceCardContent.BLESSING_COLOR, "lines": choice.get("player_lines", [])},
+			{"header": "Curse", "color": ChoiceCardContent.CURSE_COLOR, "lines": choice.get("enemy_lines", [])},
+		]
+	)

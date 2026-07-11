@@ -7,14 +7,15 @@ extends Control
 
 signal option_selected(stat_id: String)
 
-@onready var _stats_label: Label = $Center/Panel/Margin/VBox/SummaryRow/StatsCard/Margin/StatsLabel
-@onready var _hand_label: Label = $Center/Panel/Margin/VBox/SummaryRow/HandCard/Margin/HandLabel
-@onready var _choice_a: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceA
-@onready var _choice_b: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceB
-@onready var _choice_c: Button = $Center/Panel/Margin/VBox/ChoicesRow/ChoiceC
+@onready var _stats_label: Label = %StatsLabel
+@onready var _hand_label: Label = %HandLabel
+@onready var _choice_a: Button = %ChoiceA
+@onready var _choice_b: Button = %ChoiceB
+@onready var _choice_c: Button = %ChoiceC
 
 var _buttons: Array[Button] = []
 var _choice_ids: Array[String] = []
+var _card_contents: Array[ChoiceCardContent] = []
 
 
 func _ready() -> void:
@@ -22,6 +23,7 @@ func _ready() -> void:
 	_buttons = [_choice_a, _choice_b, _choice_c]
 	for index in range(_buttons.size()):
 		_buttons[index].pressed.connect(_on_choice_pressed.bind(index))
+		_card_contents.append(ChoiceCardContent.attach(_buttons[index]))
 	hide()
 
 
@@ -52,9 +54,11 @@ func _on_choice_pressed(index: int) -> void:
 
 func _bind_choice(button: Button, choice: Dictionary) -> void:
 	button.disabled = choice.is_empty()
-	var rarity: String = String(choice.get("rarity", "Common")).to_upper()
-	var title: String = String(choice.get("title", "Upgrade"))
-	var description: String = String(choice.get("description", ""))
-	button.text = "%s\n%s\n%s" % [rarity, title, description]
-	var rarity_color: Color = choice.get("rarity_color", Color.WHITE)
-	button.add_theme_color_override("font_color", rarity_color)
+	button.text = ""
+	var content: ChoiceCardContent = _card_contents[_buttons.find(button)]
+	content.set_choice(
+		String(choice.get("rarity", "Common")),
+		choice.get("rarity_color", Color.WHITE),
+		String(choice.get("title", "Upgrade")),
+		String(choice.get("description", ""))
+	)
