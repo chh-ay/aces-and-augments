@@ -39,6 +39,11 @@ window/stretch/aspect="expand"
 theme/default_font_subpixel_positioning=0
 theme/custom="res://resources/themes/vcr_ui_theme.tres"
 
+[layer_names]
+
+2d_physics/layer_1="world"
+2d_physics/layer_2="enemies"
+
 [input]
 
 restart={

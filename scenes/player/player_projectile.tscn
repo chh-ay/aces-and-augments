@@ -7,6 +7,7 @@ radius = 6.0
 
 [node name="PlayerProjectile" type="Area2D" unique_id=1786926131]
 collision_layer = 0
+collision_mask = 2
 script = ExtResource("1_2g36u")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1900127599]
